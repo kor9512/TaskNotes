@@ -1742,6 +1742,40 @@ export default class TaskNotesPlugin extends Plugin {
 		await this.openTaskEditModalForFile(activeFile, "Current file is not a tasknote");
 	}
 
+	private currentTaskTimeTrackingPending = false;
+
+	async setCurrentTaskTimeTracking(action: "start" | "stop"): Promise<void> {
+		if (this.currentTaskTimeTrackingPending) {
+			return;
+		}
+		this.currentTaskTimeTrackingPending = true;
+		try {
+			const task = await this.getCurrentTaskForCommand();
+			if (!task) {
+				return;
+			}
+
+			try {
+				if (action === "start") {
+					await this.startTimeTracking(task);
+				} else {
+					await this.stopTimeTracking(task);
+				}
+			} catch {
+				// The coordinator already logs the failure and shows a specific notice.
+			}
+		} catch (error) {
+			tasknotesLogger.error("Failed to resolve current task for time tracking:", {
+				category: "persistence",
+				operation: "current-task-time-tracking",
+				error,
+			});
+			new Notice("Failed to load current task");
+		} finally {
+			this.currentTaskTimeTrackingPending = false;
+		}
+	}
+
 	async cycleCurrentTaskStatus(): Promise<void> {
 		try {
 			const taskInfo = await this.getCurrentTaskForCommand();

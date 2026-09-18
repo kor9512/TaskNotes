@@ -1,5 +1,9 @@
 # TaskNotes - Unreleased
 
+## Added
+
+- (#296) Added commands to start and stop time tracking for the current task note, usable from the Command Palette, hotkeys, and plugins such as Buttons. Thanks to @schosch-iteratec for the request and for sharing the Quick Actions workaround. See [Time Management](https://tasknotes.dev/features/time-management/).
+
 <!--
 
 **Added** for new features.
