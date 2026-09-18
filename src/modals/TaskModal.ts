@@ -95,6 +95,7 @@ import {
 	renderTaskModalSubtasksList,
 } from "./taskModalSubtasks";
 import { openTaskModalTaskSelector } from "./taskModalTaskSelector";
+import { buildSubtaskCreationPrePopulatedValues } from "../services/taskRelationshipActions";
 import {
 	createTaskModalTitleTextarea,
 	type TaskModalTitleInputElement,
@@ -1150,8 +1151,18 @@ export abstract class TaskModal extends Modal {
 
 	// Subtask management methods
 	protected async openSubtaskSelector(): Promise<void> {
+		const parentPath = this.getCurrentTaskPath();
+		const parentFile = parentPath ? this.app.vault.getAbstractFileByPath(parentPath) : null;
+		const parentTask = parentPath
+			? await this.plugin.cacheManager.getTaskInfo(parentPath)
+			: null;
+		const creationDefaults = parentFile instanceof TFile && parentTask
+			? buildSubtaskCreationPrePopulatedValues(this.plugin, parentTask, parentFile)
+			: undefined;
+
 		await openTaskModalTaskSelector({
 			plugin: this.plugin,
+			selectorOptions: creationDefaults ? { creationDefaults } : undefined,
 			getCandidates: (allTasks) =>
 				getTaskModalSubtaskCandidates(
 					allTasks,

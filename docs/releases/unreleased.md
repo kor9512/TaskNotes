@@ -4,6 +4,10 @@
 
 - (#296) Added commands to start and stop time tracking for the current task note, usable from the Command Palette, hotkeys, and plugins such as Buttons. Thanks to @schosch-iteratec for the request and for sharing the Quick Actions workaround. See [Time Management](https://tasknotes.dev/features/time-management/).
 
+## Fixed
+
+- (#2347) Fixed subtasks created from the edit task modal ignoring the parent project when choosing their folder. Thanks to @iantierney for reporting.
+
 <!--
 
 **Added** for new features.
