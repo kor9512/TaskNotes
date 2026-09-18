@@ -6,6 +6,7 @@
 
 ## Fixed
 
+- Fixed task dialogs falling back to plain text inputs when opened without an active note, including from release notes or in an empty vault.
 - (#2347) Fixed subtasks created from the edit task modal ignoring the parent project when choosing their folder. Thanks to @iantierney for reporting.
 
 <!--
