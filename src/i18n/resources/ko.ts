@@ -2440,7 +2440,7 @@ export const ko: TranslationTree = {
 				remindLater: "나중에 알림"
 			}
 		},
-		task: {
+			task: {
 			titlePlaceholder: "무엇을 해야 하나요?",
 			titleLabel: "제목",
 			titleDetailedPlaceholder: "작업 제목...",
@@ -2486,6 +2486,12 @@ export const ko: TranslationTree = {
 				}
 			},
 			customFieldsLabel: "사용자 지정 필드",
+			googleCalendar: {
+				name: "Google 캘린더",
+				useDefaultTarget: "기본 대상 캘린더 사용",
+				unavailable: "사용할 수 없는 캘린더 ({id})",
+				unavailableDescription: "이 캘린더는 더 이상 사용할 수 없습니다. 다른 캘린더를 선택하세요.",
+			},
 			actions: {
 				due: "마감일 설정",
 				scheduled: "예정일 설정",

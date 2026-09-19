@@ -1,5 +1,6 @@
 import { TaskCalendarSyncService } from "../../src/services/TaskCalendarSyncService";
 import { TaskInfo } from "../../src/types";
+import { TFile } from "obsidian";
 
 describe("TaskCalendarSyncService", () => {
     let syncService: any;
@@ -242,5 +243,48 @@ describe("TaskCalendarSyncService", () => {
 
         jest.advanceTimersByTime(60000);
         expect(syncService.processRecoveryQueues).toHaveBeenCalledTimes(2);
+    });
+
+    it("uses due as the exclusive end for multi-day all-day events", () => {
+        const event = syncService.taskToCalendarEvent({
+            path: "Tasks/date-span.md",
+            title: "Date span",
+            scheduled: "2026-09-17",
+            due: "2026-09-20",
+        });
+
+        expect(event).toMatchObject({
+            start: { date: "2026-09-17" },
+            end: { date: "2026-09-21" },
+        });
+    });
+
+    it("falls back to a one-day event when due is absent", () => {
+        const event = syncService.taskToCalendarEvent({
+            path: "Tasks/single-day.md",
+            title: "Single day",
+            scheduled: "2026-09-17",
+        });
+
+        expect(event).toMatchObject({
+            start: { date: "2026-09-17" },
+            end: { date: "2026-09-18" },
+        });
+    });
+
+    it("resolves a task calendar override from frontmatter before the global target", () => {
+        const file = Object.create(TFile.prototype);
+        mockPlugin.app.vault.getAbstractFileByPath = jest.fn().mockReturnValue(file);
+        mockPlugin.app.metadataCache = {
+            getFileCache: jest.fn().mockReturnValue({
+                frontmatter: { googleCalendarId: "heart-calendar" },
+            }),
+        };
+
+        expect(syncService.getTaskTargetCalendarId({
+            path: "Tasks/heart-only.md",
+            title: "Heart only",
+            scheduled: "2026-09-17",
+        })).toBe("heart-calendar");
     });
 });

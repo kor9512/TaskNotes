@@ -766,12 +766,12 @@ export class TaskContextMenu {
 
 			// Sync to Google Calendar (via API)
 			submenu.addItem((subItem) => {
-				subItem.setTitle("Set tasknotes Google calendar");
+				subItem.setTitle(this.t("contextMenus.task.calendar.setTaskTarget"));
 				subItem.setIcon("calendar-cog");
 				const calendarMenu = getSubmenu(subItem);
 				const calendars = plugin.googleCalendarService?.getAvailableCalendars?.() || [];
 				calendarMenu.addItem((calendarItem) => {
-					calendarItem.setTitle("Use default target calendar");
+					calendarItem.setTitle(this.t("contextMenus.task.calendar.useDefaultTarget"));
 					calendarItem.onClick(() => {
 						void this.setTaskGoogleCalendar(task, undefined);
 					});
@@ -2583,8 +2583,8 @@ export class TaskContextMenu {
 		}
 		new Notice(
 			calendarId
-				? "TaskNotes Google Calendar override saved"
-				: "TaskNotes default Google Calendar restored"
+				? this.t("contextMenus.task.calendar.overrideSaved")
+				: this.t("contextMenus.task.calendar.defaultRestored")
 		);
 	}
 
