@@ -2076,11 +2076,18 @@ export class TaskCalendarSyncService {
 		const settings = this.plugin.settings.googleCalendarExport;
 
 		if (startInfo.isAllDay || settings.createAsAllDay) {
-			// All-day events: end is the same date (or next day for multi-day)
-			// Google Calendar requires end date to be the day AFTER for all-day events
-			if (startInfo.date) {
-				const startDate = new Date(startInfo.date + "T00:00:00");
-				const endDate = new Date(startDate);
+			// Google Calendar's all-day end date is exclusive. When a due date is
+			// present, use the day after due as the end so the event spans through
+			// the task's due date rather than ending on the start date.
+			const startDatePart = startInfo.date
+				|| (startInfo.dateTime ? getDatePart(startInfo.dateTime) : undefined);
+			const dueDatePart = task.due ? getDatePart(task.due) : undefined;
+			const endDateSource =
+				dueDatePart && (!startDatePart || dueDatePart >= startDatePart)
+					? task.due
+					: startInfo.date;
+			if (endDateSource) {
+				const endDate = new Date(endDateSource.split("T")[0] + "T00:00:00");
 				endDate.setDate(endDate.getDate() + 1);
 				return { date: format(endDate, "yyyy-MM-dd") };
 			}
