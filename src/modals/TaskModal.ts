@@ -1,4 +1,4 @@
-import { App, Modal, TAbstractFile, TFile } from "obsidian";
+import { App, Modal, Setting, TAbstractFile, TFile } from "obsidian";
 
 type Nullable<T> = T | null;
 
@@ -331,6 +331,7 @@ export abstract class TaskModal extends Modal {
 	protected recurrenceRule = "";
 	protected recurrenceAnchor: "scheduled" | "completion" = "scheduled";
 	protected reminders: Reminder[] = [];
+	protected googleCalendarId = "";
 
 	// User-defined fields (dynamic based on settings)
 	protected userFields: Record<string, unknown> = {};
@@ -727,6 +728,29 @@ export abstract class TaskModal extends Modal {
 			return;
 		}
 		this.createFieldsFromConfig(container, config);
+		this.createGoogleCalendarField(container);
+	}
+
+	protected createGoogleCalendarField(container: HTMLElement): void {
+		const setting = new Setting(container).setName("Google Calendar");
+		const dropdown = setting.controlEl.createEl("select");
+		const defaultOption = dropdown.createEl("option", {
+			text: "Use default target calendar",
+			value: "",
+		});
+		defaultOption.selected = !this.googleCalendarId;
+
+		for (const calendar of this.plugin.googleCalendarService?.getAvailableCalendars?.() || []) {
+			const option = dropdown.createEl("option", {
+				text: calendar.summary || calendar.id,
+				value: calendar.id,
+			});
+			option.selected = calendar.id === this.googleCalendarId;
+		}
+
+		dropdown.addEventListener("change", () => {
+			this.googleCalendarId = dropdown.value;
+		});
 	}
 
 	protected createFieldsFromConfig(container: HTMLElement, config: ModalFieldsConfigLike): void {

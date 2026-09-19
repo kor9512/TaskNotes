@@ -768,6 +768,12 @@ export class TaskCreationModal extends TaskModal {
 				...taskData.customFrontmatter,
 			};
 		}
+		if (this.googleCalendarId) {
+			taskData.customFrontmatter = {
+				...taskData.customFrontmatter,
+				googleCalendarId: this.googleCalendarId,
+			};
+		}
 
 		return taskData;
 	}

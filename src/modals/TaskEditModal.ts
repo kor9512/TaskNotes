@@ -108,6 +108,11 @@ export class TaskEditModal extends TaskModal {
 		this.details = formState.details;
 		this.originalDetails = formState.originalDetails;
 		this.userFields = formState.userFields;
+		const taskFile = this.app.vault.getAbstractFileByPath(this.task.path);
+		this.googleCalendarId =
+			taskFile instanceof TFile
+				? String(this.app.metadataCache.getFileCache(taskFile)?.frontmatter?.googleCalendarId || "")
+				: "";
 
 		// Initialize subtasks (tasks that have this task as a project)
 		await this.initializeSubtasks();
@@ -577,6 +582,13 @@ export class TaskEditModal extends TaskModal {
 
 		this.pendingBlockingUpdates = result.blockingUpdates;
 		this.unresolvedBlockingEntries = result.unresolvedBlockingEntries;
+		const changesWithCustomFrontmatter = result.changes as Partial<TaskInfo> & {
+			customFrontmatter?: Record<string, unknown>;
+		};
+		changesWithCustomFrontmatter.customFrontmatter = {
+			...(changesWithCustomFrontmatter.customFrontmatter || {}),
+			googleCalendarId: this.googleCalendarId || null,
+		};
 
 		if (
 			options.includeConversionWrite &&
