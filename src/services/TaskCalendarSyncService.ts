@@ -2718,7 +2718,11 @@ export class TaskCalendarSyncService {
 	async syncTaskToCalendar(
 		task: TaskInfo,
 		previous?: TaskInfo,
-		options: { queueOnFailure?: boolean; connectionGeneration?: number } = {}
+		options: {
+			queueOnFailure?: boolean;
+			connectionGeneration?: number;
+			targetCalendarId?: string;
+		} = {}
 	): Promise<boolean> {
 		const queueOnFailure = options.queueOnFailure ?? true;
 		const connectionGeneration =
@@ -2730,7 +2734,7 @@ export class TaskCalendarSyncService {
 
 		const settings = this.plugin.settings.googleCalendarExport;
 		const existingEventId = this.getTaskEventId(task);
-		const targetCalendarId = this.getTaskTargetCalendarId(task);
+		const targetCalendarId = options.targetCalendarId || this.getTaskTargetCalendarId(task);
 
 		try {
 			if (!this.isEnabled()) {
@@ -2851,6 +2855,22 @@ export class TaskCalendarSyncService {
 
 			// Check if it's a 404 error (event was deleted externally)
 			if (getErrorStatus(error) === 404 && existingEventId) {
+				// If the task moved to another calendar, remove the old-calendar
+				// event before creating the replacement. The retry must retain the
+				// resolved target because the cache may not yet include a freshly
+				// written per-task calendar override.
+				const oldEntry = (await this.getEventIndex()).find(
+					(item) => item.taskPath === task.path && item.eventId === existingEventId
+				);
+				if (oldEntry && oldEntry.calendarId !== targetCalendarId) {
+					await this.deleteOrQueueCalendarEvent(
+						task.path,
+						oldEntry.calendarId,
+						oldEntry.eventId,
+						connectionGeneration
+					);
+					await this.removeEventIndexForEvent(oldEntry.calendarId, oldEntry.eventId);
+				}
 				// Clear the stale link and retry as create
 				await this.removeTaskEventId(task.path, connectionGeneration);
 				// Retry without the link - refetch task to get updated version
@@ -2859,6 +2879,7 @@ export class TaskCalendarSyncService {
 					return this.syncTaskToCalendar(updatedTask, previous, {
 						...options,
 						connectionGeneration,
+						targetCalendarId,
 					});
 				}
 			}
