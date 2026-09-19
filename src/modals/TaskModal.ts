@@ -332,6 +332,7 @@ export abstract class TaskModal extends Modal {
 	protected recurrenceAnchor: "scheduled" | "completion" = "scheduled";
 	protected reminders: Reminder[] = [];
 	protected googleCalendarId = "";
+	protected initialGoogleCalendarId = "";
 
 	// User-defined fields (dynamic based on settings)
 	protected userFields: Record<string, unknown> = {};
@@ -732,7 +733,7 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected createGoogleCalendarField(container: HTMLElement): void {
-		const setting = new Setting(container).setName("Google Calendar");
+		const setting = new Setting(container).setName("Google calendar");
 		const dropdown = setting.controlEl.createEl("select");
 		const calendars = this.plugin.googleCalendarService?.getAvailableCalendars?.() || [];
 		const defaultOption = dropdown.createEl("option", {

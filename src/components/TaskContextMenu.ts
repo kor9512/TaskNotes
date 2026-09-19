@@ -766,7 +766,7 @@ export class TaskContextMenu {
 
 			// Sync to Google Calendar (via API)
 			submenu.addItem((subItem) => {
-				subItem.setTitle("Set TaskNotes Google Calendar");
+				subItem.setTitle("Set tasknotes Google calendar");
 				subItem.setIcon("calendar-cog");
 				const calendarMenu = getSubmenu(subItem);
 				const calendars = plugin.googleCalendarService?.getAvailableCalendars?.() || [];
@@ -2575,13 +2575,7 @@ export class TaskContextMenu {
 		const file = this.options.plugin.app.vault.getAbstractFileByPath(task.path);
 		if (!(file instanceof TFile)) return;
 
-		await this.options.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
-			if (calendarId) {
-				frontmatter.googleCalendarId = calendarId;
-			} else {
-				delete frontmatter.googleCalendarId;
-			}
-		});
+		await this.options.plugin.taskCalendarSyncService?.setTaskCalendarOverride(file, calendarId);
 
 		const updatedTask = await this.options.plugin.cacheManager.getTaskInfo(task.path);
 		if (updatedTask && this.options.plugin.taskCalendarSyncService?.isEnabled()) {
