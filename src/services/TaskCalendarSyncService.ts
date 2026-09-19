@@ -434,7 +434,9 @@ export class TaskCalendarSyncService {
 	}
 
 	private async getDeletionQueue(): Promise<PendingGoogleCalendarDeletion[]> {
-		const data = await this.plugin.loadData();
+		const data = (await this.plugin.loadData()) as {
+			googleCalendarDeletionQueue?: PendingGoogleCalendarDeletion[];
+		} | null;
 		return data?.[GOOGLE_CALENDAR_DELETION_QUEUE_KEY] || [];
 	}
 
@@ -460,7 +462,9 @@ export class TaskCalendarSyncService {
 	}
 
 	private async getEventIndex(): Promise<GoogleCalendarEventIndexEntry[]> {
-		const data = await this.plugin.loadData();
+		const data = (await this.plugin.loadData()) as {
+			googleCalendarEventIndex?: GoogleCalendarEventIndexEntry[];
+		} | null;
 		return data?.[GOOGLE_CALENDAR_EVENT_INDEX_KEY] || [];
 	}
 
@@ -472,7 +476,9 @@ export class TaskCalendarSyncService {
 	}
 
 	private async getSyncQueue(): Promise<PendingGoogleCalendarSync[]> {
-		const data = await this.plugin.loadData();
+		const data = (await this.plugin.loadData()) as {
+			googleCalendarSyncQueue?: PendingGoogleCalendarSync[];
+		} | null;
 		return data?.[GOOGLE_CALENDAR_SYNC_QUEUE_KEY] || [];
 	}
 
@@ -488,7 +494,9 @@ export class TaskCalendarSyncService {
 			return this.calendarFingerprints;
 		}
 
-		const data = await this.plugin.loadData();
+		const data = (await this.plugin.loadData()) as {
+			googleCalendarTaskFingerprints?: unknown;
+		} | null;
 		const rawFingerprints = data?.[GOOGLE_CALENDAR_FINGERPRINTS_KEY];
 		const fingerprints = new Map<string, string>();
 
@@ -2853,13 +2861,15 @@ export class TaskCalendarSyncService {
 			// Show user-friendly message for token refresh errors
 			// TokenRefreshError indicates the OAuth connection expired and user needs to reconnect
 			if (error instanceof TokenRefreshError) {
-				publishUserNotice(this.plugin.emitter,
+				publishUserNotice(
+					this.plugin.emitter,
 					this.plugin.i18n.translate(
 						"settings.integrations.googleCalendarExport.notices.connectionExpired"
 					)
 				);
 			} else {
-				publishUserNotice(this.plugin.emitter,
+				publishUserNotice(
+					this.plugin.emitter,
 					this.plugin.i18n.translate(
 						"settings.integrations.googleCalendarExport.notices.syncFailed",
 						{ message: getErrorMessage(error) }
@@ -3294,7 +3304,8 @@ export class TaskCalendarSyncService {
 		});
 
 		const total = allTasks.length;
-		publishUserNotice(this.plugin.emitter,
+		publishUserNotice(
+			this.plugin.emitter,
 			this.plugin.i18n.translate(
 				"settings.integrations.googleCalendarExport.notices.syncingTasks",
 				{ total }
@@ -3320,7 +3331,8 @@ export class TaskCalendarSyncService {
 			}
 		});
 
-		publishUserNotice(this.plugin.emitter,
+		publishUserNotice(
+			this.plugin.emitter,
 			this.plugin.i18n.translate(
 				"settings.integrations.googleCalendarExport.notices.syncComplete",
 				{
@@ -3404,7 +3416,8 @@ export class TaskCalendarSyncService {
 			}
 		}
 
-		publishUserNotice(this.plugin.emitter,
+		publishUserNotice(
+			this.plugin.emitter,
 			deleteEvents
 				? this.plugin.i18n.translate(
 						"settings.integrations.googleCalendarExport.notices.eventsDeletedAndUnlinked",

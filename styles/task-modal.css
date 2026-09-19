@@ -1158,6 +1158,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
    ===================================================================== */
 
 .tasknotes-plugin .nl-input {
+    font-size: var(--tn-font-size-lg);
     width: 100%;
     padding: var(--size-4-3) var(--size-4-2);
     font-weight: 400;
@@ -1340,6 +1341,7 @@ body.is-mobile .tasknotes-plugin .task-project-item--task-card .task-project-rem
 }
 
 .tasknotes-plugin .nl-preview-item {
+    color: var(--tn-text-muted);
     display: flex;
     align-items: center;
 	word-break: break-all;

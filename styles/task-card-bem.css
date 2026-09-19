@@ -1630,13 +1630,6 @@ body.is-mobile .tasknotes-plugin .task-card:not(.task-card--layout-inline):not(.
 }
 
 /* Compact context menu in inline mode */
-.tasknotes-plugin .task-card--layout-inline .task-card__context-menu {
-    display: inline-block;
-    width: 0.9em;
-    height: 0.9em;
-    padding: 0;
-    vertical-align: baseline;
-}
 
 body.is-mobile .tasknotes-plugin .task-card--layout-inline {
     display: inline-flex;

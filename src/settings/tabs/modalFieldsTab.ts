@@ -90,7 +90,8 @@ export function renderModalFieldsTab(
 					.addButton((button) => {
 						button
 							.setButtonText("Reset to defaults")
-							.setWarning()
+							// Keep destructive styling compatible with Obsidian 1.12.
+							.setClass("mod-warning")
 							.onClick(async () => {
 								const confirmed = await showConfirmationModal(plugin.app, {
 									title: "Reset Field Configuration",

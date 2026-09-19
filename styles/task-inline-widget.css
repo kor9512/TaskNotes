@@ -532,5 +532,9 @@
  * be aimed for, and the link still has its right-click menu.
  */
 .tasknotes-plugin .task-card--layout-inline .task-card__context-menu {
+    width: 0.9em;
+    height: 0.9em;
+    padding: 0;
+    vertical-align: baseline;
     display: none;
 }
