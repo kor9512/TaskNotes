@@ -329,6 +329,21 @@ export class TaskCalendarSyncService {
 		return this.googleCalendarService.getConnectionGeneration?.() ?? 0;
 	}
 
+	/**
+	 * Resolve the calendar for an individual task. A note may override the
+	 * global export target with a `googleCalendarId` frontmatter property.
+	 */
+	getTaskTargetCalendarId(task: TaskInfo): string {
+		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+		const frontmatter = file instanceof TFile
+			? this.plugin.app.metadataCache.getFileCache(file)?.frontmatter
+			: undefined;
+		const override = frontmatter?.googleCalendarId;
+		return typeof override === "string" && override.trim().length > 0
+			? override.trim()
+			: this.plugin.settings.googleCalendarExport.targetCalendarId;
+	}
+
 	private async assertConnectionGenerationCurrent(
 		expectedConnectionGeneration: number | undefined
 	): Promise<void> {
@@ -2715,7 +2730,7 @@ export class TaskCalendarSyncService {
 
 		const settings = this.plugin.settings.googleCalendarExport;
 		const existingEventId = this.getTaskEventId(task);
-		const targetCalendarId = settings.targetCalendarId;
+		const targetCalendarId = this.getTaskTargetCalendarId(task);
 
 		try {
 			if (!this.isEnabled()) {

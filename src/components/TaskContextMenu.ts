@@ -766,6 +766,27 @@ export class TaskContextMenu {
 
 			// Sync to Google Calendar (via API)
 			submenu.addItem((subItem) => {
+				subItem.setTitle("Set TaskNotes Google Calendar");
+				subItem.setIcon("calendar-cog");
+				const calendarMenu = getSubmenu(subItem);
+				const calendars = plugin.googleCalendarService?.getAvailableCalendars?.() || [];
+				calendarMenu.addItem((calendarItem) => {
+					calendarItem.setTitle("Use default target calendar");
+					calendarItem.onClick(() => {
+						void this.setTaskGoogleCalendar(task, undefined);
+					});
+				});
+				for (const calendar of calendars) {
+					calendarMenu.addItem((calendarItem) => {
+						calendarItem.setTitle(calendar.summary || calendar.id);
+						calendarItem.onClick(() => {
+							void this.setTaskGoogleCalendar(task, calendar.id);
+						});
+					});
+				}
+			});
+
+			submenu.addItem((subItem) => {
 				subItem.setTitle(this.t("contextMenus.task.calendar.syncToGoogle"));
 				subItem.setIcon("refresh-cw");
 				subItem.onClick(async () => {
@@ -2548,6 +2569,29 @@ export class TaskContextMenu {
 			});
 			new Notice("Failed to add reminder");
 		}
+	}
+
+	private async setTaskGoogleCalendar(task: TaskInfo, calendarId?: string): Promise<void> {
+		const file = this.options.plugin.app.vault.getAbstractFileByPath(task.path);
+		if (!(file instanceof TFile)) return;
+
+		await this.options.plugin.app.fileManager.processFrontMatter(file, (frontmatter: Record<string, unknown>) => {
+			if (calendarId) {
+				frontmatter.googleCalendarId = calendarId;
+			} else {
+				delete frontmatter.googleCalendarId;
+			}
+		});
+
+		const updatedTask = await this.options.plugin.cacheManager.getTaskInfo(task.path);
+		if (updatedTask && this.options.plugin.taskCalendarSyncService?.isEnabled()) {
+			await this.options.plugin.taskCalendarSyncService.syncTaskToCalendar(updatedTask);
+		}
+		new Notice(
+			calendarId
+				? "TaskNotes Google Calendar override saved"
+				: "TaskNotes default Google Calendar restored"
+		);
 	}
 
 	public show(event: MouseEvent): void {
