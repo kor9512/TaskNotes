@@ -2,6 +2,8 @@
 
 ## Added
 
+- (#2349, #2127) Recurring tasks now create their first available occurrence note when “Create next after completion” is enabled. Completing the parent in the UI also uses occurrence notes, and new occurrence notes use unambiguous parent links across folders. Thanks to @raphaelfaouakhiri for the requests and investigation.
+
 - (#296) Added commands to start and stop time tracking for the current task note, usable from the Command Palette, hotkeys, and plugins such as Buttons. Thanks to @schosch-iteratec for the request and for sharing the Quick Actions workaround. See [Time Management](https://tasknotes.dev/features/time-management/).
 
 ## Fixed

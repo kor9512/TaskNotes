@@ -1231,10 +1231,14 @@ export default class TaskNotesPlugin extends Plugin {
 	async toggleRecurringTaskComplete(task: TaskInfo, date?: Date): Promise<TaskInfo> {
 		try {
 			const targetDate = await this.taskService.resolveRecurringTaskActionDate(task, date);
-			const updatedTask = await this.taskService.toggleRecurringTaskComplete(
+			const result = await this.taskService.toggleRecurringTaskCompleteWithOccurrenceNotes(
 				task,
 				targetDate
 			);
+			// Task cards still represent the recurring parent, not the occurrence note.
+			const updatedTask = result.path === task.path
+				? result
+				: (await this.cacheManager.getTaskInfo(task.path)) || task;
 
 			const dateStr = formatDateForStorage(targetDate);
 			const wasCompleted = updatedTask.complete_instances?.includes(dateStr);
