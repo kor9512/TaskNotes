@@ -734,13 +734,24 @@ export abstract class TaskModal extends Modal {
 	protected createGoogleCalendarField(container: HTMLElement): void {
 		const setting = new Setting(container).setName("Google Calendar");
 		const dropdown = setting.controlEl.createEl("select");
+		const calendars = this.plugin.googleCalendarService?.getAvailableCalendars?.() || [];
 		const defaultOption = dropdown.createEl("option", {
 			text: "Use default target calendar",
 			value: "",
 		});
 		defaultOption.selected = !this.googleCalendarId;
 
-		for (const calendar of this.plugin.googleCalendarService?.getAvailableCalendars?.() || []) {
+		const hasCurrentCalendar = calendars.some((calendar) => calendar.id === this.googleCalendarId);
+		if (this.googleCalendarId && !hasCurrentCalendar) {
+			const missingOption = dropdown.createEl("option", {
+				text: `Unavailable calendar (${this.googleCalendarId})`,
+				value: this.googleCalendarId,
+			});
+			missingOption.selected = true;
+			setting.setDesc("This calendar is no longer available. Choose another calendar.");
+		}
+
+		for (const calendar of calendars) {
 			const option = dropdown.createEl("option", {
 				text: calendar.summary || calendar.id,
 				value: calendar.id,
