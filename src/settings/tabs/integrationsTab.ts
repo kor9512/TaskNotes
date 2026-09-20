@@ -917,7 +917,7 @@ export function renderIntegrationsTab(
 			group.addSetting((setting) => {
 				setting.setName("Calendars shown in TaskNotes");
 				setting.setDesc("Enable a calendar to subscribe to and display it in TaskNotes.");
-				const listEl = setting.controlEl.createDiv({ cls: "tasknotes-calendar-subscription-list" });
+				const listEl = setting.controlEl.createDiv({ cls: "tasknotes-calendar-routing-list" });
 
 				const renderCalendarList = async () => {
 					listEl.empty();
@@ -932,20 +932,36 @@ export function renderIntegrationsTab(
 						}
 					}
 					for (const calendar of calendars) {
-						const row = new Setting(listEl).setName(
-							calendar.summary + (calendar.primary ? " (Primary)" : "")
-						);
-						row.setDesc(`ID: ${calendar.id}`);
-						row.addToggle((toggle) => {
-							toggle.setValue(plugin.settings.enabledGoogleCalendars.includes(calendar.id));
-							toggle.onChange(async (enabled) => {
+						const row = listEl.createDiv({ cls: "tasknotes-calendar-routing-row" });
+						const identity = row.createDiv({ cls: "tasknotes-calendar-routing-identity" });
+						identity.createDiv({
+							cls: "tasknotes-calendar-routing-name",
+							text: calendar.summary + (calendar.primary ? " (Primary)" : ""),
+						});
+						identity.createEl("code", {
+							cls: "tasknotes-calendar-routing-id",
+							text: calendar.id,
+						});
+						const toggle = row.createEl("input", {
+							cls: "tasknotes-calendar-routing-toggle",
+						type: "checkbox",
+						});
+						toggle.checked = plugin.settings.enabledGoogleCalendars.includes(calendar.id);
+						toggle.addEventListener("change", async () => {
+								const enabled = toggle.checked;
 								const selected = new Set(plugin.settings.enabledGoogleCalendars);
 								if (enabled) selected.add(calendar.id);
 								else selected.delete(calendar.id);
 								plugin.settings.enabledGoogleCalendars = Array.from(selected);
+								if (
+									!enabled &&
+									plugin.settings.googleCalendarExport.targetCalendarId === calendar.id
+								) {
+									plugin.settings.googleCalendarExport.targetCalendarId =
+										Array.from(selected)[0] || "";
+								}
 								save();
 								await plugin.googleCalendarService?.manualRefresh();
-							});
 						});
 					}
 				};
@@ -1036,7 +1052,10 @@ export function renderIntegrationsTab(
 								});
 							}
 						}
-						for (const cal of calendars) {
+						const enabledIds = new Set(
+							plugin.googleCalendarService.getEnabledCalendars().map((calendar) => calendar.id)
+						);
+						for (const cal of calendars.filter((calendar) => enabledIds.has(calendar.id))) {
 							const option = dropdown.createEl("option", {
 								text:
 									cal.summary +
