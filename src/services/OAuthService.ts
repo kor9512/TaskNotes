@@ -100,19 +100,46 @@ export class OAuthService {
 	}
 
 	getCredentials(provider: OAuthProvider): OAuthCredentials | null {
+		if (this.plugin.settings?.oauthCredentialStorage === "plaintext") {
+			const credentials = this.plugin.settings.oauthPlaintextCredentials?.[provider];
+			return credentials?.clientId
+				? {
+						clientId: credentials.clientId,
+						...(credentials.clientSecret ? { clientSecret: credentials.clientSecret } : {}),
+				  }
+				: null;
+		}
 		return this.secretStore.getCredentials(provider);
 	}
 
 	setCredentials(provider: OAuthProvider, credentials: OAuthCredentials): void {
+		if (this.plugin.settings?.oauthCredentialStorage === "plaintext") {
+			this.plugin.settings.oauthPlaintextCredentials ??= {};
+			this.plugin.settings.oauthPlaintextCredentials[provider] = {
+				clientId: credentials.clientId.trim(),
+				...(credentials.clientSecret?.trim()
+					? { clientSecret: credentials.clientSecret.trim() }
+					: {}),
+			};
+			void this.plugin.saveSettingsDataOnly();
+			return;
+		}
 		this.secretStore.setCredentials(provider, credentials);
 	}
 
 	clearCredentials(provider: OAuthProvider): void {
+		if (this.plugin.settings?.oauthCredentialStorage === "plaintext") {
+			if (this.plugin.settings.oauthPlaintextCredentials) {
+				delete this.plugin.settings.oauthPlaintextCredentials[provider];
+			}
+			void this.plugin.saveSettingsDataOnly();
+			return;
+		}
 		this.secretStore.clearCredentials(provider);
 	}
 
 	private getConfig(provider: OAuthProvider): OAuthConfig {
-		const credentials = this.secretStore.getCredentials(provider);
+		const credentials = this.getCredentials(provider);
 		return {
 			...this.configs[provider],
 			clientId: credentials?.clientId ?? "",
@@ -130,7 +157,66 @@ export class OAuthService {
 			throw new OAuthNotConfiguredError(provider);
 		}
 
+		if (this.plugin.settings?.oauthAuthorizationMode === "copy-paste") {
+			return await this.authenticateCopyPaste(provider);
+		}
 		return await this.authenticateStandard(provider);
+	}
+
+	/**
+	 * Mobile-safe OAuth flow: open the provider URL and accept either the full
+	 * redirected URL or the authorization code pasted by the user. The browser
+	 * may show a connection error after redirecting to the loopback URL; the URL
+	 * in its address bar still contains the code to paste here.
+	 */
+	private async authenticateCopyPaste(provider: OAuthProvider): Promise<void> {
+		if (this.authenticationInProgress) {
+			throw new Error("An OAuth authorization is already in progress");
+		}
+		this.authenticationInProgress = true;
+		try {
+			const config = this.getConfig(provider);
+			const codeVerifier = this.generateCodeVerifier();
+			const codeChallenge = await this.generateCodeChallenge(codeVerifier);
+			const state = this.generateState();
+			const authUrl = this.buildAuthorizationUrl(config, codeChallenge, state);
+
+			publishUserNotice(
+				this.plugin.emitter,
+				"Open the OAuth URL, then paste the redirected URL or authorization code."
+			);
+			await this.openAuthorizationUrl(authUrl);
+			// The native prompt keeps this flow available on mobile without requiring
+			// a desktop-only callback server or an additional modal dependency.
+			const promptDialog = Reflect.get(window, "prompt");
+			const pasted = promptDialog("Paste the OAuth redirect URL or authorization code:");
+			if (!pasted?.trim()) {
+				throw new Error("No OAuth redirect URL or authorization code was provided.");
+			}
+
+			let code = pasted.trim();
+			if (code.startsWith("http://") || code.startsWith("https://")) {
+				const redirectedUrl = new URL(code);
+				const returnedState = redirectedUrl.searchParams.get("state");
+				if (returnedState && returnedState !== state) {
+					throw new Error("OAuth state did not match. Start authorization again.");
+				}
+				const providerError = redirectedUrl.searchParams.get("error");
+				if (providerError) {
+					throw new Error(`OAuth authorization failed: ${providerError}`);
+				}
+				code = redirectedUrl.searchParams.get("code") ?? "";
+			}
+			if (!code) {
+				throw new Error("The pasted OAuth value did not contain an authorization code.");
+			}
+
+			const tokens = await this.exchangeCodeForTokens(config, code, codeVerifier);
+			await this.storeConnection(provider, tokens);
+			publishUserNotice(this.plugin.emitter, `Successfully connected to ${provider} Calendar!`);
+		} finally {
+			this.authenticationInProgress = false;
+		}
 	}
 
 	/**

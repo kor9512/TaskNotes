@@ -249,8 +249,13 @@ export interface TaskNotesSettings {
 	disableCalendarOnMobile: boolean;
 	/** Where OAuth client credentials should be stored. Plaintext is intended for cross-device experiments. */
 	oauthCredentialStorage: "secret" | "plaintext";
-	/** Authorization flow preference. Copy/paste flow is staged for implementation. */
+	/** Authorization flow preference. */
 	oauthAuthorizationMode: "desktop-callback" | "copy-paste";
+	/** Client credentials used when plaintext storage is selected. */
+	oauthPlaintextCredentials: {
+		google?: OAuthPlaintextCredential;
+		microsoft?: OAuthPlaintextCredential;
+	};
 	// Google Calendar selection
 	enabledGoogleCalendars: string[]; // Array of calendar IDs that should be displayed
 	// Google Calendar sync tokens (for incremental sync)
@@ -346,6 +351,11 @@ export interface GoogleCalendarExportSettings {
 	defaultEventDuration: number; // Duration in minutes if timed (uses timeEstimate if available)
 	includeObsidianLink: boolean; // Include obsidian:// link in event description
 	defaultReminderMinutes: number | number[] | null; // Popup reminder(s) X minutes before event (null = no reminder)
+}
+
+export interface OAuthPlaintextCredential {
+	clientId: string;
+	clientSecret?: string;
 }
 
 export type TimeblockAttachmentSearchOrder =
