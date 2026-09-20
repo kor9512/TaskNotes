@@ -11,6 +11,14 @@ export function createTaskNotesCommandDefinitions(
 ): TranslatedCommandDefinition[] {
 	return [
 		{
+			id: "refresh-google-calendar",
+			nameKey: "commands.refreshGoogleCalendar",
+			callback: async (ctx) => {
+				if (!ctx.googleCalendarService) return;
+				await ctx.googleCalendarService.manualRefresh();
+			},
+		},
+		{
 			id: "open-calendar-view",
 			nameKey: "commands.openCalendarView",
 			callback: async (ctx) => {

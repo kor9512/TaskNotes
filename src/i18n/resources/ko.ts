@@ -2238,6 +2238,7 @@ export const ko: TranslationTree = {
 		statsLoadingFailed: "프로젝트 세부정보 로딩 중 오류."
 	},
 	commands: {
+		refreshGoogleCalendar: "Google 캘린더 새로고침",
 		openCalendarView: "미니 캘린더 뷰 열기",
 		openAdvancedCalendarView: "캘린더 뷰 열기",
 		openTasksView: "작업 뷰 열기",

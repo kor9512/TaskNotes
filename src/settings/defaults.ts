@@ -204,6 +204,7 @@ export const DEFAULT_GOOGLE_CALENDAR_EXPORT: GoogleCalendarExportSettings = {
 	defaultEventDuration: 60, // 1 hour if timed events
 	includeObsidianLink: true, // Include link back to Obsidian
 	defaultReminderMinutes: null, // No reminder override by default (user opts in)
+	calendarRefreshMode: "both",
 };
 
 export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {
