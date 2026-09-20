@@ -281,6 +281,52 @@ export function renderIntegrationsTab(
 			heading: "OAuth Calendar Integration",
 		},
 		(group) => {
+			group.addSetting((setting) =>
+				void configureDropdownSetting(setting, {
+					name: translate("settings.integrations.oauthCredentialStorage.name"),
+					desc: translate("settings.integrations.oauthCredentialStorage.description"),
+					options: [
+						{
+							value: "secret",
+							label: translate("settings.integrations.oauthCredentialStorage.options.secret"),
+						},
+						{
+							value: "plaintext",
+							label: translate("settings.integrations.oauthCredentialStorage.options.plaintext"),
+						},
+					],
+					getValue: () => plugin.settings.oauthCredentialStorage,
+					setValue: (value) => {
+						if (value !== "secret" && value !== "plaintext") return;
+						plugin.settings.oauthCredentialStorage = value;
+						save();
+					},
+				})
+			);
+
+			group.addSetting((setting) =>
+				void configureDropdownSetting(setting, {
+					name: translate("settings.integrations.oauthAuthorizationMode.name"),
+					desc: translate("settings.integrations.oauthAuthorizationMode.description"),
+					options: [
+						{
+							value: "desktop-callback",
+							label: translate("settings.integrations.oauthAuthorizationMode.options.desktop"),
+						},
+						{
+							value: "copy-paste",
+							label: translate("settings.integrations.oauthAuthorizationMode.options.copyPaste"),
+						},
+					],
+					getValue: () => plugin.settings.oauthAuthorizationMode,
+					setValue: (value) => {
+						if (value !== "desktop-callback" && value !== "copy-paste") return;
+						plugin.settings.oauthAuthorizationMode = value;
+						save();
+					},
+				})
+			);
+
 			group.addSetting((setting) => {
 				setting.setDesc(
 					"Connect your Google calendar or Microsoft outlook to sync events directly into tasknotes."

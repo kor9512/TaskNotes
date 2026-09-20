@@ -1720,6 +1720,22 @@ export const en: TranslationTree = {
 			},
 		},
 		integrations: {
+			oauthCredentialStorage: {
+				name: "OAUTH credential storage",
+				description: "Choose where client credentials will be stored. Plaintext is experimental and insecure.",
+				options: {
+					secret: "Obsidian secret storage",
+					plaintext: "Plaintext (experimental)",
+				},
+			},
+			oauthAuthorizationMode: {
+				name: "OAUTH authorization method",
+				description: "Choose the authorization flow. Copy/paste is staged for the next implementation step.",
+				options: {
+					desktop: "Desktop callback",
+					copyPaste: "Copy/paste authorization (experimental)",
+				},
+			},
 			mobileCalendar: {
 				disable: {
 					name: "Disable calendar integrations on mobile",
