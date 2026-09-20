@@ -551,6 +551,12 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			// Get current cached events
 			let cachedEvents = this.cache.get("all") || [];
+			const enabledCalendarSet = new Set(enabledCalendarIds);
+			cachedEvents = cachedEvents.filter(
+				(event) =>
+					!event.subscriptionId.startsWith("google-") ||
+					enabledCalendarSet.has(event.subscriptionId.slice("google-".length))
+			);
 
 			// Fetch events from each enabled calendar
 			for (const calendarId of enabledCalendarIds) {

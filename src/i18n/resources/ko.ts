@@ -1866,6 +1866,11 @@ export const ko: TranslationTree = {
 					connectFirst: "먼저 Google 캘린더를 연결하세요",
 					primarySuffix: " (기본)"
 				},
+				enabledCalendars: {
+					name: "TaskNotes에 표시할 캘린더",
+					description: "TaskNotes가 구독하고 표시할 Google 캘린더를 선택하세요.",
+					noCalendars: "사용 가능한 캘린더가 없습니다. 먼저 Google 캘린더를 연결하세요.",
+				},
 				syncTrigger: {
 					name: "동기화 트리거",
 					description: "어떤 작업 날짜가 캘린더 이벤트 생성을 트리거할지 설정합니다.",

@@ -928,6 +928,63 @@ export function renderIntegrationsTab(
 					})
 			);
 
+			// Calendar subscription list
+			group.addSetting((setting) => {
+				setting.setName(
+					translate("settings.integrations.googleCalendarExport.enabledCalendars.name")
+				);
+				setting.setDesc(
+					translate("settings.integrations.googleCalendarExport.enabledCalendars.description")
+				);
+				const listEl = setting.controlEl.createDiv({ cls: "tasknotes-calendar-subscription-list" });
+
+				const renderCalendarList = async () => {
+					listEl.empty();
+					if (!plugin.googleCalendarService) return;
+					let calendars = plugin.googleCalendarService.getAvailableCalendars();
+					if (calendars.length === 0) {
+						try {
+							calendars = await plugin.googleCalendarService.listCalendars();
+						} catch {
+							listEl.createSpan({
+								text: translate(
+									"settings.integrations.googleCalendarExport.enabledCalendars.noCalendars"
+								),
+							});
+							return;
+						}
+					}
+					if (calendars.length === 0) {
+						listEl.createSpan({
+							text: translate(
+								"settings.integrations.googleCalendarExport.enabledCalendars.noCalendars"
+							),
+						});
+						return;
+					}
+					for (const calendar of calendars) {
+						new Setting(listEl)
+							.setName(calendar.summary + (calendar.primary ? " (Primary)" : ""))
+							.addToggle((toggle) => {
+								toggle.setValue(plugin.settings.enabledGoogleCalendars.includes(calendar.id));
+								toggle.onChange(async (enabled) => {
+									const selected = new Set(plugin.settings.enabledGoogleCalendars);
+									if (enabled) selected.add(calendar.id);
+									else selected.delete(calendar.id);
+									plugin.settings.enabledGoogleCalendars = Array.from(selected);
+									save();
+									await plugin.googleCalendarService?.refreshAllCalendars();
+								});
+							});
+					}
+				};
+
+				void renderCalendarList();
+				plugin.googleCalendarService?.on("data-changed", () => {
+					if (listEl.isConnected) void renderCalendarList();
+				});
+			});
+
 			// Target calendar dropdown (populated dynamically)
 			group.addSetting((setting) => {
 				setting.setName(

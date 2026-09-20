@@ -2010,6 +2010,11 @@ export const en: TranslationTree = {
 					connectFirst: "Connect Google Calendar first",
 					primarySuffix: " (Primary)",
 				},
+				enabledCalendars: {
+					name: "Calendars shown in TaskNotes",
+					description: "Select the Google calendars that TaskNotes should subscribe to and display.",
+					noCalendars: "No calendars available. Connect Google Calendar first.",
+				},
 				syncTrigger: {
 					name: "Sync trigger",
 					description: "Which task date should trigger calendar event creation.",
