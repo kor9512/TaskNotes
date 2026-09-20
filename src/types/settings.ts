@@ -365,6 +365,12 @@ export interface GoogleCalendarExportSettings {
 	defaultReminderMinutes: number | number[] | null; // Popup reminder(s) X minutes before event (null = no reminder)
 	/** How external Google Calendar changes are pulled into TaskNotes. */
 	calendarRefreshMode: "periodic" | "triggered" | "both";
+	/** Polling interval for periodic calendar refreshes, in minutes. */
+	calendarRefreshIntervalMinutes: number;
+	/** Private webhook receiver settings; OAuth tokens remain separate. */
+	webhookEnabled: boolean;
+	webhookEndpoint: string;
+	webhookChannelToken: string;
 }
 
 export interface OAuthPlaintextCredential {
