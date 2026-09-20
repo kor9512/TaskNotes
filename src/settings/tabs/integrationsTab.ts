@@ -549,6 +549,9 @@ export function renderIntegrationsTab(
 									if (!oauthService) return;
 									await oauthService.disconnect("google");
 									plugin.googleCalendarService?.clearCache();
+									plugin.settings.enabledGoogleCalendars = [];
+									plugin.settings.googleCalendarExport.targetCalendarId = "";
+									save();
 									new Notice("Disconnected from Google calendar");
 									void renderGoogleCalendarCard(); // Re-render to show disconnected state
 								} catch (error) {
@@ -638,7 +641,6 @@ export function renderIntegrationsTab(
 									await oauthService.authenticate("google");
 									new Notice("Connected. Loading Google calendars…");
 									await plugin.googleCalendarService?.refreshAllCalendars({ propagateErrors: true });
-									new Notice("Google calendar connected successfully!");
 									void renderGoogleCalendarCard(); // Re-render to show connected state
 								} catch (error) {
 									tasknotesLogger.error("Failed to connect:", {
@@ -666,7 +668,6 @@ export function renderIntegrationsTab(
 												copyPasteInput.input.value = "";
 												stopGoogleCopyPasteCountdown();
 												await plugin.googleCalendarService?.refreshAllCalendars({ propagateErrors: true });
-												new Notice("Google calendar connected successfully!");
 												void renderGoogleCalendarCard();
 											} catch (error) {
 												new Notice(`Failed to connect: ${getErrorMessage(error)}`);
@@ -858,6 +859,8 @@ export function renderIntegrationsTab(
 									if (!oauthService) return;
 									await oauthService.disconnect("microsoft");
 									plugin.microsoftCalendarService?.clearCache();
+									plugin.settings.enabledMicrosoftCalendars = [];
+									save();
 									new Notice("Disconnected from Microsoft calendar");
 									void renderMicrosoftCalendarCard();
 								} catch (error) {
@@ -945,7 +948,6 @@ export function renderIntegrationsTab(
 					}
 					new Notice("Connecting to Microsoft Calendar…");
 					await oauthService.authenticate("microsoft");
-									new Notice("Microsoft calendar connected successfully!");
 									void renderMicrosoftCalendarCard();
 								} catch (error) {
 									tasknotesLogger.error("Failed to connect:", {
@@ -972,7 +974,6 @@ export function renderIntegrationsTab(
 												);
 												copyPasteInput.input.value = "";
 												stopMicrosoftCopyPasteCountdown();
-												new Notice("Microsoft calendar connected successfully!");
 												void renderMicrosoftCalendarCard();
 											} catch (error) {
 												new Notice(`Failed to connect: ${getErrorMessage(error)}`);
@@ -1420,6 +1421,7 @@ export function renderIntegrationsTab(
 						buttonText: translate(
 							"settings.integrations.googleCalendarExport.syncAllTasks.buttonText"
 						),
+						loadingText: "Syncing…",
 							onClick: async () => {
 								const configurationIssue = plugin.taskCalendarSyncService?.getConfigurationIssue();
 								if (configurationIssue) {
