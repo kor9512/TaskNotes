@@ -693,6 +693,9 @@ export class GoogleCalendarService extends CalendarProvider {
 	 */
 	clearCache(): void {
 		this.cache.clear();
+		this.availableCalendars = [];
+		this.calendarColors.clear();
+		this.emit("data-changed");
 	}
 
 	/**

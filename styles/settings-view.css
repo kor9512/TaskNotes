@@ -1372,6 +1372,15 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     font-size: var(--font-smaller);
 }
 
+.tasknotes-oauth-copy-paste-control {
+    display: block;
+    width: 100%;
+}
+
+.tasknotes-oauth-copy-paste-control > input {
+    width: 100%;
+}
+
 @media (max-width: 700px) {
     .tasknotes-calendar-routing-row {
         grid-template-columns: 1.5rem minmax(6rem, 0.8fr) minmax(5rem, 1fr) 2.4rem;

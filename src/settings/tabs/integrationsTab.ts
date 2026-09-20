@@ -150,7 +150,11 @@ function createOAuthCopyPasteInput(plugin: TaskNotesPlugin): OAuthCopyPasteContr
 		""
 	);
 	input.disabled = plugin.settings.oauthAuthorizationMode !== "copy-paste";
-	const container = input.parentElement ?? input;
+	// Keep the input and its status in a dedicated block. Appending the status to
+	// the input's parent made it either invisible or squeezed into the setting row
+	// on mobile because the input is created before CardComponent attaches it.
+	const container = activeWindow.createDiv({ cls: "tasknotes-oauth-copy-paste-control" });
+	container.appendChild(input);
 	const status = container.createSpan({ cls: "tasknotes-oauth-copy-paste-status" });
 	status.textContent = "Request authorization to start a 5-minute window.";
 	return { input, container, status };
@@ -544,6 +548,7 @@ export function renderIntegrationsTab(
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
 									await oauthService.disconnect("google");
+									plugin.googleCalendarService?.clearCache();
 									new Notice("Disconnected from Google calendar");
 									void renderGoogleCalendarCard(); // Re-render to show disconnected state
 								} catch (error) {
