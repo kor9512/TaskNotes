@@ -1367,11 +1367,8 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
 
 @media (max-width: 700px) {
     .tasknotes-calendar-routing-row {
-        grid-template-columns: 1.5rem minmax(7rem, 1fr) 2.4rem;
-    }
-
-    .tasknotes-calendar-routing-id-box {
-        display: none;
+        grid-template-columns: 1.5rem minmax(6rem, 0.8fr) minmax(5rem, 1fr) 2.4rem;
+        gap: 0.4rem;
     }
 }
 
