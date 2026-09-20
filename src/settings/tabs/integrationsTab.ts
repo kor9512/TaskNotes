@@ -628,12 +628,15 @@ export function renderIntegrationsTab(
 									if (!oauthService) return;
 									credentialControls.persistPendingValues();
 					if (isCopyPasteMode) {
+						new Notice("Opening Google authorization…");
 						const expiresAt = await oauthService.requestCopyPasteAuthorization("google");
 						stopGoogleCopyPasteCountdown();
 						stopGoogleCopyPasteCountdown = startOAuthCopyPasteCountdown(copyPasteInput.status, expiresAt);
 						return;
 									}
+									new Notice("Connecting to Google Calendar…");
 									await oauthService.authenticate("google");
+									new Notice("Connected. Loading Google calendars…");
 									await plugin.googleCalendarService?.refreshAllCalendars({ propagateErrors: true });
 									new Notice("Google calendar connected successfully!");
 									void renderGoogleCalendarCard(); // Re-render to show connected state
@@ -655,6 +658,7 @@ export function renderIntegrationsTab(
 										variant: "primary" as const,
 										onClick: async () => {
 											try {
+												new Notice("Connecting to Google Calendar…");
 												await plugin.oauthService?.connectCopyPasteAuthorization(
 													"google",
 													copyPasteInput.input.value
@@ -933,11 +937,13 @@ export function renderIntegrationsTab(
 									if (!oauthService) return;
 									credentialControls.persistPendingValues();
 					if (isCopyPasteMode) {
+						new Notice("Opening Microsoft authorization…");
 						const expiresAt = await oauthService.requestCopyPasteAuthorization("microsoft");
 						stopMicrosoftCopyPasteCountdown();
 						stopMicrosoftCopyPasteCountdown = startOAuthCopyPasteCountdown(copyPasteInput.status, expiresAt);
 						return;
 					}
+					new Notice("Connecting to Microsoft Calendar…");
 					await oauthService.authenticate("microsoft");
 									new Notice("Microsoft calendar connected successfully!");
 									void renderMicrosoftCalendarCard();
@@ -959,6 +965,7 @@ export function renderIntegrationsTab(
 										variant: "primary" as const,
 										onClick: async () => {
 											try {
+												new Notice("Connecting to Microsoft Calendar…");
 												await plugin.oauthService?.connectCopyPasteAuthorization(
 													"microsoft",
 													copyPasteInput.input.value
@@ -1413,14 +1420,11 @@ export function renderIntegrationsTab(
 						buttonText: translate(
 							"settings.integrations.googleCalendarExport.syncAllTasks.buttonText"
 						),
-						onClick: async () => {
-							if (!plugin.taskCalendarSyncService?.isEnabled()) {
-								new Notice(
-									translate(
-										"settings.integrations.googleCalendarExport.notices.notEnabledOrConfigured"
-									)
-								);
-								return;
+							onClick: async () => {
+								const configurationIssue = plugin.taskCalendarSyncService?.getConfigurationIssue();
+								if (configurationIssue) {
+									new Notice(configurationIssue);
+									return;
 							}
 							const results = await plugin.taskCalendarSyncService.syncAllTasks();
 							new Notice(

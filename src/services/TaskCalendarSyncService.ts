@@ -315,14 +315,17 @@ export class TaskCalendarSyncService {
 	 * Check if the sync service is enabled and properly configured
 	 */
 	isEnabled(): boolean {
-		const settings = this.plugin.settings.googleCalendarExport;
-		const enabled = settings.enabled;
-		const hasTargetCalendar = !!settings.targetCalendarId;
-		// Calendar availability is the synchronous readiness signal. Metadata writes
-		// additionally use the OAuth connection generation captured before network work.
-		const isConnected = this.googleCalendarService.getAvailableCalendars().length > 0;
+		return this.getConfigurationIssue() === null;
+	}
 
-		return enabled && hasTargetCalendar && isConnected;
+	getConfigurationIssue(): string | null {
+		const settings = this.plugin.settings.googleCalendarExport;
+		if (!settings.enabled) return "Google Calendar export is disabled";
+		if (!settings.targetCalendarId) return "No target Google Calendar is selected";
+		if (this.googleCalendarService.getAvailableCalendars().length === 0) {
+			return "Google Calendar list is empty; reconnect or refresh calendars first";
+		}
+		return null;
 	}
 
 	private getConnectionGeneration(): number {

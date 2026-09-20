@@ -47,6 +47,7 @@ export interface ButtonSettingOptions {
 	buttonText: string;
 	onClick: () => unknown;
 	buttonClass?: string;
+	loadingText?: string;
 }
 
 export interface SettingGroupOptions {
@@ -331,7 +332,19 @@ export function configureButtonSetting(setting: Setting, options: ButtonSettingO
 		.setDesc(options.desc)
 		.addButton((button) => {
 			button.setButtonText(options.buttonText).onClick(() => {
-				runAsyncSettingCallback(options.onClick);
+				if (!options.loadingText) {
+					runAsyncSettingCallback(options.onClick);
+					return;
+				}
+
+				button.setDisabled(true).setButtonText(options.loadingText);
+				runAsyncSettingCallback(async () => {
+					try {
+						await options.onClick();
+					} finally {
+						button.setDisabled(false).setButtonText(options.buttonText);
+					}
+				});
 			});
 
 			if (options.buttonClass) {
