@@ -853,6 +853,7 @@ export function renderIntegrationsTab(
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
 									await oauthService.disconnect("microsoft");
+									plugin.microsoftCalendarService?.clearCache();
 									new Notice("Disconnected from Microsoft calendar");
 									void renderMicrosoftCalendarCard();
 								} catch (error) {

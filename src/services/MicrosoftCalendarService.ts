@@ -852,6 +852,15 @@ export class MicrosoftCalendarService extends CalendarProvider {
 	 */
 	clearCache(): void {
 		this.cache.clear();
+		this.availableCalendars = [];
+		this.syncStatus = {
+			...this.syncStatus,
+			lastError: null,
+			calendarErrors: [],
+			calendarsChecked: 0,
+			eventsLoaded: 0,
+		};
+		this.emit("data-changed");
 	}
 
 	/**
