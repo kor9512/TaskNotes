@@ -1142,6 +1142,66 @@ export function renderIntegrationsTab(
 				});
 			});
 
+			group.addSetting((setting) => {
+				setting.setName("Private webhook receiver").setDesc(
+					"Optional receiver used by Triggered/Both mode. Stored in TaskNotes data.json; separate from Google OAuth."
+				);
+				setting.setHeading();
+			});
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: "Enable webhook trigger",
+						desc: "Use the private webhook receiver as a refresh trigger.",
+						getValue: () => plugin.settings.googleCalendarExport.webhookEnabled ?? false,
+						setValue: async (value: boolean) => {
+							plugin.settings.googleCalendarExport.webhookEnabled = value;
+							save();
+						},
+					})
+			);
+			group.addSetting(
+				(setting) =>
+					void configureTextSetting(setting, {
+						name: "Webhook endpoint",
+						desc: "HTTPS endpoint for the private receiver.",
+						getValue: () => plugin.settings.googleCalendarExport.webhookEndpoint ?? "",
+						setValue: async (value: string) => {
+							plugin.settings.googleCalendarExport.webhookEndpoint = value.trim();
+							save();
+						},
+						placeholder: "https://example.ts.net",
+					})
+			);
+			group.addSetting(
+				(setting) =>
+					void configureTextSetting(setting, {
+						name: "Webhook channel token",
+						desc: "Same secret as the private receiver.",
+						getValue: () => plugin.settings.googleCalendarExport.webhookChannelToken ?? "",
+						setValue: async (value: string) => {
+							plugin.settings.googleCalendarExport.webhookChannelToken = value;
+							save();
+						},
+					})
+			);
+			group.addSetting(
+				(setting) =>
+					void configureButtonSetting(setting, {
+						name: "Check webhook connection",
+						desc: "Calls /healthz on the configured receiver.",
+						buttonText: "Check",
+						onClick: async () => {
+							try {
+								await plugin.googleCalendarService?.checkWebhookEndpoint();
+								new Notice("TaskNotes webhook is reachable");
+							} catch (error) {
+								new Notice(`Webhook check failed: ${error instanceof Error ? error.message : String(error)}`);
+							}
+						},
+					})
+			);
+
 			// Sync trigger
 			group.addSetting(
 				(setting) =>

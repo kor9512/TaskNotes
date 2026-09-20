@@ -367,6 +367,10 @@ export interface GoogleCalendarExportSettings {
 	calendarRefreshMode: "periodic" | "triggered" | "both";
 	/** Polling interval for periodic calendar refreshes, in minutes. */
 	calendarRefreshIntervalMinutes: number;
+	/** Private webhook receiver settings; OAuth tokens remain separate. */
+	webhookEnabled: boolean;
+	webhookEndpoint: string;
+	webhookChannelToken: string;
 }
 
 export interface OAuthPlaintextCredential {

@@ -206,6 +206,9 @@ export const DEFAULT_GOOGLE_CALENDAR_EXPORT: GoogleCalendarExportSettings = {
 	defaultReminderMinutes: null, // No reminder override by default (user opts in)
 	calendarRefreshMode: "both",
 	calendarRefreshIntervalMinutes: 60,
+	webhookEnabled: false,
+	webhookEndpoint: "",
+	webhookChannelToken: "",
 };
 
 export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {

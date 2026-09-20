@@ -199,6 +199,23 @@ export class GoogleCalendarService extends CalendarProvider {
 		this.emit("data-changed");
 	}
 
+	/** Check the private webhook receiver without starting a Google watch channel. */
+	async checkWebhookEndpoint(): Promise<void> {
+		const settings = this.plugin.settings.googleCalendarExport;
+		const endpoint = settings.webhookEndpoint.trim().replace(/\/$/, "");
+		if (!endpoint) throw new Error("Webhook endpoint is not configured");
+		const response = await requestUrl({
+			url: `${endpoint}/healthz`,
+			method: "GET",
+			headers: settings.webhookChannelToken
+				? { "X-TaskNotes-Webhook-Token": settings.webhookChannelToken }
+				: undefined,
+		});
+		if (response.status < 200 || response.status >= 300) {
+			throw new Error(`Webhook returned HTTP ${response.status}`);
+		}
+	}
+
 	/** Returns only calendars selected for TaskNotes subscription and task targeting. */
 	getEnabledCalendars(): ProviderCalendar[] {
 		const enabledIds = new Set(this.getEnabledCalendarIds());
