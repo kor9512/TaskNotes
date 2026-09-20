@@ -981,7 +981,12 @@ export function renderIntegrationsTab(
 										Array.from(selected)[0] || "";
 								}
 								save();
-								await plugin.googleCalendarService?.manualRefresh();
+								try {
+									await plugin.googleCalendarService?.manualRefresh();
+									new Notice(enabled ? `Subscribed to ${calendar.summary}` : `Unsubscribed from ${calendar.summary}`);
+								} catch (error) {
+									new Notice(`Calendar refresh failed: ${error instanceof Error ? error.message : String(error)}`);
+								}
 						});
 					}
 				};
