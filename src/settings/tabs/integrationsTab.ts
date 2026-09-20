@@ -391,6 +391,8 @@ export function renderIntegrationsTab(
 						if (value !== "desktop-callback" && value !== "copy-paste") return;
 						plugin.settings.oauthAuthorizationMode = value;
 						save();
+						// Rebuild the provider cards so the mode-specific controls change immediately.
+						renderIntegrationsTab(container, plugin, save);
 					},
 				})
 			);
