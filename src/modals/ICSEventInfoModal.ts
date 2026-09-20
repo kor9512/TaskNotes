@@ -261,9 +261,7 @@ export class ICSEventInfoModal extends Modal {
 
 				// Open the created task file
 				await this.safeOpenFile(result.file.path);
-
-				// Refresh the modal to show the new related task
-				void this.refreshRelatedNotes();
+				this.close();
 			},
 			{
 				errorMessage: "Failed to create task from ICS event",

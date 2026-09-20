@@ -283,11 +283,10 @@ export class ICSNoteService {
 				contexts:
 					overrides?.contexts || (icsEvent.location ? [icsEvent.location] : undefined),
 				projects: overrides?.projects,
-				tags: overrides?.tags || [this.plugin.fieldMapper.toUserField("icsEventTag")],
+				tags: overrides?.tags || [this.plugin.settings.taskTag],
 				timeEstimate: overrides?.timeEstimate || this.calculateEventDuration(icsEvent),
 				details:
 					overrides?.details || this.buildICSEventDetails(icsEvent, subscriptionName),
-				icsEventId: [icsEvent.id],
 				customFrontmatter: this.getGoogleTaskFrontmatter(icsEvent, subscriptionName),
 				folder: this.getImportedTaskFolder(subscriptionName),
 				creationContext: "ics-event",
@@ -349,13 +348,7 @@ export class ICSNoteService {
 		calendarName: string
 	): Record<string, unknown> | undefined {
 		if (!icsEvent.subscriptionId.startsWith("google-")) return undefined;
-		const calendarId = icsEvent.subscriptionId.slice("google-".length);
-		const prefix = `google-${calendarId}-`;
-		const eventId = icsEvent.id.startsWith(prefix) ? icsEvent.id.slice(prefix.length) : undefined;
-		return {
-			googleCalendarName: calendarName,
-			...(eventId ? { googleCalendarEventId: eventId } : {}),
-		};
+		return { googleCalendarName: calendarName };
 	}
 
 	/**

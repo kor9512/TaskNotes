@@ -166,9 +166,8 @@ export class GoogleCalendarService extends CalendarProvider {
 
 	/**
 	 * Resolve either a canonical calendar ID or a display name from a note's
-	 * user-facing metadata. IDs remain the canonical stored value; names are a
-	 * convenience for hand-written notes and are validated against the current
-	 * calendar list.
+	 * user-facing metadata. Names are stored in notes; IDs remain internal
+	 * runtime identifiers resolved from the current calendar list.
 	 */
 	resolveCalendarId(value?: string): string | undefined {
 		const normalized = value?.trim();
@@ -179,6 +178,25 @@ export class GoogleCalendarService extends CalendarProvider {
 			(calendar) => calendar.summary.trim().toLocaleLowerCase() === normalized.toLocaleLowerCase()
 		);
 		return byName?.id;
+	}
+
+	/** Update a Google Calendar's background color and refresh the local cache. */
+	async updateCalendarColor(calendarId: string, color: string): Promise<void> {
+		const token = await this.oauthService.getValidToken("google");
+		await requestUrl({
+			url: `${this.baseUrl}/users/me/calendarList/${encodeURIComponent(calendarId)}`,
+			method: "PATCH",
+			headers: {
+				Authorization: `Bearer ${token}`,
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ backgroundColor: color }),
+		});
+		this.calendarColors.set(calendarId, color);
+		const calendar = this.availableCalendars.find((item) => item.id === calendarId);
+		if (calendar) calendar.backgroundColor = color;
+		this.emit("data-changed");
 	}
 
 	/** Returns only calendars selected for TaskNotes subscription and task targeting. */

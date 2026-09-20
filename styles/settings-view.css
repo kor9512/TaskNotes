@@ -1247,8 +1247,12 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     color: var(--text-warning);
 }
 
-/* Calendar routing rows: keep the display name and ID together while the
-   enable toggle stays in a fixed right-hand column. */
+/* Calendar routing rows: FCR-style left toggle, visible separator and color. */
+.tasknotes-calendar-routing-divider {
+    border-top: 1px solid var(--background-modifier-border);
+    margin: 0.75rem 0 0.25rem;
+}
+
 .tasknotes-calendar-routing-list {
     width: 100%;
     margin-top: 0.5rem;
@@ -1256,12 +1260,12 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
 
 .tasknotes-calendar-routing-row {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
     gap: 0.75rem;
     min-height: 3.5rem;
     padding: 0.65rem 0;
-    border-top: 1px solid var(--background-modifier-border);
+    border-bottom: 1px solid var(--background-modifier-border);
 }
 
 .tasknotes-calendar-routing-identity {
@@ -1275,6 +1279,26 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     font-weight: 500;
 }
 
+.tasknotes-calendar-routing-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.tasknotes-calendar-routing-color {
+    width: 1.25rem;
+    height: 1.25rem;
+    padding: 0;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 50%;
+    cursor: pointer;
+}
+
+.tasknotes-calendar-routing-color-label {
+    color: var(--text-muted);
+    font-size: var(--font-smaller);
+}
+
 .tasknotes-calendar-routing-id {
     overflow-wrap: anywhere;
     color: var(--text-muted);
@@ -1285,7 +1309,7 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
 .tasknotes-calendar-routing-toggle {
     width: 2.25rem;
     height: 1.25rem;
-    margin: 0;
+    margin: 0 0.5rem 0 0;
     accent-color: var(--interactive-accent);
 }
 
