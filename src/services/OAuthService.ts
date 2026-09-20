@@ -780,7 +780,14 @@ export class OAuthService {
 			return false;
 		}
 
-		this.secretStore.clearConnection(provider);
+		if (this.plugin.settings?.oauthCredentialStorage === "plaintext") {
+			if (this.plugin.settings.oauthPlaintextConnections) {
+				delete this.plugin.settings.oauthPlaintextConnections[provider];
+			}
+			void this.plugin.saveSettingsDataOnly();
+		} else {
+			this.secretStore.clearConnection(provider);
+		}
 		this.connectionGenerations.set(provider, currentGeneration + 1);
 		return true;
 	}
@@ -866,7 +873,13 @@ export class OAuthService {
 			connectedAt: new Date().toISOString(),
 			lastRefreshed: new Date().toISOString(),
 		};
-		this.secretStore.setConnection(provider, connection);
+		if (this.plugin.settings?.oauthCredentialStorage === "plaintext") {
+			this.plugin.settings.oauthPlaintextConnections ??= {};
+			this.plugin.settings.oauthPlaintextConnections[provider] = connection;
+			await this.plugin.saveSettingsDataOnly();
+		} else {
+			this.secretStore.setConnection(provider, connection);
+		}
 		if (expectedGeneration === undefined) {
 			const currentGeneration = this.connectionGenerations.get(provider) ?? 0;
 			this.connectionGenerations.set(provider, currentGeneration + 1);
@@ -877,6 +890,9 @@ export class OAuthService {
 	 * Retrieves a connection from Obsidian SecretStorage.
 	 */
 	async getConnection(provider: OAuthProvider): Promise<OAuthConnection | null> {
+		if (this.plugin.settings?.oauthCredentialStorage === "plaintext") {
+			return this.plugin.settings.oauthPlaintextConnections?.[provider] ?? null;
+		}
 		return this.secretStore.getConnection(provider);
 	}
 

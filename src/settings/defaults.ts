@@ -408,6 +408,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	oauthCredentialStorage: "secret",
 	oauthAuthorizationMode: "desktop-callback",
 	oauthPlaintextCredentials: {},
+	oauthPlaintextConnections: {},
 	// Google Calendar selection (empty = show all calendars)
 	enabledGoogleCalendars: [],
 	// Google Calendar sync tokens (for incremental sync)

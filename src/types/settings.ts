@@ -1,4 +1,11 @@
-import { FieldMapping, StatusConfig, PriorityConfig, SavedView, WebhookConfig } from "../types";
+import {
+	FieldMapping,
+	StatusConfig,
+	PriorityConfig,
+	SavedView,
+	WebhookConfig,
+	OAuthConnection,
+} from "../types";
 import type { FileFilterConfig } from "../suggest/FileSuggestHelper";
 
 export interface UserFieldMapping {
@@ -247,7 +254,7 @@ export interface TaskNotesSettings {
 	enableGoogleCalendar: boolean;
 	enableMicrosoftCalendar: boolean;
 	disableCalendarOnMobile: boolean;
-	/** Where OAuth client credentials should be stored. Plaintext is intended for cross-device experiments. */
+	/** Where OAuth credentials and connection tokens should be stored. Plaintext exposes refresh tokens to sync. */
 	oauthCredentialStorage: "secret" | "plaintext";
 	/** Authorization flow preference. */
 	oauthAuthorizationMode: "desktop-callback" | "copy-paste";
@@ -255,6 +262,11 @@ export interface TaskNotesSettings {
 	oauthPlaintextCredentials: {
 		google?: OAuthPlaintextCredential;
 		microsoft?: OAuthPlaintextCredential;
+	};
+	/** OAuth connection tokens used when plaintext storage is selected. */
+	oauthPlaintextConnections: {
+		google?: OAuthConnection;
+		microsoft?: OAuthConnection;
 	};
 	// Google Calendar selection
 	enabledGoogleCalendars: string[]; // Array of calendar IDs that should be displayed

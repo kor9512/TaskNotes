@@ -36,7 +36,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Added per-task Google Calendar target selection in task creation, edit, and context menus. The selected calendar is stored by stable calendar ID while the UI displays the current calendar name.
 - Added a warning when a task references a Google Calendar that is no longer available.
-- Added experimental OAuth credential storage and authorization modes for mobile-friendly setups. Credentials can be stored in Secret Storage (default) or plaintext plugin settings, and authorization can use the desktop callback or copy/paste flow.
+- Added experimental OAuth storage and authorization modes for mobile-friendly setups. Secret Storage is the default; Plaintext mode shares client credentials and connection tokens through plugin settings, and authorization can use the desktop callback or copy/paste flow. Plaintext mode exposes refresh tokens in synced `data.json` and should only be used deliberately.
 
 ## Fixed
 
