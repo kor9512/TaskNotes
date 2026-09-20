@@ -172,7 +172,7 @@ export class OAuthService {
 	}
 
 	/** Opens the provider consent page for the mobile-safe copy-paste flow. */
-	async requestCopyPasteAuthorization(provider: OAuthProvider): Promise<void> {
+	async requestCopyPasteAuthorization(provider: OAuthProvider): Promise<number> {
 		if (this.authenticationInProgress) {
 			throw new Error("An OAuth authorization is already in progress");
 		}
@@ -196,6 +196,7 @@ export class OAuthService {
 		try {
 			await this.openAuthorizationUrl(this.buildAuthorizationUrl(config, codeChallenge, state));
 			publishUserNotice(this.plugin.emitter, "After approval, paste the redirect URL or code and connect.");
+			return Date.now() + 300000;
 		} catch (error) {
 			this.clearPendingCopyPaste(provider);
 			throw error;
