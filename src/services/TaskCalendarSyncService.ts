@@ -348,7 +348,7 @@ export class TaskCalendarSyncService {
 
 	/**
 	 * Resolve the calendar for an individual task. A note may override the
-	 * global export target with a `googleCalendarId` frontmatter property.
+	 * global export target with a `googleCalendarName` frontmatter property.
 	 */
 	getTaskTargetCalendarId(task: TaskInfo): string {
 		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
