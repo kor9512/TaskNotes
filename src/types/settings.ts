@@ -363,6 +363,8 @@ export interface GoogleCalendarExportSettings {
 	defaultEventDuration: number; // Duration in minutes if timed (uses timeEstimate if available)
 	includeObsidianLink: boolean; // Include obsidian:// link in event description
 	defaultReminderMinutes: number | number[] | null; // Popup reminder(s) X minutes before event (null = no reminder)
+	/** How external Google Calendar changes are pulled into TaskNotes. */
+	calendarRefreshMode: "periodic" | "triggered" | "both";
 }
 
 export interface OAuthPlaintextCredential {

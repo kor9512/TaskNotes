@@ -269,9 +269,17 @@ export class GoogleCalendarService extends CalendarProvider {
 			// Fetch initial data
 			await this.refreshAllCalendars();
 
-			// Set up periodic refresh (every 15 minutes)
-			this.startRefreshTimer();
+			// Set up periodic refresh only when polling is enabled. A webhook daemon
+			// can invoke the refresh command when using triggered mode.
+			if (this.shouldUsePeriodicRefresh()) {
+				this.startRefreshTimer();
+			}
 		}
+	}
+
+	private shouldUsePeriodicRefresh(): boolean {
+		const mode = this.plugin.settings.googleCalendarExport.calendarRefreshMode ?? "both";
+		return mode === "periodic" || mode === "both";
 	}
 
 	/**
@@ -294,7 +302,7 @@ export class GoogleCalendarService extends CalendarProvider {
 				})
 				.finally(() => {
 					void this.oauthService.isConnected("google").then((isConnected) => {
-						if (isConnected) {
+						if (isConnected && this.shouldUsePeriodicRefresh()) {
 							this.startRefreshTimer();
 						}
 					});

@@ -2415,6 +2415,7 @@ export const en: TranslationTree = {
 		statsLoadingFailed: "Error loading project details.",
 	},
 	commands: {
+		refreshGoogleCalendar: "Refresh Google Calendar",
 		openCalendarView: "Open mini calendar view",
 		openAdvancedCalendarView: "Open calendar view",
 		openTasksView: "Open tasks view",

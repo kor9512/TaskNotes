@@ -1146,6 +1146,25 @@ export function renderIntegrationsTab(
 			group.addSetting(
 				(setting) =>
 					void configureDropdownSetting(setting, {
+						name: "Calendar refresh trigger",
+						desc: "Choose how external Google Calendar changes are pulled into TaskNotes. Triggered mode is intended for the private webhook daemon.",
+						options: [
+							{ value: "periodic", label: "Periodic (15 minutes)" },
+							{ value: "triggered", label: "Triggered (webhook/command)" },
+							{ value: "both", label: "Both" },
+						],
+						getValue: () => plugin.settings.googleCalendarExport.calendarRefreshMode ?? "both",
+						setValue: async (value: string) => {
+							plugin.settings.googleCalendarExport.calendarRefreshMode = value as
+								"periodic" | "triggered" | "both";
+							save();
+						},
+					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureDropdownSetting(setting, {
 						name: translate(
 							"settings.integrations.googleCalendarExport.syncTrigger.name"
 						),
