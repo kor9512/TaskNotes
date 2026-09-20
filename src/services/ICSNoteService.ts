@@ -288,6 +288,7 @@ export class ICSNoteService {
 				details:
 					overrides?.details || this.buildICSEventDetails(icsEvent, subscriptionName),
 				icsEventId: [icsEvent.id],
+				customFrontmatter: this.getGoogleTaskFrontmatter(icsEvent, subscriptionName),
 				folder: this.getImportedTaskFolder(subscriptionName),
 				creationContext: "ics-event",
 				dateCreated: getCurrentTimestamp(),
@@ -317,6 +318,20 @@ export class ICSNoteService {
 		const safeCalendarName = calendarName.replace(/[<>:"/\\|?*]/g, "_").trim() || "Calendar";
 		const tasksFolder = this.plugin.settings.tasksFolder?.trim();
 		return tasksFolder ? `${tasksFolder}/${safeCalendarName}` : safeCalendarName;
+	}
+
+	private getGoogleTaskFrontmatter(
+		icsEvent: ICSEvent,
+		calendarName: string
+	): Record<string, unknown> | undefined {
+		if (!icsEvent.subscriptionId.startsWith("google-")) return undefined;
+		const calendarId = icsEvent.subscriptionId.slice("google-".length);
+		const prefix = `google-${calendarId}-`;
+		const eventId = icsEvent.id.startsWith(prefix) ? icsEvent.id.slice(prefix.length) : undefined;
+		return {
+			googleCalendar: calendarName,
+			...(eventId ? { googleCalendarEventId: eventId } : {}),
+		};
 	}
 
 	/**
