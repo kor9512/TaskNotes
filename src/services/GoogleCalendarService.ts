@@ -164,6 +164,12 @@ export class GoogleCalendarService extends CalendarProvider {
 		return this.availableCalendars;
 	}
 
+	/** Returns only calendars selected for TaskNotes subscription and task targeting. */
+	getEnabledCalendars(): ProviderCalendar[] {
+		const enabledIds = new Set(this.getEnabledCalendarIds());
+		return this.availableCalendars.filter((calendar) => enabledIds.has(calendar.id));
+	}
+
 	getConnectionGeneration(): number {
 		return this.oauthService.getConnectionGeneration("google");
 	}

@@ -735,7 +735,10 @@ export abstract class TaskModal extends Modal {
 	protected createGoogleCalendarField(container: HTMLElement): void {
 		const setting = new Setting(container).setName(this.t("modals.task.googleCalendar.name"));
 		const dropdown = setting.controlEl.createEl("select");
-		const calendars = this.plugin.googleCalendarService?.getAvailableCalendars?.() || [];
+		const calendars =
+			this.plugin.googleCalendarService?.getEnabledCalendars?.() ||
+			this.plugin.googleCalendarService?.getAvailableCalendars?.() ||
+			[];
 		const defaultOption = dropdown.createEl("option", {
 			text: this.t("modals.task.googleCalendar.useDefaultTarget"),
 			value: "",

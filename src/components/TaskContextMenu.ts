@@ -769,7 +769,10 @@ export class TaskContextMenu {
 				subItem.setTitle(this.t("contextMenus.task.calendar.setTaskTarget"));
 				subItem.setIcon("calendar-cog");
 				const calendarMenu = getSubmenu(subItem);
-				const calendars = plugin.googleCalendarService?.getAvailableCalendars?.() || [];
+				const calendars =
+					plugin.googleCalendarService?.getEnabledCalendars?.() ||
+					plugin.googleCalendarService?.getAvailableCalendars?.() ||
+					[];
 				calendarMenu.addItem((calendarItem) => {
 					calendarItem.setTitle(this.t("contextMenus.task.calendar.useDefaultTarget"));
 					calendarItem.onClick(() => {
