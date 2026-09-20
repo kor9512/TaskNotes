@@ -16,7 +16,6 @@ import {
 	runAsyncSettingCallback,
 } from "../components/settingHelpers";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
-import { showTextInputModal } from "../../modals/TextInputModal";
 import { isCalendarIntegrationDisabledOnMobile } from "../../utils/calendarIntegration";
 import {
 	createCard,
@@ -137,6 +136,16 @@ type OAuthCredentialControls = {
 	persistPendingValues(): void;
 	hasStoredCredentials: boolean;
 };
+
+function createOAuthCopyPasteInput(plugin: TaskNotesPlugin): HTMLInputElement {
+	const input = createCardInput(
+		"text",
+		"Paste OAuth redirect URL or authorization code",
+		""
+	);
+	input.disabled = plugin.settings.oauthAuthorizationMode !== "copy-paste";
+	return input;
+}
 
 function createOAuthCredentialControls(
 	plugin: TaskNotesPlugin,
@@ -503,6 +512,7 @@ export function renderIntegrationsTab(
 				"your-client-id.apps.googleusercontent.com",
 				"your-client-secret"
 			);
+			const copyPasteInput = createOAuthCopyPasteInput(plugin);
 
 			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
@@ -513,6 +523,7 @@ export function renderIntegrationsTab(
 				rows: [
 					{ label: "Client ID:", input: credentialControls.clientIdInput },
 					{ label: "Client Secret:", input: credentialControls.clientSecretInput },
+					{ label: "OAuth redirect/code:", input: copyPasteInput },
 					{ label: "", input: credentialNote, fullWidth: true },
 				],
 			});
@@ -542,18 +553,13 @@ export function renderIntegrationsTab(
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
 									credentialControls.persistPendingValues();
-									await oauthService.authenticate(
-										"google",
-										plugin.settings.oauthAuthorizationMode === "copy-paste"
-											? () =>
-													showTextInputModal(plugin.app, {
-														title: "Paste OAuth redirect URL or authorization code",
-														placeholder: "https://... or authorization code",
-														confirmText: "Continue",
-														cancelText: "Cancel",
-													})
-											: undefined
-									);
+					await oauthService.authenticate(
+						"google",
+						plugin.settings.oauthAuthorizationMode === "copy-paste"
+							? async () => copyPasteInput.value.trim() || null
+							: undefined
+					);
+					copyPasteInput.value = "";
 									new Notice("Google calendar connected successfully!");
 									void renderGoogleCalendarCard(); // Re-render to show connected state
 								} catch (error) {
@@ -783,6 +789,7 @@ export function renderIntegrationsTab(
 				"your-microsoft-client-id",
 				"your-microsoft-client-secret"
 			);
+			const copyPasteInput = createOAuthCopyPasteInput(plugin);
 
 			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
@@ -793,6 +800,7 @@ export function renderIntegrationsTab(
 				rows: [
 					{ label: "Client ID:", input: credentialControls.clientIdInput },
 					{ label: "Client Secret:", input: credentialControls.clientSecretInput },
+					{ label: "OAuth redirect/code:", input: copyPasteInput },
 					{ label: "", input: credentialNote, fullWidth: true },
 				],
 			});
@@ -822,18 +830,13 @@ export function renderIntegrationsTab(
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
 									credentialControls.persistPendingValues();
-									await oauthService.authenticate(
-										"microsoft",
-										plugin.settings.oauthAuthorizationMode === "copy-paste"
-											? () =>
-													showTextInputModal(plugin.app, {
-														title: "Paste OAuth redirect URL or authorization code",
-														placeholder: "https://... or authorization code",
-														confirmText: "Continue",
-														cancelText: "Cancel",
-													})
-											: undefined
-									);
+					await oauthService.authenticate(
+						"microsoft",
+						plugin.settings.oauthAuthorizationMode === "copy-paste"
+							? async () => copyPasteInput.value.trim() || null
+							: undefined
+					);
+					copyPasteInput.value = "";
 									new Notice("Microsoft calendar connected successfully!");
 									void renderMicrosoftCalendarCard();
 								} catch (error) {
