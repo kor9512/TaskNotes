@@ -981,7 +981,12 @@ export function renderIntegrationsTab(
 										Array.from(selected)[0] || "";
 								}
 								save();
-								await plugin.googleCalendarService?.manualRefresh();
+								try {
+									await plugin.googleCalendarService?.manualRefresh();
+									new Notice(enabled ? `Subscribed to ${calendar.summary}` : `Unsubscribed from ${calendar.summary}`);
+								} catch (error) {
+									new Notice(`Calendar refresh failed: ${error instanceof Error ? error.message : String(error)}`);
+								}
 						});
 					}
 				};
@@ -1173,6 +1178,7 @@ export function renderIntegrationsTab(
 							save();
 						},
 						placeholder: "https://example.ts.net",
+						debounceMs: 500,
 					})
 			);
 			group.addSetting(
@@ -1185,6 +1191,7 @@ export function renderIntegrationsTab(
 							plugin.settings.googleCalendarExport.webhookChannelToken = value;
 							save();
 						},
+						debounceMs: 500,
 					})
 			);
 			group.addSetting(
