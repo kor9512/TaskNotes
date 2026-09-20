@@ -542,7 +542,9 @@ export class GoogleCalendarService extends CalendarProvider {
 	/**
 	 * Refreshes all enabled Google calendars using incremental sync when possible
 	 */
-	async refreshAllCalendars(options: { propagateErrors?: boolean } = {}): Promise<void> {
+	async refreshAllCalendars(
+		options: { propagateErrors?: boolean; forceFullSync?: boolean } = {}
+	): Promise<void> {
 		try {
 			const isConnected = await this.oauthService.isConnected("google");
 			if (!isConnected) {
@@ -554,6 +556,11 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			// Get enabled calendar IDs from settings
 			const enabledCalendarIds = this.getEnabledCalendarIds();
+			if (options.forceFullSync) {
+				// A manual full refresh must cover every enabled calendar, not just
+				// calendars that happen to have a stale incremental sync token.
+				await Promise.all(enabledCalendarIds.map((calendarId) => this.clearSyncToken(calendarId)));
+			}
 
 			// Get current cached events
 			let cachedEvents = this.cache.get("all") || [];
@@ -696,7 +703,7 @@ export class GoogleCalendarService extends CalendarProvider {
 			return;
 		}
 
-		await this.refreshAllCalendars({ propagateErrors: true });
+		await this.refreshAllCalendars({ propagateErrors: true, forceFullSync: true });
 		this.lastManualRefresh = Date.now();
 	}
 

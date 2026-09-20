@@ -973,7 +973,9 @@ export function renderIntegrationsTab(
 									else selected.delete(calendar.id);
 									plugin.settings.enabledGoogleCalendars = Array.from(selected);
 									save();
-									await plugin.googleCalendarService?.refreshAllCalendars();
+							// Settings' Refresh Now is an explicit full refresh across all
+							// enabled calendars; background/view refreshes remain incremental.
+							await plugin.googleCalendarService?.manualRefresh();
 								});
 							});
 					}
