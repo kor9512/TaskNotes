@@ -534,6 +534,7 @@ export function renderIntegrationsTab(
 				"your-client-secret"
 			);
 			const copyPasteInput = createOAuthCopyPasteInput(plugin);
+			const isCopyPasteMode = plugin.settings.oauthAuthorizationMode === "copy-paste";
 
 			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
@@ -563,10 +564,10 @@ export function renderIntegrationsTab(
 				content: {
 					sections: sections,
 				},
-				actions: {
-					buttons: [
+					actions: {
+						buttons: [
 						{
-							text: "Connect Google Calendar",
+							text: isCopyPasteMode ? "Request authorization" : "Connect Google Calendar",
 							icon: "link",
 							variant: "primary",
 							onClick: async () => {
@@ -574,13 +575,11 @@ export function renderIntegrationsTab(
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
 									credentialControls.persistPendingValues();
-					await oauthService.authenticate(
-						"google",
-						plugin.settings.oauthAuthorizationMode === "copy-paste"
-							? () => waitForOAuthCopyPasteInput(copyPasteInput)
-							: undefined
-					);
-					copyPasteInput.value = "";
+									if (isCopyPasteMode) {
+										await oauthService.requestCopyPasteAuthorization("google");
+										return;
+									}
+									await oauthService.authenticate("google");
 									new Notice("Google calendar connected successfully!");
 									void renderGoogleCalendarCard(); // Re-render to show connected state
 								} catch (error) {
@@ -593,6 +592,28 @@ export function renderIntegrationsTab(
 								}
 							},
 						},
+						...(isCopyPasteMode
+							? [
+									{
+										text: "Connect with pasted code",
+										icon: "plug",
+										variant: "primary" as const,
+										onClick: async () => {
+											try {
+												await plugin.oauthService?.connectCopyPasteAuthorization(
+													"google",
+													copyPasteInput.value
+												);
+												copyPasteInput.value = "";
+												new Notice("Google calendar connected successfully!");
+												void renderGoogleCalendarCard();
+											} catch (error) {
+												new Notice(`Failed to connect: ${getErrorMessage(error)}`);
+											}
+										},
+									},
+								]
+							: []),
 						...(credentialControls.hasStoredCredentials
 							? [
 									{
@@ -811,6 +832,7 @@ export function renderIntegrationsTab(
 				"your-microsoft-client-secret"
 			);
 			const copyPasteInput = createOAuthCopyPasteInput(plugin);
+			const isCopyPasteMode = plugin.settings.oauthAuthorizationMode === "copy-paste";
 
 			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
@@ -841,9 +863,9 @@ export function renderIntegrationsTab(
 					sections: sections,
 				},
 				actions: {
-					buttons: [
+				buttons: [
 						{
-							text: "Connect Microsoft Calendar",
+							text: isCopyPasteMode ? "Request authorization" : "Connect Microsoft Calendar",
 							icon: "link",
 							variant: "primary",
 							onClick: async () => {
@@ -851,13 +873,11 @@ export function renderIntegrationsTab(
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
 									credentialControls.persistPendingValues();
-					await oauthService.authenticate(
-						"microsoft",
-						plugin.settings.oauthAuthorizationMode === "copy-paste"
-							? () => waitForOAuthCopyPasteInput(copyPasteInput)
-							: undefined
-					);
-					copyPasteInput.value = "";
+					if (isCopyPasteMode) {
+						await oauthService.requestCopyPasteAuthorization("microsoft");
+						return;
+					}
+					await oauthService.authenticate("microsoft");
 									new Notice("Microsoft calendar connected successfully!");
 									void renderMicrosoftCalendarCard();
 								} catch (error) {
@@ -868,8 +888,30 @@ export function renderIntegrationsTab(
 									});
 									new Notice(`Failed to connect: ${getErrorMessage(error)}`);
 								}
-							},
 						},
+						},
+						...(isCopyPasteMode
+							? [
+									{
+										text: "Connect with pasted code",
+										icon: "plug",
+										variant: "primary" as const,
+										onClick: async () => {
+											try {
+												await plugin.oauthService?.connectCopyPasteAuthorization(
+													"microsoft",
+													copyPasteInput.value
+												);
+												copyPasteInput.value = "";
+												new Notice("Microsoft calendar connected successfully!");
+												void renderMicrosoftCalendarCard();
+											} catch (error) {
+												new Notice(`Failed to connect: ${getErrorMessage(error)}`);
+											}
+										},
+									},
+								]
+							: []),
 						...(credentialControls.hasStoredCredentials
 							? [
 									{
