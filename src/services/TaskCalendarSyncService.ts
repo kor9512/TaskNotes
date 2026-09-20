@@ -3299,7 +3299,8 @@ export class TaskCalendarSyncService {
 	async deleteTaskFromCalendarByPath(
 		taskPath: string,
 		eventId?: string,
-		...additionalEventIds: Array<string | undefined>
+		exceptionEventId?: string,
+		taskCalendarId?: string
 	): Promise<boolean> {
 		if (!this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
 			return true;
@@ -3307,7 +3308,7 @@ export class TaskCalendarSyncService {
 
 		const connectionGeneration = this.getConnectionGeneration();
 		const settings = this.plugin.settings.googleCalendarExport;
-		const eventIds = [eventId, ...additionalEventIds].filter(
+		const eventIds = [eventId, exceptionEventId].filter(
 			(id): id is string => typeof id === "string" && id.length > 0
 		);
 
@@ -3315,7 +3316,7 @@ export class TaskCalendarSyncService {
 			return true;
 		}
 
-		const targetCalendarId = settings.targetCalendarId;
+		const targetCalendarId = taskCalendarId || settings.targetCalendarId;
 		if (!targetCalendarId) {
 			tasknotesLogger.warn(
 				"[TaskCalendarSync] Cannot delete task events without target calendar:",
