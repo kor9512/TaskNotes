@@ -153,7 +153,9 @@ function createOAuthCredentialControls(
 	const clientSecretInput = createCardInput(
 		"text",
 		storedCredentials?.clientSecret
-			? "Stored securely - enter a new value to replace"
+			? plugin.settings.oauthCredentialStorage === "plaintext"
+				? "Stored in plugin settings - enter a new value to replace"
+				: "Stored securely - enter a new value to replace"
 			: clientSecretPlaceholder,
 		""
 	);
@@ -179,7 +181,10 @@ function createOAuthCredentialControls(
 			clientSecret,
 		});
 		clientSecretInput.value = "";
-		clientSecretInput.placeholder = "Stored securely - enter a new value to replace";
+		clientSecretInput.placeholder =
+			plugin.settings.oauthCredentialStorage === "plaintext"
+				? "Stored in plugin settings - enter a new value to replace"
+				: "Stored securely - enter a new value to replace";
 	};
 
 	clientIdInput.addEventListener("blur", persistClientId);

@@ -169,3 +169,53 @@ describe("OAuthService SecretStorage persistence", () => {
 		);
 	});
 });
+
+describe("OAuthService plaintext credential persistence", () => {
+	it("stores credentials in settings when plaintext mode is selected", () => {
+		const secretStore = new OAuthSecretStore(new InMemorySecretStorage());
+		const settings = {
+			oauthCredentialStorage: "plaintext" as const,
+			oauthPlaintextCredentials: {},
+		};
+		const mockPlugin = {
+			settings,
+			saveSettingsDataOnly: jest.fn().mockResolvedValue(undefined),
+		} as unknown as TaskNotesPlugin;
+		const service = new OAuthService(mockPlugin, secretStore);
+
+		service.setCredentials("google", {
+			clientId: " client-id ",
+			clientSecret: " client-secret ",
+		});
+
+		expect(service.getCredentials("google")).toEqual({
+			clientId: "client-id",
+			clientSecret: "client-secret",
+		});
+		expect(settings.oauthPlaintextCredentials).toEqual({
+			google: { clientId: "client-id", clientSecret: "client-secret" },
+		});
+		expect(mockPlugin.saveSettingsDataOnly).toHaveBeenCalledTimes(1);
+	});
+
+	it("clears plaintext credentials without touching SecretStorage", () => {
+		const secretStore = new OAuthSecretStore(new InMemorySecretStorage());
+		const settings = {
+			oauthCredentialStorage: "plaintext" as const,
+			oauthPlaintextCredentials: {
+				google: { clientId: "client-id", clientSecret: "client-secret" },
+			},
+		};
+		const mockPlugin = {
+			settings,
+			saveSettingsDataOnly: jest.fn().mockResolvedValue(undefined),
+		} as unknown as TaskNotesPlugin;
+		const service = new OAuthService(mockPlugin, secretStore);
+
+		service.clearCredentials("google");
+
+		expect(service.getCredentials("google")).toBeNull();
+		expect(secretStore.getCredentials("google")).toBeNull();
+		expect(mockPlugin.saveSettingsDataOnly).toHaveBeenCalledTimes(1);
+	});
+});

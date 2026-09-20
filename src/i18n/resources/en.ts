@@ -1722,7 +1722,7 @@ export const en: TranslationTree = {
 		integrations: {
 			oauthCredentialStorage: {
 				name: "OAUTH credential storage",
-				description: "Choose where client credentials will be stored. Plaintext is experimental and insecure.",
+				description: "Choose where client credentials will be stored. Plaintext is convenient for cross-device setup but insecure.",
 				options: {
 					secret: "Obsidian secret storage",
 					plaintext: "Plaintext (experimental)",
@@ -1730,7 +1730,7 @@ export const en: TranslationTree = {
 			},
 			oauthAuthorizationMode: {
 				name: "OAUTH authorization method",
-				description: "Choose the authorization flow. Copy/paste is staged for the next implementation step.",
+				description: "Choose the authorization flow. Copy/paste works without a local callback server.",
 				options: {
 					desktop: "Desktop callback",
 					copyPaste: "Copy/paste authorization (experimental)",
