@@ -1601,6 +1601,22 @@ export const ko: TranslationTree = {
 			}
 		},
 		integrations: {
+			oauthCredentialStorage: {
+				name: "OAuth 자격 증명 저장 방식",
+				description: "클라이언트 자격 증명을 저장할 위치를 선택합니다. 평문 저장은 실험적이며 안전하지 않습니다.",
+				options: {
+					secret: "Obsidian Secret Storage",
+					plaintext: "평문 저장 (실험적)",
+				},
+			},
+			oauthAuthorizationMode: {
+				name: "OAuth 인증 방식",
+				description: "인증 흐름을 선택합니다. 복사·붙여넣기 방식은 다음 구현 단계에서 연결됩니다.",
+				options: {
+					desktop: "데스크톱 callback",
+					copyPaste: "복사·붙여넣기 인증 (실험적)",
+				},
+			},
 			mobileCalendar: {
 				disable: {
 					name: "모바일에서 캘린더 연동 비활성화",

@@ -247,6 +247,10 @@ export interface TaskNotesSettings {
 	enableGoogleCalendar: boolean;
 	enableMicrosoftCalendar: boolean;
 	disableCalendarOnMobile: boolean;
+	/** Where OAuth client credentials should be stored. Plaintext is intended for cross-device experiments. */
+	oauthCredentialStorage: "secret" | "plaintext";
+	/** Authorization flow preference. Copy/paste flow is staged for implementation. */
+	oauthAuthorizationMode: "desktop-callback" | "copy-paste";
 	// Google Calendar selection
 	enabledGoogleCalendars: string[]; // Array of calendar IDs that should be displayed
 	// Google Calendar sync tokens (for incremental sync)
