@@ -223,6 +223,8 @@ function createOAuthCredentialControls(
 		""
 	);
 	clientSecretInput.setAttribute("type", "password");
+	let clientIdSaveTimer: number | null = null;
+	let clientSecretSaveTimer: number | null = null;
 
 	const persistClientId = () => {
 		if (!oauthService) return;
@@ -252,6 +254,16 @@ function createOAuthCredentialControls(
 
 	clientIdInput.addEventListener("blur", persistClientId);
 	clientSecretInput.addEventListener("blur", persistClientSecret);
+	clientIdInput.addEventListener("change", persistClientId);
+	clientSecretInput.addEventListener("change", persistClientSecret);
+	clientIdInput.addEventListener("input", () => {
+		if (clientIdSaveTimer !== null) window.clearTimeout(clientIdSaveTimer);
+		clientIdSaveTimer = window.setTimeout(persistClientId, 750);
+	});
+	clientSecretInput.addEventListener("input", () => {
+		if (clientSecretSaveTimer !== null) window.clearTimeout(clientSecretSaveTimer);
+		clientSecretSaveTimer = window.setTimeout(persistClientSecret, 750);
+	});
 
 	return {
 		clientIdInput,
@@ -617,6 +629,7 @@ export function renderIntegrationsTab(
 						return;
 									}
 									await oauthService.authenticate("google");
+									await plugin.googleCalendarService?.refreshAllCalendars({ propagateErrors: true });
 									new Notice("Google calendar connected successfully!");
 									void renderGoogleCalendarCard(); // Re-render to show connected state
 								} catch (error) {
@@ -643,6 +656,7 @@ export function renderIntegrationsTab(
 												);
 												copyPasteInput.input.value = "";
 												stopGoogleCopyPasteCountdown();
+												await plugin.googleCalendarService?.refreshAllCalendars({ propagateErrors: true });
 												new Notice("Google calendar connected successfully!");
 												void renderGoogleCalendarCard();
 											} catch (error) {
