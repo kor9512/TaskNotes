@@ -137,14 +137,46 @@ type OAuthCredentialControls = {
 	hasStoredCredentials: boolean;
 };
 
-function createOAuthCopyPasteInput(plugin: TaskNotesPlugin): HTMLInputElement {
+type OAuthCopyPasteControls = {
+	input: HTMLInputElement;
+	container: HTMLElement;
+	status: HTMLSpanElement;
+};
+
+function createOAuthCopyPasteInput(plugin: TaskNotesPlugin): OAuthCopyPasteControls {
 	const input = createCardInput(
 		"text",
 		"Paste OAuth redirect URL or authorization code",
 		""
 	);
 	input.disabled = plugin.settings.oauthAuthorizationMode !== "copy-paste";
-	return input;
+	const container = input.parentElement ?? input;
+	const status = container.createSpan({ cls: "tasknotes-oauth-copy-paste-status" });
+	status.textContent = "Request authorization to start a 5-minute window.";
+	return { input, container, status };
+}
+
+function startOAuthCopyPasteCountdown(
+	status: HTMLSpanElement,
+	expiresAt: number
+): () => void {
+	let timer: number | null = null;
+	const update = () => {
+		const remaining = Math.max(0, expiresAt - Date.now());
+		if (remaining === 0) {
+			status.textContent = "Authorization request expired. Request a new code.";
+			if (timer !== null) window.clearInterval(timer);
+			return;
+		}
+		const totalSeconds = Math.ceil(remaining / 1000);
+		status.textContent = `Authorization window: ${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, "0")} remaining`;
+	};
+	update();
+	timer = window.setInterval(update, 1000);
+	return () => {
+		if (timer !== null) window.clearInterval(timer);
+		timer = null;
+	};
 }
 
 function waitForOAuthCopyPasteInput(input: HTMLInputElement): Promise<string | null> {
@@ -535,6 +567,7 @@ export function renderIntegrationsTab(
 			);
 			const copyPasteInput = createOAuthCopyPasteInput(plugin);
 			const isCopyPasteMode = plugin.settings.oauthAuthorizationMode === "copy-paste";
+			let stopGoogleCopyPasteCountdown = () => {};
 
 			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
@@ -545,7 +578,7 @@ export function renderIntegrationsTab(
 				rows: [
 					{ label: "Client ID:", input: credentialControls.clientIdInput },
 					{ label: "Client Secret:", input: credentialControls.clientSecretInput },
-					{ label: "OAuth redirect/code:", input: copyPasteInput },
+					{ label: "OAuth redirect/code:", input: copyPasteInput.container },
 					{ label: "", input: credentialNote, fullWidth: true },
 				],
 			});
@@ -575,9 +608,11 @@ export function renderIntegrationsTab(
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
 									credentialControls.persistPendingValues();
-									if (isCopyPasteMode) {
-										await oauthService.requestCopyPasteAuthorization("google");
-										return;
+					if (isCopyPasteMode) {
+						const expiresAt = await oauthService.requestCopyPasteAuthorization("google");
+						stopGoogleCopyPasteCountdown();
+						stopGoogleCopyPasteCountdown = startOAuthCopyPasteCountdown(copyPasteInput.status, expiresAt);
+						return;
 									}
 									await oauthService.authenticate("google");
 									new Notice("Google calendar connected successfully!");
@@ -602,9 +637,10 @@ export function renderIntegrationsTab(
 											try {
 												await plugin.oauthService?.connectCopyPasteAuthorization(
 													"google",
-													copyPasteInput.value
+													copyPasteInput.input.value
 												);
-												copyPasteInput.value = "";
+												copyPasteInput.input.value = "";
+												stopGoogleCopyPasteCountdown();
 												new Notice("Google calendar connected successfully!");
 												void renderGoogleCalendarCard();
 											} catch (error) {
@@ -833,6 +869,7 @@ export function renderIntegrationsTab(
 			);
 			const copyPasteInput = createOAuthCopyPasteInput(plugin);
 			const isCopyPasteMode = plugin.settings.oauthAuthorizationMode === "copy-paste";
+			let stopMicrosoftCopyPasteCountdown = () => {};
 
 			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
@@ -843,7 +880,7 @@ export function renderIntegrationsTab(
 				rows: [
 					{ label: "Client ID:", input: credentialControls.clientIdInput },
 					{ label: "Client Secret:", input: credentialControls.clientSecretInput },
-					{ label: "OAuth redirect/code:", input: copyPasteInput },
+					{ label: "OAuth redirect/code:", input: copyPasteInput.container },
 					{ label: "", input: credentialNote, fullWidth: true },
 				],
 			});
@@ -874,7 +911,9 @@ export function renderIntegrationsTab(
 									if (!oauthService) return;
 									credentialControls.persistPendingValues();
 					if (isCopyPasteMode) {
-						await oauthService.requestCopyPasteAuthorization("microsoft");
+						const expiresAt = await oauthService.requestCopyPasteAuthorization("microsoft");
+						stopMicrosoftCopyPasteCountdown();
+						stopMicrosoftCopyPasteCountdown = startOAuthCopyPasteCountdown(copyPasteInput.status, expiresAt);
 						return;
 					}
 					await oauthService.authenticate("microsoft");
@@ -900,9 +939,10 @@ export function renderIntegrationsTab(
 											try {
 												await plugin.oauthService?.connectCopyPasteAuthorization(
 													"microsoft",
-													copyPasteInput.value
+													copyPasteInput.input.value
 												);
-												copyPasteInput.value = "";
+												copyPasteInput.input.value = "";
+												stopMicrosoftCopyPasteCountdown();
 												new Notice("Microsoft calendar connected successfully!");
 												void renderMicrosoftCalendarCard();
 											} catch (error) {
