@@ -164,6 +164,23 @@ export class GoogleCalendarService extends CalendarProvider {
 		return this.availableCalendars;
 	}
 
+	/**
+	 * Resolve either a canonical calendar ID or a display name from a note's
+	 * user-facing metadata. IDs remain the canonical stored value; names are a
+	 * convenience for hand-written notes and are validated against the current
+	 * calendar list.
+	 */
+	resolveCalendarId(value?: string): string | undefined {
+		const normalized = value?.trim();
+		if (!normalized) return undefined;
+		const byId = this.availableCalendars.find((calendar) => calendar.id === normalized);
+		if (byId) return byId.id;
+		const byName = this.availableCalendars.find(
+			(calendar) => calendar.summary.trim().toLocaleLowerCase() === normalized.toLocaleLowerCase()
+		);
+		return byName?.id;
+	}
+
 	/** Returns only calendars selected for TaskNotes subscription and task targeting. */
 	getEnabledCalendars(): ProviderCalendar[] {
 		const enabledIds = new Set(this.getEnabledCalendarIds());

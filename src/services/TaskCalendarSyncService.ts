@@ -350,10 +350,16 @@ export class TaskCalendarSyncService {
 		const frontmatter = file instanceof TFile
 			? this.plugin.app.metadataCache?.getFileCache(file)?.frontmatter
 			: undefined;
-		const override = frontmatter?.googleCalendarId;
-		return typeof override === "string" && override.trim().length > 0
-			? override.trim()
-			: this.plugin.settings.googleCalendarExport.targetCalendarId;
+		const overrideId = frontmatter?.googleCalendarId;
+		const overrideName = frontmatter?.googleCalendar;
+		const resolvedOverride =
+			this.googleCalendarService.resolveCalendarId(
+				typeof overrideId === "string" ? overrideId : undefined
+			) ||
+			this.googleCalendarService.resolveCalendarId(
+				typeof overrideName === "string" ? overrideName : undefined
+			);
+		return resolvedOverride || this.plugin.settings.googleCalendarExport.targetCalendarId;
 	}
 
 	private async assertConnectionGenerationCurrent(

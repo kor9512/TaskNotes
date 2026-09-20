@@ -473,12 +473,20 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 							// Per-task calendar override is intentionally not part of the
 							// user-configurable FieldMapping yet.
 							const calendarIdKey = "googleCalendarId";
+							const calendarNameKey = "googleCalendar";
 							const prevCache = data.prevCache as
 								| { frontmatter?: Record<string, unknown> }
 								| undefined;
 							const eventId = prevCache?.frontmatter?.[eventIdKey];
 							const exceptionEventId = prevCache?.frontmatter?.[exceptionEventIdKey];
 							const taskCalendarId = prevCache?.frontmatter?.[calendarIdKey];
+							const taskCalendarName = prevCache?.frontmatter?.[calendarNameKey];
+							const resolvedTaskCalendarId =
+								typeof taskCalendarId === "string"
+									? taskCalendarId
+									: plugin.googleCalendarService?.resolveCalendarId(
+											typeof taskCalendarName === "string" ? taskCalendarName : undefined
+									);
 
 							if (
 								(typeof eventId === "string" && eventId.length > 0) ||
@@ -492,7 +500,7 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 										typeof exceptionEventId === "string"
 											? exceptionEventId
 											: undefined,
-										typeof taskCalendarId === "string" ? taskCalendarId : undefined
+									resolvedTaskCalendarId
 									)
 									.catch((error) => {
 										tasknotesLogger.warn(
