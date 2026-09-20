@@ -184,7 +184,7 @@ export class GoogleCalendarService extends CalendarProvider {
 	async updateCalendarColor(calendarId: string, color: string): Promise<void> {
 		const token = await this.oauthService.getValidToken("google");
 		await requestUrl({
-			url: `${this.baseUrl}/users/me/calendarList/${encodeURIComponent(calendarId)}`,
+			url: `${this.baseUrl}/users/me/calendarList/${encodeURIComponent(calendarId)}?colorRgbFormat=true`,
 			method: "PATCH",
 			headers: {
 				Authorization: `Bearer ${token}`,
