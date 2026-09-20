@@ -970,7 +970,18 @@ export function renderIntegrationsTab(
 					const isConnected =
 						plugin.oauthService && (await plugin.oauthService.isConnected("google"));
 					if (isConnected && plugin.googleCalendarService) {
-						const calendars = plugin.googleCalendarService.getAvailableCalendars();
+						let calendars = plugin.googleCalendarService.getAvailableCalendars();
+						if (calendars.length === 0) {
+							try {
+								calendars = await plugin.googleCalendarService.listCalendars();
+							} catch (error) {
+								tasknotesLogger.warn("Failed to populate target calendar list", {
+									category: "configuration",
+									operation: "populate-target-calendar-list",
+									error,
+								});
+							}
+						}
 						for (const cal of calendars) {
 							const option = dropdown.createEl("option", {
 								text:
