@@ -4,7 +4,7 @@ import { EVENT_USER_NOTICE } from "../../src/core/userNotices";
 import { TokenRefreshError } from "../../src/services/errors";
 import { OAuthSecretStore } from "../../src/services/OAuthSecretStore";
 import { OAuthService } from "../../src/services/OAuthService";
-import type { OAuthConnection } from "../../src/types";
+import type { OAuthConnection, OAuthTokens } from "../../src/types";
 
 jest.mock("obsidian", () => ({
 	Platform: { isDesktopApp: true },
@@ -167,5 +167,92 @@ describe("OAuthService SecretStorage persistence", () => {
 		expect(secretStore.getConnection("google")?.tokens.accessToken).toBe(
 			"reconnected-access-token"
 		);
+	});
+});
+
+describe("OAuthService plaintext credential persistence", () => {
+	it("stores credentials in settings when plaintext mode is selected", () => {
+		const secretStore = new OAuthSecretStore(new InMemorySecretStorage());
+		const settings = {
+			oauthCredentialStorage: "plaintext" as const,
+			oauthPlaintextCredentials: {},
+		};
+		const mockPlugin = {
+			settings,
+			saveSettingsDataOnly: jest.fn().mockResolvedValue(undefined),
+		} as unknown as TaskNotesPlugin;
+		const service = new OAuthService(mockPlugin, secretStore);
+
+		service.setCredentials("google", {
+			clientId: " client-id ",
+			clientSecret: " client-secret ",
+		});
+
+		expect(service.getCredentials("google")).toEqual({
+			clientId: "client-id",
+			clientSecret: "client-secret",
+		});
+		expect(settings.oauthPlaintextCredentials).toEqual({
+			google: { clientId: "client-id", clientSecret: "client-secret" },
+		});
+		expect(mockPlugin.saveSettingsDataOnly).toHaveBeenCalledTimes(1);
+	});
+
+	it("clears plaintext credentials without touching SecretStorage", () => {
+		const secretStore = new OAuthSecretStore(new InMemorySecretStorage());
+		const settings = {
+			oauthCredentialStorage: "plaintext" as const,
+			oauthPlaintextCredentials: {
+				google: { clientId: "client-id", clientSecret: "client-secret" },
+			},
+		};
+		const mockPlugin = {
+			settings,
+			saveSettingsDataOnly: jest.fn().mockResolvedValue(undefined),
+		} as unknown as TaskNotesPlugin;
+		const service = new OAuthService(mockPlugin, secretStore);
+
+		service.clearCredentials("google");
+
+		expect(service.getCredentials("google")).toBeNull();
+		expect(secretStore.getCredentials("google")).toBeNull();
+		expect(mockPlugin.saveSettingsDataOnly).toHaveBeenCalledTimes(1);
+	});
+
+	it("shares the OAuth connection in settings in plaintext mode", async () => {
+		const secretStore = new OAuthSecretStore(new InMemorySecretStorage());
+		const settings = {
+			oauthCredentialStorage: "plaintext" as const,
+			oauthPlaintextCredentials: {},
+			oauthPlaintextConnections: {},
+		};
+		const mockPlugin = {
+			settings,
+			saveSettingsDataOnly: jest.fn().mockResolvedValue(undefined),
+		} as unknown as TaskNotesPlugin;
+		const service = new OAuthService(mockPlugin, secretStore);
+		const connection: OAuthConnection = {
+			provider: "google",
+			tokens: {
+				accessToken: "access-token",
+				refreshToken: "refresh-token",
+				expiresAt: Date.now() + 3600000,
+				scope: "calendar",
+				tokenType: "Bearer",
+			},
+			connectedAt: "2026-09-20T00:00:00.000Z",
+		};
+
+		await (service as unknown as {
+			storeConnection: (provider: "google", tokens: OAuthTokens) => Promise<void>;
+		}).storeConnection(
+			"google",
+			connection.tokens
+		);
+
+		expect(await service.getConnection("google")).toEqual(
+			expect.objectContaining({ provider: "google", tokens: connection.tokens })
+		);
+		expect(secretStore.getConnection("google")).toBeNull();
 	});
 });

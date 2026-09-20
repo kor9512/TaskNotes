@@ -1,4 +1,11 @@
-import { FieldMapping, StatusConfig, PriorityConfig, SavedView, WebhookConfig } from "../types";
+import {
+	FieldMapping,
+	StatusConfig,
+	PriorityConfig,
+	SavedView,
+	WebhookConfig,
+	OAuthConnection,
+} from "../types";
 import type { FileFilterConfig } from "../suggest/FileSuggestHelper";
 
 export interface UserFieldMapping {
@@ -247,6 +254,20 @@ export interface TaskNotesSettings {
 	enableGoogleCalendar: boolean;
 	enableMicrosoftCalendar: boolean;
 	disableCalendarOnMobile: boolean;
+	/** Where OAuth credentials and connection tokens should be stored. Plaintext exposes refresh tokens to sync. */
+	oauthCredentialStorage: "secret" | "plaintext";
+	/** Authorization flow preference. */
+	oauthAuthorizationMode: "desktop-callback" | "copy-paste";
+	/** Client credentials used when plaintext storage is selected. */
+	oauthPlaintextCredentials: {
+		google?: OAuthPlaintextCredential;
+		microsoft?: OAuthPlaintextCredential;
+	};
+	/** OAuth connection tokens used when plaintext storage is selected. */
+	oauthPlaintextConnections: {
+		google?: OAuthConnection;
+		microsoft?: OAuthConnection;
+	};
 	// Google Calendar selection
 	enabledGoogleCalendars: string[]; // Array of calendar IDs that should be displayed
 	// Google Calendar sync tokens (for incremental sync)
@@ -342,6 +363,11 @@ export interface GoogleCalendarExportSettings {
 	defaultEventDuration: number; // Duration in minutes if timed (uses timeEstimate if available)
 	includeObsidianLink: boolean; // Include obsidian:// link in event description
 	defaultReminderMinutes: number | number[] | null; // Popup reminder(s) X minutes before event (null = no reminder)
+}
+
+export interface OAuthPlaintextCredential {
+	clientId: string;
+	clientSecret?: string;
 }
 
 export type TimeblockAttachmentSearchOrder =

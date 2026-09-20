@@ -1247,6 +1247,138 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     color: var(--text-warning);
 }
 
+/* Calendar routing rows: color, name, ID, and a right-aligned switch. */
+.tasknotes-calendar-routing-setting {
+    display: block;
+}
+
+.tasknotes-calendar-routing-setting .setting-item-info,
+.tasknotes-calendar-routing-setting .setting-item-control {
+    width: 100%;
+    max-width: none;
+}
+
+.tasknotes-calendar-routing-setting .setting-item-control {
+    justify-content: stretch;
+}
+
+.tasknotes-calendar-routing-divider {
+    border-top: 1px solid var(--background-modifier-border);
+    margin: 0.75rem 0 0.25rem;
+}
+
+.tasknotes-calendar-routing-list {
+    width: 100%;
+    margin-top: 0.5rem;
+}
+
+.tasknotes-calendar-routing-row {
+    display: grid;
+    grid-template-columns: 1.5rem minmax(8rem, 0.8fr) minmax(12rem, 1.8fr) 2.75rem;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: 3.25rem;
+    padding: 0.55rem 0.75rem;
+    border-left: 0.25rem solid var(--tn-calendar-color, var(--interactive-accent));
+    border-radius: 0.2rem;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.tasknotes-calendar-routing-name-box,
+.tasknotes-calendar-routing-id-box {
+    min-width: 0;
+    padding: 0.35rem 0.55rem;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 0.3rem;
+    background: var(--background-secondary);
+}
+
+.tasknotes-calendar-routing-name {
+    color: var(--text-normal);
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.tasknotes-calendar-routing-color {
+    width: 1.5rem;
+    height: 1.5rem;
+    padding: 0;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 0.25rem;
+    cursor: pointer;
+    flex: 0 0 auto;
+}
+
+.tasknotes-calendar-routing-id {
+    display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-muted);
+    font-size: var(--font-smaller);
+    font-weight: 400;
+}
+
+.tasknotes-calendar-routing-toggle {
+    position: relative;
+    display: inline-flex;
+    width: 2.4rem;
+    height: 1.4rem;
+    justify-self: end;
+    cursor: pointer;
+}
+
+.tasknotes-calendar-routing-toggle input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+}
+
+.tasknotes-calendar-routing-toggle-track {
+    width: 100%;
+    height: 100%;
+    border-radius: 999px;
+    background: var(--background-modifier-border);
+    transition: background 120ms ease;
+}
+
+.tasknotes-calendar-routing-toggle-track::after {
+    display: block;
+    width: 1rem;
+    height: 1rem;
+    margin: 0.2rem;
+    border-radius: 50%;
+    background: var(--text-muted);
+    content: "";
+    transition: transform 120ms ease, background 120ms ease;
+}
+
+.tasknotes-calendar-routing-toggle input:checked + .tasknotes-calendar-routing-toggle-track {
+    background: var(--interactive-accent);
+}
+
+.tasknotes-calendar-routing-toggle input:checked + .tasknotes-calendar-routing-toggle-track::after {
+    background: var(--text-on-accent);
+    transform: translateX(1rem);
+}
+
+.tasknotes-oauth-copy-paste-status {
+    display: block;
+    margin-top: 0.35rem;
+    color: var(--text-muted);
+    font-size: var(--font-smaller);
+}
+
+@media (max-width: 700px) {
+    .tasknotes-calendar-routing-row {
+        grid-template-columns: 1.5rem minmax(6rem, 0.8fr) minmax(5rem, 1fr) 2.4rem;
+        gap: 0.4rem;
+    }
+}
+
 /* ================================================
    ACCESSIBILITY & REDUCED MOTION
    ================================================ */

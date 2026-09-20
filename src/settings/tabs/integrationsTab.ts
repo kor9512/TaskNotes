@@ -137,6 +137,69 @@ type OAuthCredentialControls = {
 	hasStoredCredentials: boolean;
 };
 
+type OAuthCopyPasteControls = {
+	input: HTMLInputElement;
+	container: HTMLElement;
+	status: HTMLSpanElement;
+};
+
+function createOAuthCopyPasteInput(plugin: TaskNotesPlugin): OAuthCopyPasteControls {
+	const input = createCardInput(
+		"text",
+		"Paste OAuth redirect URL or authorization code",
+		""
+	);
+	input.disabled = plugin.settings.oauthAuthorizationMode !== "copy-paste";
+	const container = input.parentElement ?? input;
+	const status = container.createSpan({ cls: "tasknotes-oauth-copy-paste-status" });
+	status.textContent = "Request authorization to start a 5-minute window.";
+	return { input, container, status };
+}
+
+function startOAuthCopyPasteCountdown(
+	status: HTMLSpanElement,
+	expiresAt: number
+): () => void {
+	let timer: number | null = null;
+	const update = () => {
+		const remaining = Math.max(0, expiresAt - Date.now());
+		if (remaining === 0) {
+			status.textContent = "Authorization request expired. Request a new code.";
+			if (timer !== null) window.clearInterval(timer);
+			return;
+		}
+		const totalSeconds = Math.ceil(remaining / 1000);
+		status.textContent = `Authorization window: ${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, "0")} remaining`;
+	};
+	update();
+	timer = window.setInterval(update, 1000);
+	return () => {
+		if (timer !== null) window.clearInterval(timer);
+		timer = null;
+	};
+}
+
+function waitForOAuthCopyPasteInput(input: HTMLInputElement): Promise<string | null> {
+	const currentValue = input.value.trim();
+	if (currentValue) return Promise.resolve(currentValue);
+
+	input.focus();
+	return new Promise((resolve) => {
+		const timeout = window.setTimeout(() => {
+			input.removeEventListener("input", onInput);
+			resolve(null);
+		}, 300000);
+		const onInput = () => {
+			const value = input.value.trim();
+			if (!value) return;
+			window.clearTimeout(timeout);
+			input.removeEventListener("input", onInput);
+			resolve(value);
+		};
+		input.addEventListener("input", onInput);
+	});
+}
+
 function createOAuthCredentialControls(
 	plugin: TaskNotesPlugin,
 	provider: OAuthProvider,
@@ -153,7 +216,9 @@ function createOAuthCredentialControls(
 	const clientSecretInput = createCardInput(
 		"text",
 		storedCredentials?.clientSecret
-			? "Stored securely - enter a new value to replace"
+			? plugin.settings.oauthCredentialStorage === "plaintext"
+				? "Stored in plugin settings - enter a new value to replace"
+				: "Stored securely - enter a new value to replace"
 			: clientSecretPlaceholder,
 		""
 	);
@@ -179,7 +244,10 @@ function createOAuthCredentialControls(
 			clientSecret,
 		});
 		clientSecretInput.value = "";
-		clientSecretInput.placeholder = "Stored securely - enter a new value to replace";
+		clientSecretInput.placeholder =
+			plugin.settings.oauthCredentialStorage === "plaintext"
+				? "Stored in plugin settings - enter a new value to replace"
+				: "Stored securely - enter a new value to replace";
 	};
 
 	clientIdInput.addEventListener("blur", persistClientId);
@@ -281,6 +349,54 @@ export function renderIntegrationsTab(
 			heading: "OAuth Calendar Integration",
 		},
 		(group) => {
+			group.addSetting((setting) =>
+				void configureDropdownSetting(setting, {
+					name: translate("settings.integrations.oauthCredentialStorage.name"),
+					desc: translate("settings.integrations.oauthCredentialStorage.description"),
+					options: [
+						{
+							value: "secret",
+							label: translate("settings.integrations.oauthCredentialStorage.options.secret"),
+						},
+						{
+							value: "plaintext",
+							label: translate("settings.integrations.oauthCredentialStorage.options.plaintext"),
+						},
+					],
+					getValue: () => plugin.settings.oauthCredentialStorage,
+					setValue: (value) => {
+						if (value !== "secret" && value !== "plaintext") return;
+						plugin.settings.oauthCredentialStorage = value;
+						save();
+					},
+				})
+			);
+
+			group.addSetting((setting) =>
+				void configureDropdownSetting(setting, {
+					name: translate("settings.integrations.oauthAuthorizationMode.name"),
+					desc: translate("settings.integrations.oauthAuthorizationMode.description"),
+					options: [
+						{
+							value: "desktop-callback",
+							label: translate("settings.integrations.oauthAuthorizationMode.options.desktop"),
+						},
+						{
+							value: "copy-paste",
+							label: translate("settings.integrations.oauthAuthorizationMode.options.copyPaste"),
+						},
+					],
+					getValue: () => plugin.settings.oauthAuthorizationMode,
+					setValue: (value) => {
+						if (value !== "desktop-callback" && value !== "copy-paste") return;
+						plugin.settings.oauthAuthorizationMode = value;
+						save();
+						// Rebuild the provider cards so the mode-specific controls change immediately.
+						renderIntegrationsTab(container, plugin, save);
+					},
+				})
+			);
+
 			group.addSetting((setting) => {
 				setting.setDesc(
 					"Connect your Google calendar or Microsoft outlook to sync events directly into tasknotes."
@@ -451,6 +567,9 @@ export function renderIntegrationsTab(
 				"your-client-id.apps.googleusercontent.com",
 				"your-client-secret"
 			);
+			const copyPasteInput = createOAuthCopyPasteInput(plugin);
+			const isCopyPasteMode = plugin.settings.oauthAuthorizationMode === "copy-paste";
+			let stopGoogleCopyPasteCountdown = () => {};
 
 			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
@@ -461,6 +580,7 @@ export function renderIntegrationsTab(
 				rows: [
 					{ label: "Client ID:", input: credentialControls.clientIdInput },
 					{ label: "Client Secret:", input: credentialControls.clientSecretInput },
+					{ label: "OAuth redirect/code:", input: copyPasteInput.container },
 					{ label: "", input: credentialNote, fullWidth: true },
 				],
 			});
@@ -479,10 +599,10 @@ export function renderIntegrationsTab(
 				content: {
 					sections: sections,
 				},
-				actions: {
-					buttons: [
+					actions: {
+						buttons: [
 						{
-							text: "Connect Google Calendar",
+							text: isCopyPasteMode ? "Request authorization" : "Connect Google Calendar",
 							icon: "link",
 							variant: "primary",
 							onClick: async () => {
@@ -490,6 +610,12 @@ export function renderIntegrationsTab(
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
 									credentialControls.persistPendingValues();
+					if (isCopyPasteMode) {
+						const expiresAt = await oauthService.requestCopyPasteAuthorization("google");
+						stopGoogleCopyPasteCountdown();
+						stopGoogleCopyPasteCountdown = startOAuthCopyPasteCountdown(copyPasteInput.status, expiresAt);
+						return;
+									}
 									await oauthService.authenticate("google");
 									new Notice("Google calendar connected successfully!");
 									void renderGoogleCalendarCard(); // Re-render to show connected state
@@ -503,17 +629,40 @@ export function renderIntegrationsTab(
 								}
 							},
 						},
+						...(isCopyPasteMode
+							? [
+									{
+										text: "Connect with pasted code",
+										icon: "plug",
+										variant: "primary" as const,
+										onClick: async () => {
+											try {
+												await plugin.oauthService?.connectCopyPasteAuthorization(
+													"google",
+													copyPasteInput.input.value
+												);
+												copyPasteInput.input.value = "";
+												stopGoogleCopyPasteCountdown();
+												new Notice("Google calendar connected successfully!");
+												void renderGoogleCalendarCard();
+											} catch (error) {
+												new Notice(`Failed to connect: ${getErrorMessage(error)}`);
+											}
+										},
+									},
+								]
+							: []),
 						...(credentialControls.hasStoredCredentials
 							? [
 									{
-										text: "Forget saved credentials",
+										text: "Forget client credentials",
 										icon: "trash-2",
 										variant: "warning" as const,
 										onClick: async () => {
 											const confirmed = await showConfirmationModal(
 												plugin.app,
 												{
-													title: "Forget Google OAuth credentials?",
+													 title: "Forget Google client credentials?",
 													message:
 														"This removes the saved client ID and client secret from Obsidian Secret Storage.",
 													confirmText: "Forget credentials",
@@ -720,6 +869,9 @@ export function renderIntegrationsTab(
 				"your-microsoft-client-id",
 				"your-microsoft-client-secret"
 			);
+			const copyPasteInput = createOAuthCopyPasteInput(plugin);
+			const isCopyPasteMode = plugin.settings.oauthAuthorizationMode === "copy-paste";
+			let stopMicrosoftCopyPasteCountdown = () => {};
 
 			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
@@ -730,6 +882,7 @@ export function renderIntegrationsTab(
 				rows: [
 					{ label: "Client ID:", input: credentialControls.clientIdInput },
 					{ label: "Client Secret:", input: credentialControls.clientSecretInput },
+					{ label: "OAuth redirect/code:", input: copyPasteInput.container },
 					{ label: "", input: credentialNote, fullWidth: true },
 				],
 			});
@@ -749,9 +902,9 @@ export function renderIntegrationsTab(
 					sections: sections,
 				},
 				actions: {
-					buttons: [
+				buttons: [
 						{
-							text: "Connect Microsoft Calendar",
+							text: isCopyPasteMode ? "Request authorization" : "Connect Microsoft Calendar",
 							icon: "link",
 							variant: "primary",
 							onClick: async () => {
@@ -759,7 +912,13 @@ export function renderIntegrationsTab(
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
 									credentialControls.persistPendingValues();
-									await oauthService.authenticate("microsoft");
+					if (isCopyPasteMode) {
+						const expiresAt = await oauthService.requestCopyPasteAuthorization("microsoft");
+						stopMicrosoftCopyPasteCountdown();
+						stopMicrosoftCopyPasteCountdown = startOAuthCopyPasteCountdown(copyPasteInput.status, expiresAt);
+						return;
+					}
+					await oauthService.authenticate("microsoft");
 									new Notice("Microsoft calendar connected successfully!");
 									void renderMicrosoftCalendarCard();
 								} catch (error) {
@@ -770,19 +929,42 @@ export function renderIntegrationsTab(
 									});
 									new Notice(`Failed to connect: ${getErrorMessage(error)}`);
 								}
-							},
 						},
+						},
+						...(isCopyPasteMode
+							? [
+									{
+										text: "Connect with pasted code",
+										icon: "plug",
+										variant: "primary" as const,
+										onClick: async () => {
+											try {
+												await plugin.oauthService?.connectCopyPasteAuthorization(
+													"microsoft",
+													copyPasteInput.input.value
+												);
+												copyPasteInput.input.value = "";
+												stopMicrosoftCopyPasteCountdown();
+												new Notice("Microsoft calendar connected successfully!");
+												void renderMicrosoftCalendarCard();
+											} catch (error) {
+												new Notice(`Failed to connect: ${getErrorMessage(error)}`);
+											}
+										},
+									},
+								]
+							: []),
 						...(credentialControls.hasStoredCredentials
 							? [
 									{
-										text: "Forget saved credentials",
+										text: "Forget client credentials",
 										icon: "trash-2",
 										variant: "warning" as const,
 										onClick: async () => {
 											const confirmed = await showConfirmationModal(
 												plugin.app,
 												{
-													title: "Forget Microsoft OAuth credentials?",
+													 title: "Forget Microsoft client credentials?",
 													message:
 														"This removes the saved client ID and client secret from Obsidian Secret Storage.",
 													confirmText: "Forget credentials",
@@ -872,7 +1054,18 @@ export function renderIntegrationsTab(
 					const isConnected =
 						plugin.oauthService && (await plugin.oauthService.isConnected("google"));
 					if (isConnected && plugin.googleCalendarService) {
-						const calendars = plugin.googleCalendarService.getAvailableCalendars();
+						let calendars = plugin.googleCalendarService.getAvailableCalendars();
+						if (calendars.length === 0) {
+							try {
+								calendars = await plugin.googleCalendarService.listCalendars();
+							} catch (error) {
+								tasknotesLogger.warn("Failed to populate target calendar list", {
+									category: "configuration",
+									operation: "populate-target-calendar-list",
+									error,
+								});
+							}
+						}
 						for (const cal of calendars) {
 							const option = dropdown.createEl("option", {
 								text:
