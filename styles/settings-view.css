@@ -1264,7 +1264,9 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
     align-items: center;
     gap: 0.75rem;
     min-height: 3.5rem;
-    padding: 0.65rem 0;
+    padding: 0.65rem 0.75rem;
+    border-left: 0.25rem solid var(--tn-calendar-color, var(--interactive-accent));
+    border-radius: 0.2rem;
     border-bottom: 1px solid var(--background-modifier-border);
 }
 
@@ -1286,12 +1288,13 @@ body.is-mobile .tasknotes-plugin .tasknotes-settings__card-action-btn {
 }
 
 .tasknotes-calendar-routing-color {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1.4rem;
+    height: 1.4rem;
     padding: 0;
     border: 1px solid var(--background-modifier-border);
     border-radius: 50%;
     cursor: pointer;
+    flex: 0 0 auto;
 }
 
 .tasknotes-calendar-routing-color-label {

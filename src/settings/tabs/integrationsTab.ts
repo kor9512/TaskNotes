@@ -934,6 +934,8 @@ export function renderIntegrationsTab(
 					}
 					for (const calendar of calendars) {
 						const row = listEl.createDiv({ cls: "tasknotes-calendar-routing-row" });
+						const calendarColor = calendar.backgroundColor || "#4285f4";
+						row.style.setProperty("--tn-calendar-color", calendarColor);
 						const toggle = row.createEl("input", {
 							cls: "tasknotes-calendar-routing-toggle",
 							type: "checkbox",
@@ -943,7 +945,7 @@ export function renderIntegrationsTab(
 						const colorSwatch = titleLine.createEl("input", {
 							cls: "tasknotes-calendar-routing-color",
 							type: "color",
-							value: calendar.backgroundColor || "#4285f4",
+							value: calendarColor,
 						});
 						colorSwatch.setAttribute("aria-label", `Color for ${calendar.summary}`);
 						colorSwatch.addEventListener("change", async () => {
@@ -951,7 +953,7 @@ export function renderIntegrationsTab(
 								await plugin.googleCalendarService?.updateCalendarColor(calendar.id, colorSwatch.value);
 							} catch (error) {
 								new Notice(`Failed to update ${calendar.summary} color`);
-								colorSwatch.value = calendar.backgroundColor || "#4285f4";
+								colorSwatch.value = calendarColor;
 							}
 						});
 						titleLine.createSpan({
@@ -960,7 +962,7 @@ export function renderIntegrationsTab(
 						});
 						identity.createDiv({
 							cls: "tasknotes-calendar-routing-color-label",
-							text: calendar.backgroundColor || "Google Calendar default color",
+							text: `${calendarColor} · Google Calendar color`,
 						});
 						toggle.checked = plugin.settings.enabledGoogleCalendars.includes(calendar.id);
 						toggle.addEventListener("change", async () => {
