@@ -307,7 +307,7 @@ export class GoogleCalendarService extends CalendarProvider {
 						}
 					});
 				});
-		}, GOOGLE_CALENDAR_CONSTANTS.REFRESH_INTERVAL_MS);
+		}, Math.max(5, this.plugin.settings.googleCalendarExport.calendarRefreshIntervalMinutes ?? 60) * 60 * 1000);
 	}
 
 	/**

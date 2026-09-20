@@ -112,8 +112,7 @@ export class TaskEditModal extends TaskModal {
 		const calendarValue =
 			taskFile instanceof TFile
 				? String(
-						this.app.metadataCache?.getFileCache(taskFile)?.frontmatter?.googleCalendarName ??
-							this.app.metadataCache?.getFileCache(taskFile)?.frontmatter?.googleCalendar ??
+						this.app.metadataCache?.getFileCache(taskFile)?.frontmatter?.googleCalendar ??
 							this.app.metadataCache?.getFileCache(taskFile)?.frontmatter?.googleCalendarId ??
 							""
 					)
@@ -596,7 +595,7 @@ export class TaskEditModal extends TaskModal {
 			};
 			changesWithCustomFrontmatter.customFrontmatter = {
 				...(changesWithCustomFrontmatter.customFrontmatter || {}),
-				googleCalendarName:
+				googleCalendar:
 					this.plugin.googleCalendarService?.getAvailableCalendars().find(
 						(calendar) => calendar.id === this.googleCalendarId
 					)?.summary || this.googleCalendarId || null,

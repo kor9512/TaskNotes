@@ -748,7 +748,7 @@ export abstract class TaskModal extends Modal {
 		const hasCurrentCalendar = calendars.some((calendar) => calendar.id === this.googleCalendarId);
 		if (this.googleCalendarId && !hasCurrentCalendar) {
 			const missingOption = dropdown.createEl("option", {
-				text: this.t("modals.task.googleCalendar.unavailable", { id: this.googleCalendarId }),
+				text: this.t("modals.task.googleCalendar.unavailable", { id: "unavailable calendar" }),
 				value: this.googleCalendarId,
 			});
 			missingOption.selected = true;
@@ -757,7 +757,7 @@ export abstract class TaskModal extends Modal {
 
 		for (const calendar of calendars) {
 			const option = dropdown.createEl("option", {
-				text: calendar.summary || calendar.id,
+				text: calendar.summary || "Unnamed calendar",
 				value: calendar.id,
 			});
 			option.selected = calendar.id === this.googleCalendarId;

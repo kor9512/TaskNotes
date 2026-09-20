@@ -1161,6 +1161,20 @@ export function renderIntegrationsTab(
 						},
 					})
 			);
+			group.addSetting(
+				(setting) =>
+					void configureNumberSetting(setting, {
+						name: "Calendar polling interval (minutes)",
+						desc: "Used by Periodic and Both modes. Minimum 5 minutes.",
+						getValue: () => plugin.settings.googleCalendarExport.calendarRefreshIntervalMinutes ?? 60,
+						setValue: async (value: number) => {
+							plugin.settings.googleCalendarExport.calendarRefreshIntervalMinutes = Math.max(5, value || 60);
+							save();
+						},
+						min: 5,
+						max: 1440,
+					})
+			);
 
 			group.addSetting(
 				(setting) =>

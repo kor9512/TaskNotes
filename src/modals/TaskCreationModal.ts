@@ -776,7 +776,7 @@ export class TaskCreationModal extends TaskModal {
 				...taskData.customFrontmatter,
 				// Store the human-readable alias. The sync service resolves it to
 				// the stable Google calendar ID internally.
-				googleCalendarName: calendar?.summary || this.googleCalendarId,
+				googleCalendar: calendar?.summary || this.googleCalendarId,
 			};
 		}
 
