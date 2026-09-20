@@ -655,14 +655,14 @@ export function renderIntegrationsTab(
 						...(credentialControls.hasStoredCredentials
 							? [
 									{
-										text: "Forget saved credentials",
+										text: "Forget client credentials",
 										icon: "trash-2",
 										variant: "warning" as const,
 										onClick: async () => {
 											const confirmed = await showConfirmationModal(
 												plugin.app,
 												{
-													title: "Forget Google OAuth credentials?",
+													 title: "Forget Google client credentials?",
 													message:
 														"This removes the saved client ID and client secret from Obsidian Secret Storage.",
 													confirmText: "Forget credentials",
@@ -957,14 +957,14 @@ export function renderIntegrationsTab(
 						...(credentialControls.hasStoredCredentials
 							? [
 									{
-										text: "Forget saved credentials",
+										text: "Forget client credentials",
 										icon: "trash-2",
 										variant: "warning" as const,
 										onClick: async () => {
 											const confirmed = await showConfirmationModal(
 												plugin.app,
 												{
-													title: "Forget Microsoft OAuth credentials?",
+													 title: "Forget Microsoft client credentials?",
 													message:
 														"This removes the saved client ID and client secret from Obsidian Secret Storage.",
 													confirmText: "Forget credentials",
