@@ -552,7 +552,6 @@ export function renderIntegrationsTab(
 									plugin.settings.enabledGoogleCalendars = [];
 									plugin.settings.googleCalendarExport.targetCalendarId = "";
 									save();
-									new Notice("Disconnected from Google calendar");
 									void renderGoogleCalendarCard(); // Re-render to show disconnected state
 								} catch (error) {
 									tasknotesLogger.error("Failed to disconnect:", {
@@ -861,7 +860,6 @@ export function renderIntegrationsTab(
 									plugin.microsoftCalendarService?.clearCache();
 									plugin.settings.enabledMicrosoftCalendars = [];
 									save();
-									new Notice("Disconnected from Microsoft calendar");
 									void renderMicrosoftCalendarCard();
 								} catch (error) {
 									tasknotesLogger.error("Failed to disconnect:", {
@@ -1422,23 +1420,28 @@ export function renderIntegrationsTab(
 							"settings.integrations.googleCalendarExport.syncAllTasks.buttonText"
 						),
 						loadingText: "Syncing…",
-							onClick: async () => {
+						onClick: async () => {
 								const configurationIssue = plugin.taskCalendarSyncService?.getConfigurationIssue();
 								if (configurationIssue) {
 									new Notice(configurationIssue);
 									return;
+								}
+							new Notice("Syncing all tasks to Google Calendar…");
+							try {
+								const results = await plugin.taskCalendarSyncService.syncAllTasks();
+								new Notice(
+									translate(
+										"settings.integrations.googleCalendarExport.notices.syncResults",
+										{
+											synced: results.synced,
+											failed: results.failed,
+											skipped: results.skipped,
+										}
+									)
+								);
+							} catch (error) {
+								new Notice(`Task sync failed: ${getErrorMessage(error)}`);
 							}
-							const results = await plugin.taskCalendarSyncService.syncAllTasks();
-							new Notice(
-								translate(
-									"settings.integrations.googleCalendarExport.notices.syncResults",
-									{
-										synced: results.synced,
-										failed: results.failed,
-										skipped: results.skipped,
-									}
-								)
-							);
 						},
 					})
 			);
