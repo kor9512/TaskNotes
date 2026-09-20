@@ -147,6 +147,27 @@ function createOAuthCopyPasteInput(plugin: TaskNotesPlugin): HTMLInputElement {
 	return input;
 }
 
+function waitForOAuthCopyPasteInput(input: HTMLInputElement): Promise<string | null> {
+	const currentValue = input.value.trim();
+	if (currentValue) return Promise.resolve(currentValue);
+
+	input.focus();
+	return new Promise((resolve) => {
+		const timeout = window.setTimeout(() => {
+			input.removeEventListener("input", onInput);
+			resolve(null);
+		}, 300000);
+		const onInput = () => {
+			const value = input.value.trim();
+			if (!value) return;
+			window.clearTimeout(timeout);
+			input.removeEventListener("input", onInput);
+			resolve(value);
+		};
+		input.addEventListener("input", onInput);
+	});
+}
+
 function createOAuthCredentialControls(
 	plugin: TaskNotesPlugin,
 	provider: OAuthProvider,
@@ -556,7 +577,7 @@ export function renderIntegrationsTab(
 					await oauthService.authenticate(
 						"google",
 						plugin.settings.oauthAuthorizationMode === "copy-paste"
-							? async () => copyPasteInput.value.trim() || null
+							? () => waitForOAuthCopyPasteInput(copyPasteInput)
 							: undefined
 					);
 					copyPasteInput.value = "";
@@ -833,7 +854,7 @@ export function renderIntegrationsTab(
 					await oauthService.authenticate(
 						"microsoft",
 						plugin.settings.oauthAuthorizationMode === "copy-paste"
-							? async () => copyPasteInput.value.trim() || null
+							? () => waitForOAuthCopyPasteInput(copyPasteInput)
 							: undefined
 					);
 					copyPasteInput.value = "";
