@@ -872,12 +872,44 @@ export class GoogleCalendarService extends CalendarProvider {
 	}
 
 	/**
+	 * Fetch a single event by ID without mutating the local event cache.
+	 * This is used to recover from an idempotent create that raced on another
+	 * TaskNotes instance and returned HTTP 409.
+	 */
+	async getEvent(calendarId: string, eventId: string): Promise<ICSEvent> {
+		validateCalendarId(calendarId);
+		validateEventId(eventId);
+
+		try {
+			const token = await this.oauthService.getValidToken("google");
+			const response = await this.withRetry(async () => {
+				return await requestUrl({
+					url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+					method: "GET",
+					headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+				});
+			}, `Get event ${eventId}`);
+
+			return this.convertToICSEvent(response.json as GoogleCalendarEvent, calendarId);
+		} catch (error) {
+			if (error.status === 404) {
+				throw new EventNotFoundError(eventId);
+			}
+			if (error.status === 401 || error.status === 403) {
+				throw new TokenExpiredError("google");
+			}
+			throw new GoogleCalendarError(`Failed to fetch event: ${error.message}`, error.status);
+		}
+	}
+
+	/**
 	 * Creates a new Google Calendar event
 	 * For tests, accepts simplified event format and returns ICSEvent
 	 */
 	async createEvent(
 		calendarId: string,
 		event: {
+			id?: string;
 			title?: string;
 			summary?: string;
 			description?: string;
@@ -912,6 +944,7 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			// Build Google Calendar API payload
 			const payload: GoogleCalendarEventPayload = {
+				id: event.id,
 				summary: summary,
 				description: event.description,
 				location: event.location,

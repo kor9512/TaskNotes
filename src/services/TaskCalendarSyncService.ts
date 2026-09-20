@@ -4,6 +4,7 @@ import TaskNotesPlugin from "../main";
 import { GoogleCalendarService } from "./GoogleCalendarService";
 import {
 	GoogleCalendarEventIndexEntry,
+	ICSEvent,
 	PendingGoogleCalendarDeletion,
 	PendingGoogleCalendarSync,
 	TaskInfo,
@@ -2486,17 +2487,32 @@ export class TaskCalendarSyncService {
 		calendarId: string,
 		expectedConnectionGeneration: number
 	): Promise<string> {
-		const createdEvent = await this.withGoogleRateLimit(async () => {
-			await this.assertConnectionGenerationCurrent(expectedConnectionGeneration);
-			return this.googleCalendarService.createEvent(
-				calendarId,
-				{
-					...eventData,
-					isAllDay: !!eventData.start.date,
-				},
-				expectedConnectionGeneration
-			);
-		});
+		// Google supports a caller-supplied event ID. Deriving it from the stable
+		// note path and calendar makes concurrent creates from multiple devices
+		// converge on one event instead of producing two random IDs.
+		const stableEventId = await this.getStableGoogleEventId(task.path, calendarId);
+		let createdEvent: ICSEvent;
+		try {
+			createdEvent = await this.withGoogleRateLimit(async () => {
+				await this.assertConnectionGenerationCurrent(expectedConnectionGeneration);
+				return this.googleCalendarService.createEvent(
+					calendarId,
+					{
+						...eventData,
+						id: stableEventId,
+						isAllDay: !!eventData.start.date,
+					},
+					expectedConnectionGeneration
+				);
+			});
+		} catch (error) {
+			// A second device may win the same deterministic insert. Recover the
+			// existing event instead of retrying POST and creating another event.
+			if (getErrorStatus(error) !== 409) {
+				throw error;
+			}
+			createdEvent = await this.googleCalendarService.getEvent(calendarId, stableEventId);
+		}
 
 		// Extract the actual event ID from the ICSEvent ID format.
 		// Format is "google-{calendarId}-{eventId}". Calendar IDs can contain
@@ -2518,6 +2534,17 @@ export class TaskCalendarSyncService {
 			throw error;
 		}
 		return eventId;
+	}
+
+	private async getStableGoogleEventId(taskPath: string, calendarId: string): Promise<string> {
+		const data = new TextEncoder().encode(`tasknotes:${calendarId}:${taskPath}`);
+		const digest = await crypto.subtle.digest("SHA-256", data);
+		const hex = Array.from(new Uint8Array(digest))
+			.map((value) => value.toString(16).padStart(2, "0"))
+			.join("");
+		// Google event IDs accept lowercase base32hex characters. Hex is a
+		// compliant subset and keeps this ID deterministic across devices.
+		return `tn${hex}`;
 	}
 
 	private shouldCreateDetachedRecurringException(task: TaskInfo): boolean {
