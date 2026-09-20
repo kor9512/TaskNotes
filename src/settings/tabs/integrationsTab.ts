@@ -16,6 +16,7 @@ import {
 	runAsyncSettingCallback,
 } from "../components/settingHelpers";
 import { showConfirmationModal } from "../../modals/ConfirmationModal";
+import { showTextInputModal } from "../../modals/TextInputModal";
 import { isCalendarIntegrationDisabledOnMobile } from "../../utils/calendarIntegration";
 import {
 	createCard,
@@ -541,7 +542,18 @@ export function renderIntegrationsTab(
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
 									credentialControls.persistPendingValues();
-									await oauthService.authenticate("google");
+									await oauthService.authenticate(
+										"google",
+										plugin.settings.oauthAuthorizationMode === "copy-paste"
+											? () =>
+													showTextInputModal(plugin.app, {
+														title: "Paste OAuth redirect URL or authorization code",
+														placeholder: "https://... or authorization code",
+														confirmText: "Continue",
+														cancelText: "Cancel",
+													})
+											: undefined
+									);
 									new Notice("Google calendar connected successfully!");
 									void renderGoogleCalendarCard(); // Re-render to show connected state
 								} catch (error) {
@@ -810,7 +822,18 @@ export function renderIntegrationsTab(
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
 									credentialControls.persistPendingValues();
-									await oauthService.authenticate("microsoft");
+									await oauthService.authenticate(
+										"microsoft",
+										plugin.settings.oauthAuthorizationMode === "copy-paste"
+											? () =>
+													showTextInputModal(plugin.app, {
+														title: "Paste OAuth redirect URL or authorization code",
+														placeholder: "https://... or authorization code",
+														confirmText: "Continue",
+														cancelText: "Cancel",
+													})
+											: undefined
+									);
 									new Notice("Microsoft calendar connected successfully!");
 									void renderMicrosoftCalendarCard();
 								} catch (error) {

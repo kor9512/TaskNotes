@@ -151,14 +151,17 @@ export class OAuthService {
 	 * Initiates OAuth flow for a provider
 	 * Uses standard loopback redirect flow with user-provided credentials.
 	 */
-	async authenticate(provider: OAuthProvider): Promise<void> {
+	async authenticate(
+		provider: OAuthProvider,
+		requestCopyPasteInput?: () => Promise<string | null>
+	): Promise<void> {
 		const config = this.getConfig(provider);
 		if (!config.clientId) {
 			throw new OAuthNotConfiguredError(provider);
 		}
 
 		if (this.plugin.settings?.oauthAuthorizationMode === "copy-paste") {
-			return await this.authenticateCopyPaste(provider);
+			return await this.authenticateCopyPaste(provider, requestCopyPasteInput);
 		}
 		return await this.authenticateStandard(provider);
 	}
@@ -169,7 +172,10 @@ export class OAuthService {
 	 * may show a connection error after redirecting to the loopback URL; the URL
 	 * in its address bar still contains the code to paste here.
 	 */
-	private async authenticateCopyPaste(provider: OAuthProvider): Promise<void> {
+	private async authenticateCopyPaste(
+		provider: OAuthProvider,
+		requestInput?: () => Promise<string | null>
+	): Promise<void> {
 		if (this.authenticationInProgress) {
 			throw new Error("An OAuth authorization is already in progress");
 		}
@@ -186,10 +192,12 @@ export class OAuthService {
 				"Open the OAuth URL, then paste the redirected URL or authorization code."
 			);
 			await this.openAuthorizationUrl(authUrl);
-			// The native prompt keeps this flow available on mobile without requiring
-			// a desktop-only callback server or an additional modal dependency.
-			const promptDialog = Reflect.get(window, "prompt");
-			const pasted = promptDialog("Paste the OAuth redirect URL or authorization code:");
+			const pasted = requestInput
+				? await requestInput()
+				: (() => {
+						const promptDialog = Reflect.get(window, "prompt");
+						return promptDialog("Paste the OAuth redirect URL or authorization code:");
+				  })();
 			if (!pasted?.trim()) {
 				throw new Error("No OAuth redirect URL or authorization code was provided.");
 			}
