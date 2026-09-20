@@ -66,6 +66,10 @@ export class OAuthService {
 	// Maps provider to pending refresh promise
 	private tokenRefreshPromises: Map<OAuthProvider, Promise<OAuthTokens>> = new Map();
 	private connectionGenerations: Map<OAuthProvider, number> = new Map();
+	private pendingCopyPaste: Map<
+		OAuthProvider,
+		{ state: string; codeVerifier: string; expiresAt: number; timeout: number }
+	> = new Map();
 
 	// OAuth configurations for different providers
 	private configs: Record<OAuthProvider, OAuthConfig> = {
@@ -167,6 +171,74 @@ export class OAuthService {
 		return await this.authenticateStandard(provider);
 	}
 
+	/** Opens the provider consent page for the mobile-safe copy-paste flow. */
+	async requestCopyPasteAuthorization(provider: OAuthProvider): Promise<void> {
+		if (this.authenticationInProgress) {
+			throw new Error("An OAuth authorization is already in progress");
+		}
+		const config = this.getConfig(provider);
+		if (!config.clientId) throw new OAuthNotConfiguredError(provider);
+		const codeVerifier = this.generateCodeVerifier();
+		const codeChallenge = await this.generateCodeChallenge(codeVerifier);
+		const state = this.generateState();
+		const timeout = window.setTimeout(() => {
+			this.pendingCopyPaste.delete(provider);
+			this.authenticationInProgress = false;
+			publishUserNotice(this.plugin.emitter, "OAuth request expired. Start again.");
+		}, 300000);
+		this.pendingCopyPaste.set(provider, {
+			state,
+			codeVerifier,
+			expiresAt: Date.now() + 300000,
+			timeout,
+		});
+		this.authenticationInProgress = true;
+		try {
+			await this.openAuthorizationUrl(this.buildAuthorizationUrl(config, codeChallenge, state));
+			publishUserNotice(this.plugin.emitter, "After approval, paste the redirect URL or code and connect.");
+		} catch (error) {
+			this.clearPendingCopyPaste(provider);
+			throw error;
+		}
+	}
+
+	/** Exchanges a pasted redirect URL/code created by requestCopyPasteAuthorization. */
+	async connectCopyPasteAuthorization(provider: OAuthProvider, pastedValue: string): Promise<void> {
+		const pending = this.pendingCopyPaste.get(provider);
+		if (!pending || pending.expiresAt < Date.now()) {
+			this.clearPendingCopyPaste(provider);
+			throw new Error("No active OAuth request. Press Request authorization first.");
+		}
+		let code = pastedValue.trim();
+		if (!code) throw new Error("Paste the OAuth redirect URL or authorization code first.");
+		if (code.startsWith("http://") || code.startsWith("https://")) {
+			const redirectedUrl = new URL(code);
+			const returnedState = redirectedUrl.searchParams.get("state");
+			if (returnedState && returnedState !== pending.state) {
+				this.clearPendingCopyPaste(provider);
+				throw new Error("OAuth state did not match. Press Request authorization again.");
+			}
+			const providerError = redirectedUrl.searchParams.get("error");
+			if (providerError) throw new Error(`OAuth authorization failed: ${providerError}`);
+			code = redirectedUrl.searchParams.get("code") ?? "";
+		}
+		if (!code) throw new Error("The pasted OAuth value did not contain an authorization code.");
+		try {
+			const tokens = await this.exchangeCodeForTokens(this.getConfig(provider), code, pending.codeVerifier);
+			await this.storeConnection(provider, tokens);
+			publishUserNotice(this.plugin.emitter, `Successfully connected to ${provider} Calendar!`);
+		} finally {
+			this.clearPendingCopyPaste(provider);
+		}
+	}
+
+	private clearPendingCopyPaste(provider: OAuthProvider): void {
+		const pending = this.pendingCopyPaste.get(provider);
+		if (pending) window.clearTimeout(pending.timeout);
+		this.pendingCopyPaste.delete(provider);
+		this.authenticationInProgress = false;
+	}
+
 	/**
 	 * Mobile-safe OAuth flow: open the provider URL and accept either the full
 	 * redirected URL or the authorization code pasted by the user. The browser
@@ -177,22 +249,8 @@ export class OAuthService {
 		provider: OAuthProvider,
 		requestInput?: () => Promise<string | null>
 	): Promise<void> {
-		if (this.authenticationInProgress) {
-			throw new Error("An OAuth authorization is already in progress");
-		}
-		this.authenticationInProgress = true;
+		await this.requestCopyPasteAuthorization(provider);
 		try {
-			const config = this.getConfig(provider);
-			const codeVerifier = this.generateCodeVerifier();
-			const codeChallenge = await this.generateCodeChallenge(codeVerifier);
-			const state = this.generateState();
-			const authUrl = this.buildAuthorizationUrl(config, codeChallenge, state);
-
-			publishUserNotice(
-				this.plugin.emitter,
-				"Open the OAuth URL, then paste the redirected URL or authorization code."
-			);
-			await this.openAuthorizationUrl(authUrl);
 			const pasted = requestInput
 				? await requestInput()
 				: (() => {
@@ -203,28 +261,10 @@ export class OAuthService {
 				throw new Error("No OAuth redirect URL or authorization code was provided.");
 			}
 
-			let code = pasted.trim();
-			if (code.startsWith("http://") || code.startsWith("https://")) {
-				const redirectedUrl = new URL(code);
-				const returnedState = redirectedUrl.searchParams.get("state");
-				if (returnedState && returnedState !== state) {
-					throw new Error("OAuth state did not match. Start authorization again.");
-				}
-				const providerError = redirectedUrl.searchParams.get("error");
-				if (providerError) {
-					throw new Error(`OAuth authorization failed: ${providerError}`);
-				}
-				code = redirectedUrl.searchParams.get("code") ?? "";
-			}
-			if (!code) {
-				throw new Error("The pasted OAuth value did not contain an authorization code.");
-			}
-
-			const tokens = await this.exchangeCodeForTokens(config, code, codeVerifier);
-			await this.storeConnection(provider, tokens);
-			publishUserNotice(this.plugin.emitter, `Successfully connected to ${provider} Calendar!`);
-		} finally {
-			this.authenticationInProgress = false;
+			await this.connectCopyPasteAuthorization(provider, pasted ?? "");
+		} catch (error) {
+			this.clearPendingCopyPaste(provider);
+			throw error;
 		}
 	}
 
