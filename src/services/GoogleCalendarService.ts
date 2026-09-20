@@ -1084,7 +1084,6 @@ export class GoogleCalendarService extends CalendarProvider {
 				error.status
 			);
 		}
-	}
 
 	/**
 	 * Cleanup method
