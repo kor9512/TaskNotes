@@ -552,7 +552,7 @@ export function renderIntegrationsTab(
 									plugin.settings.enabledGoogleCalendars = [];
 									plugin.settings.googleCalendarExport.targetCalendarId = "";
 									save();
-									void renderGoogleCalendarCard(); // Re-render to show disconnected state
+									await renderGoogleCalendarCard(); // Render disconnected state before returning
 								} catch (error) {
 									tasknotesLogger.error("Failed to disconnect:", {
 										category: "configuration",
@@ -860,7 +860,7 @@ export function renderIntegrationsTab(
 									plugin.microsoftCalendarService?.clearCache();
 									plugin.settings.enabledMicrosoftCalendars = [];
 									save();
-									void renderMicrosoftCalendarCard();
+									await renderMicrosoftCalendarCard();
 								} catch (error) {
 									tasknotesLogger.error("Failed to disconnect:", {
 										category: "configuration",
