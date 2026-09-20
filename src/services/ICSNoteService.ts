@@ -301,7 +301,9 @@ export class ICSNoteService {
 
 			// Create the task using the existing TaskService
 			// Disable defaults since ICS events have their own data
-			return await this.plugin.taskService.createTask(taskData, { applyDefaults: false });
+			const result = await this.plugin.taskService.createTask(taskData, { applyDefaults: false });
+			await this.removeMaterializedICSNotes(icsEvent.id, result.file.path);
+			return result;
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
 			tasknotesLogger.error("Error creating task from ICS event:", {
@@ -311,6 +313,28 @@ export class ICSNoteService {
 				error: errorMessage,
 			});
 			throw new Error(`Failed to create task from ICS event: ${errorMessage}`);
+		}
+	}
+
+	/** Remove old read-only ICS materializations after their event becomes a task. */
+	private async removeMaterializedICSNotes(eventId: string, keepPath: string): Promise<void> {
+		for (const file of this.plugin.app.vault.getMarkdownFiles()) {
+			if (file.path === keepPath) continue;
+			const frontmatter = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter;
+			const tags = Array.isArray(frontmatter?.tags) ? frontmatter.tags : [];
+			const eventIds = Array.isArray(frontmatter?.icsEventId)
+				? frontmatter.icsEventId
+				: [frontmatter?.icsEventId];
+			if (!tags.includes("ics_event") || !eventIds.includes(eventId)) continue;
+			try {
+				await this.plugin.app.fileManager.trashFile(file);
+			} catch (error) {
+				tasknotesLogger.warn("Failed to remove materialized ICS note after task conversion", {
+					category: "persistence",
+					operation: "remove-materialized-ics-note",
+					error,
+				});
+			}
 		}
 	}
 
@@ -329,7 +353,7 @@ export class ICSNoteService {
 		const prefix = `google-${calendarId}-`;
 		const eventId = icsEvent.id.startsWith(prefix) ? icsEvent.id.slice(prefix.length) : undefined;
 		return {
-			googleCalendar: calendarName,
+			googleCalendarName: calendarName,
 			...(eventId ? { googleCalendarEventId: eventId } : {}),
 		};
 	}
@@ -507,7 +531,7 @@ export class ICSNoteService {
 				[this.plugin.fieldMapper.toUserField("icsEventId")]: [icsEvent.id],
 			};
 			if (icsEvent.subscriptionId.startsWith("google-")) {
-				frontmatter.googleCalendar = subscriptionName;
+				frontmatter.googleCalendarName = subscriptionName;
 			}
 
 			let bodyContent = this.buildICSEventDetails(icsEvent, subscriptionName);

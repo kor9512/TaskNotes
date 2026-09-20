@@ -162,9 +162,14 @@ export class TaskCalendarSyncService {
 	async setTaskCalendarOverride(file: TFile, calendarId?: string): Promise<void> {
 		await processVaultFrontMatterWithinMutation(this.plugin.app, file, (frontmatter) => {
 			if (calendarId) {
-				frontmatter.googleCalendarId = calendarId;
+				const calendar = this.googleCalendarService
+					.getAvailableCalendars()
+					.find((item) => item.id === calendarId);
+				frontmatter.googleCalendarName = calendar?.summary || calendarId;
+				delete frontmatter.googleCalendarId;
 			} else {
 				delete frontmatter.googleCalendarId;
+				delete frontmatter.googleCalendarName;
 			}
 		});
 	}
@@ -351,7 +356,7 @@ export class TaskCalendarSyncService {
 			? this.plugin.app.metadataCache?.getFileCache(file)?.frontmatter
 			: undefined;
 		const overrideId = frontmatter?.googleCalendarId;
-		const overrideName = frontmatter?.googleCalendar;
+		const overrideName = frontmatter?.googleCalendarName ?? frontmatter?.googleCalendar;
 		const resolvedOverride =
 			this.googleCalendarService.resolveCalendarId(
 				typeof overrideId === "string" ? overrideId : undefined

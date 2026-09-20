@@ -109,10 +109,17 @@ export class TaskEditModal extends TaskModal {
 		this.originalDetails = formState.originalDetails;
 		this.userFields = formState.userFields;
 		const taskFile = this.app.vault.getAbstractFileByPath(this.task.path);
-		this.googleCalendarId =
+		const calendarValue =
 			taskFile instanceof TFile
-				? String(this.app.metadataCache?.getFileCache(taskFile)?.frontmatter?.googleCalendarId || "")
+				? String(
+						this.app.metadataCache?.getFileCache(taskFile)?.frontmatter?.googleCalendarName ??
+							this.app.metadataCache?.getFileCache(taskFile)?.frontmatter?.googleCalendar ??
+							this.app.metadataCache?.getFileCache(taskFile)?.frontmatter?.googleCalendarId ??
+							""
+					)
 				: "";
+		this.googleCalendarId =
+			this.plugin.googleCalendarService?.resolveCalendarId(calendarValue) || calendarValue;
 		this.initialGoogleCalendarId = this.googleCalendarId;
 
 		// Initialize subtasks (tasks that have this task as a project)
@@ -589,7 +596,10 @@ export class TaskEditModal extends TaskModal {
 			};
 			changesWithCustomFrontmatter.customFrontmatter = {
 				...(changesWithCustomFrontmatter.customFrontmatter || {}),
-				googleCalendarId: this.googleCalendarId || null,
+				googleCalendarName:
+					this.plugin.googleCalendarService?.getAvailableCalendars().find(
+						(calendar) => calendar.id === this.googleCalendarId
+					)?.summary || this.googleCalendarId || null,
 			};
 		}
 

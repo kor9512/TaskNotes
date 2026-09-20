@@ -769,9 +769,14 @@ export class TaskCreationModal extends TaskModal {
 			};
 		}
 		if (this.googleCalendarId) {
+			const calendar = this.plugin.googleCalendarService?.getAvailableCalendars().find(
+				(item) => item.id === this.googleCalendarId
+			);
 			taskData.customFrontmatter = {
 				...taskData.customFrontmatter,
-				googleCalendarId: this.googleCalendarId,
+				// Store the human-readable alias. The sync service resolves it to
+				// the stable Google calendar ID internally.
+				googleCalendarName: calendar?.summary || this.googleCalendarId,
 			};
 		}
 
