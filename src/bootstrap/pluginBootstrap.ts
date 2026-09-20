@@ -470,7 +470,9 @@ export function initializeServicesLazily(plugin: TaskNotesPlugin): void {
 							const exceptionEventIdKey = plugin.fieldMapper.toUserField(
 								"googleCalendarExceptionEventId"
 							);
-							const calendarIdKey = plugin.fieldMapper.toUserField("googleCalendarId");
+							// Per-task calendar override is intentionally not part of the
+							// user-configurable FieldMapping yet.
+							const calendarIdKey = "googleCalendarId";
 							const prevCache = data.prevCache as
 								| { frontmatter?: Record<string, unknown> }
 								| undefined;
