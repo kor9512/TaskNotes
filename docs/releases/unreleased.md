@@ -37,3 +37,5 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Corrected the desktop calendar sign-in dependency declaration. Electron remains provided by Obsidian and is not bundled with TaskNotes.
 
 - (#2356) Reduced Pomodoro timer CPU usage by removing progress-ring animation and unnecessary display updates. Hidden timers skip rendering, and warning pulses stop while paused. Improved view cleanup and timing accuracy across repeated pauses. Thanks to @akseliekseli for reporting the CPU usage issue.
+
+- ([Discussion #2355](https://github.com/callumalpass/tasknotes/discussions/2355)) Fixed Live Preview task links remaining as task widgets after removing a note's task-identifying tag or property, and links to the same task incorrectly sharing a heading label during cache refreshes. Inline task links now retain heading and block targets when opening the note. Thanks to @ZedLeb for reporting this.
