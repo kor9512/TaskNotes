@@ -698,6 +698,9 @@ export abstract class TaskModal extends Modal {
 				},
 				focusNextField: () => this.focusNextField(),
 				focusPreviousField: () => this.focusPreviousField(),
+				attachMobileKeyboardScrollGuard: (container) => {
+					this.attachMobileKeyboardScrollGuard(container);
+				},
 			});
 		}
 
