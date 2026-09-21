@@ -104,6 +104,14 @@
 		"yaml": "^2.3.1",
 		"zod": "^3.24.0"
 	},
+	"peerDependencies": {
+		"electron": "*"
+	},
+	"peerDependenciesMeta": {
+		"electron": {
+			"optional": true
+		}
+	},
 	"overrides": {
 		"@hono/node-server": "2.1.0"
 	}
