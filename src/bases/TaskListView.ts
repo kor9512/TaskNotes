@@ -885,10 +885,8 @@ export class TaskListView extends BasesViewBase {
 
 			// Live Preview embeds sit inside CodeMirror. Keep reorder presses from
 			// becoming editor selection gestures before the browser can start DnD.
+			// Do not preventDefault: cancelling mousedown also cancels native dragging.
 			event.stopPropagation();
-			if (event.type === "mousedown") {
-				event.preventDefault();
-			}
 		};
 
 		this.setupCardDragHandle(cardEl);

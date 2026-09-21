@@ -1,5 +1,9 @@
 # TaskNotes - Unreleased
 
+## Fixed
+
+- (#2210, #2207) Fixed Task List manual drag-to-reorder failing to start or save the new order. Thanks to @dong-jichen and @mgrecar for reporting, and @kemalguvenc, @MatthiasSoell, and @bravely for confirming and helping narrow down the issue.
+
 <!--
 
 **Added** for new features.
