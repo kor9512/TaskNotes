@@ -31,3 +31,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- (#2356) Reduced Pomodoro timer CPU usage by removing progress-ring animation and unnecessary display updates. Hidden timers skip rendering, and warning pulses stop while paused. Improved view cleanup and timing accuracy across repeated pauses. Thanks to @akseliekseli for reporting the CPU usage issue.
