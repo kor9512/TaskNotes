@@ -31,3 +31,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Fixed
+
+- Clarified that dependency relationships store `blockedBy` and derive “Blocking”, separately from project/subtask membership. See [Dependencies](https://tasknotes.dev/features/task-management/#dependencies).
+  - Thanks to @Dual1r for raising this in [discussion #2357](https://github.com/callumalpass/tasknotes/discussions/2357).
