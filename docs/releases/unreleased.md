@@ -36,6 +36,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - (#2364) Fixed the calendar creation menu opening off-screen after selecting a time range by touch. Thanks to @saschaobsidian for reporting the iPad issue.
 
+- (#2360) Preserve expanded and collapsed settings cards when the settings interface is rebuilt. Thanks to @pankevely for reporting the loss of expanded sections.
+
 - (#2361) Fixed Kanban formula swimlanes showing **None** on a cold load when Bases had not cached the formula. Swimlane values now use the public Bases entry API. Thanks to @iantierney for reporting and recording the issue.
 
 - (#2362) Show every configured priority swimlane when empty swimlanes are visible, including priorities assigned only to hidden subtasks. See [Kanban View](https://tasknotes.dev/views/kanban-view/).
