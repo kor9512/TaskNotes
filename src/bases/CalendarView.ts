@@ -2608,7 +2608,19 @@ export class CalendarView extends BasesViewBase {
 			this.calendar?.unselect();
 		});
 
-		if (info.jsEvent) {
+		const selectionEvent = info.jsEvent as Event | null;
+		if (selectionEvent && "changedTouches" in selectionEvent) {
+			// FullCalendar types jsEvent as MouseEvent, but touch selection ends with a TouchEvent.
+			// Obsidian's showAtMouseEvent reads mouse coordinates and places that menu off-screen.
+			const touchEvent = selectionEvent as TouchEvent;
+			const touch = touchEvent.changedTouches[0] ?? touchEvent.touches[0];
+			if (touch) {
+				menu.showAtPosition({ x: touch.clientX, y: touch.clientY });
+			} else {
+				const bounds = this.calendarEl?.getBoundingClientRect();
+				menu.showAtPosition({ x: bounds?.left ?? 0, y: bounds?.top ?? 0 });
+			}
+		} else if (info.jsEvent) {
 			menu.showAtMouseEvent(info.jsEvent);
 		} else {
 			menu.showAtPosition({ x: 0, y: 0 });
