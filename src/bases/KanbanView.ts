@@ -53,6 +53,7 @@ import {
 import {
 	buildBasesPathProperties,
 	computeBasesFormulas,
+	populateBasesFormulaProperty,
 	isObsidianListProperty,
 } from "./basesViewAdapters";
 import { applyKanbanCreationDefault } from "./kanbanCreationDefaults";
@@ -602,7 +603,10 @@ export class KanbanView extends BasesViewBase {
 			}
 
 			// Build path -> props map for dynamic property access
-			const pathToProps = buildBasesPathProperties(this.dataAdapter.extractDataItems());
+			const pathToProps = buildBasesPathProperties(dataItems);
+			if (this.swimLanePropertyId) {
+				populateBasesFormulaProperty(dataItems, pathToProps, this.swimLanePropertyId);
+			}
 
 			// Determine groupBy property ID
 			const groupByPropertyId = this.getGroupByPropertyId();

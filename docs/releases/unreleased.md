@@ -34,6 +34,8 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Fixed
 
+- (#2361) Fixed Kanban formula swimlanes showing **None** on a cold load when Bases had not cached the formula. Swimlane values now use the public Bases entry API. Thanks to @iantierney for reporting and recording the issue.
+
 - Clarified that dependency relationships store `blockedBy` and derive “Blocking”, separately from project/subtask membership. See [Dependencies](https://tasknotes.dev/features/task-management/#dependencies).
   - Thanks to @Dual1r for raising this in [discussion #2357](https://github.com/callumalpass/tasknotes/discussions/2357).
 
