@@ -592,7 +592,12 @@ export class KanbanView extends BasesViewBase {
 			this.sortScopeTaskPaths.clear();
 			this.sortScopeCandidateTaskPaths.clear();
 
-			if (renderTasks.length === 0) {
+			if (
+				renderTasks.length === 0 &&
+				!(filteredTasks.length > 0 &&
+					!this.hideEmptySwimLanes &&
+					this.isPropertyField(this.swimLanePropertyId, "priority"))
+			) {
 				// Show "no results" if search returned empty but we had tasks
 				if (this.isSearchWithNoResults(filteredTasks, taskNotes.length)) {
 					this.renderSearchNoResults(this.boardEl);
@@ -4132,6 +4137,7 @@ export class KanbanView extends BasesViewBase {
 			columnKeys,
 			swimLaneOrders: this.swimLaneOrders,
 			hideEmptySwimLanes: this.hideEmptySwimLanes,
+			priorityKeys: this.plugin.priorityManager.getAllPriorities().map((priority) => priority.value),
 			isPriorityField: (propertyId) => this.isPropertyField(propertyId, "priority"),
 			isStatusField: (propertyId) => this.isPropertyField(propertyId, "status"),
 			getPriorityWeight: (key) => this.plugin.priorityManager.getPriorityWeight(key),
