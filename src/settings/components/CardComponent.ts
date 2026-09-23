@@ -261,6 +261,15 @@ export interface CardButton {
 	disabled?: boolean;
 }
 
+export const CARD_COLLAPSE_CHANGED = "tasknotes:card-collapse-changed";
+
+/** Update presentation without treating restoration as a user interaction. */
+export function setCardCollapsed(card: HTMLElement, collapsed: boolean): void {
+	card.classList.toggle("tasknotes-settings__card--collapsed", collapsed);
+	const header = card.querySelector<HTMLElement>(":scope > .tasknotes-settings__card-header");
+	if (header) header.title = collapsed ? "Expand card" : "Collapse card";
+}
+
 /**
  * Creates a deduplicated card component
  */
@@ -409,17 +418,11 @@ export function createCard(container: HTMLElement, config: CardConfig): HTMLElem
 		const toggleCollapse = () => {
 			const isCurrentlyCollapsed = card.hasClass("tasknotes-settings__card--collapsed");
 
-			if (isCurrentlyCollapsed) {
-				// Expand
-				card.removeClass("tasknotes-settings__card--collapsed");
-				header.title = "Collapse card";
-				config.onCollapseChange?.(false);
-			} else {
-				// Collapse
-				card.addClass("tasknotes-settings__card--collapsed");
-				header.title = "Expand card";
-				config.onCollapseChange?.(true);
-			}
+			const collapsed = !isCurrentlyCollapsed;
+			setCardCollapsed(card, collapsed);
+			// Record state before callbacks can rebuild or remove the card.
+			card.dispatchEvent(new CustomEvent(CARD_COLLAPSE_CHANGED, { bubbles: true }));
+			config.onCollapseChange?.(collapsed);
 		};
 
 		// Make entire header clickable
