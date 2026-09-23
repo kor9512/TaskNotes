@@ -304,9 +304,9 @@ export function sortUserFieldGroupKeys(
 			});
 		case "boolean":
 			return keys.sort((a, b) => {
-				if (a === "true" && b === "false") return -1;
-				if (a === "false" && b === "true") return 1;
-				return compareStringsWithMissingLast(a, b);
+				// Rank true, false, then everything else so the comparator stays transitive
+				const rank = (key: string) => (key === "true" ? 0 : key === "false" ? 1 : 2);
+				return rank(a) - rank(b) || compareStringsWithMissingLast(a, b);
 			});
 		case "date":
 			return keys.sort((a, b) => {

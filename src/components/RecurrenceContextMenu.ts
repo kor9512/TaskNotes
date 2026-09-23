@@ -92,6 +92,11 @@ function getIntlLocaleWeekInfo(locale: string | undefined):
 		const LocaleCtor = (
 			Intl as unknown as {
 				Locale?: new (locale: string) => {
+					// Newer runtimes expose getWeekInfo(); older ones only the weekInfo getter
+					getWeekInfo?: () => {
+						firstDay?: number;
+						weekend?: number[];
+					};
 					weekInfo?: {
 						firstDay?: number;
 						weekend?: number[];
@@ -104,7 +109,8 @@ function getIntlLocaleWeekInfo(locale: string | undefined):
 			return undefined;
 		}
 
-		return new LocaleCtor(locale).weekInfo;
+		const intlLocale = new LocaleCtor(locale);
+		return intlLocale.getWeekInfo?.() ?? intlLocale.weekInfo;
 	} catch {
 		return undefined;
 	}

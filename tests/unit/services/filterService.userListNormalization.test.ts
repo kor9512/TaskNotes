@@ -101,9 +101,14 @@ describe('user field value helpers', () => {
       'no-value',
     ]);
     expect(sortUserFieldGroupKeys(['false', 'true', 'no-value'], createUserField({ type: 'boolean' }))).toEqual([
-      'no-value',
       'true',
       'false',
+      'no-value',
+    ]);
+    expect(sortUserFieldGroupKeys(['no-value', 'false', 'true'], createUserField({ type: 'boolean' }))).toEqual([
+      'true',
+      'false',
+      'no-value',
     ]);
     expect(sortUserFieldGroupKeys(['invalid', '2025-01-02', '2025-01-01'], createUserField({ type: 'date' }))).toEqual([
       '2025-01-01',
