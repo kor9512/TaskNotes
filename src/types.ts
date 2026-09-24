@@ -500,6 +500,7 @@ export interface TaskInfo {
 
 export interface TaskCreationData extends Partial<TaskInfo> {
 	details?: string; // Optional details/description for file content
+	folder?: string; // Optional destination folder override for imported tasks
 	parentNote?: string; // Optional parent note name/path for template variable
 	creationContext?: "inline-conversion" | "manual-creation" | "modal-inline-creation" | "api" | "import" | "ics-event"; // Context for folder determination
 	customFrontmatter?: Record<string, unknown>; // Custom frontmatter properties (including user fields)

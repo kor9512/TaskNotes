@@ -108,6 +108,19 @@ export class TaskEditModal extends TaskModal {
 		this.details = formState.details;
 		this.originalDetails = formState.originalDetails;
 		this.userFields = formState.userFields;
+		const taskFile = this.app.vault.getAbstractFileByPath(this.task.path);
+		const calendarValue =
+			taskFile instanceof TFile
+				? String(
+						this.app.metadataCache?.getFileCache(taskFile)?.frontmatter?.googleCalendarName ??
+							this.app.metadataCache?.getFileCache(taskFile)?.frontmatter?.googleCalendar ??
+							this.app.metadataCache?.getFileCache(taskFile)?.frontmatter?.googleCalendarId ??
+							""
+					)
+				: "";
+		this.googleCalendarId =
+			this.plugin.googleCalendarService?.resolveCalendarId(calendarValue) || calendarValue;
+		this.initialGoogleCalendarId = this.googleCalendarId;
 
 		// Initialize subtasks (tasks that have this task as a project)
 		await this.initializeSubtasks();
@@ -577,6 +590,18 @@ export class TaskEditModal extends TaskModal {
 
 		this.pendingBlockingUpdates = result.blockingUpdates;
 		this.unresolvedBlockingEntries = result.unresolvedBlockingEntries;
+		if (this.googleCalendarId !== this.initialGoogleCalendarId) {
+			const changesWithCustomFrontmatter = result.changes as Partial<TaskInfo> & {
+				customFrontmatter?: Record<string, unknown>;
+			};
+			changesWithCustomFrontmatter.customFrontmatter = {
+				...(changesWithCustomFrontmatter.customFrontmatter || {}),
+				googleCalendarName:
+					this.plugin.googleCalendarService?.getAvailableCalendars().find(
+						(calendar) => calendar.id === this.googleCalendarId
+					)?.summary || this.googleCalendarId || null,
+			};
+		}
 
 		if (
 			options.includeConversionWrite &&

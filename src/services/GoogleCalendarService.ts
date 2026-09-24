@@ -164,6 +164,47 @@ export class GoogleCalendarService extends CalendarProvider {
 		return this.availableCalendars;
 	}
 
+	/**
+	 * Resolve either a canonical calendar ID or a display name from a note's
+	 * user-facing metadata. Names are stored in notes; IDs remain internal
+	 * runtime identifiers resolved from the current calendar list.
+	 */
+	resolveCalendarId(value?: string): string | undefined {
+		const normalized = value?.trim();
+		if (!normalized) return undefined;
+		const byId = this.availableCalendars.find((calendar) => calendar.id === normalized);
+		if (byId) return byId.id;
+		const byName = this.availableCalendars.find(
+			(calendar) => calendar.summary.trim().toLocaleLowerCase() === normalized.toLocaleLowerCase()
+		);
+		return byName?.id;
+	}
+
+	/** Update a Google Calendar's background color and refresh the local cache. */
+	async updateCalendarColor(calendarId: string, color: string): Promise<void> {
+		const token = await this.oauthService.getValidToken("google");
+		await requestUrl({
+			url: `${this.baseUrl}/users/me/calendarList/${encodeURIComponent(calendarId)}?colorRgbFormat=true`,
+			method: "PATCH",
+			headers: {
+				Authorization: `Bearer ${token}`,
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({ backgroundColor: color }),
+		});
+		this.calendarColors.set(calendarId, color);
+		const calendar = this.availableCalendars.find((item) => item.id === calendarId);
+		if (calendar) calendar.backgroundColor = color;
+		this.emit("data-changed");
+	}
+
+	/** Returns only calendars selected for TaskNotes subscription and task targeting. */
+	getEnabledCalendars(): ProviderCalendar[] {
+		const enabledIds = new Set(this.getEnabledCalendarIds());
+		return this.availableCalendars.filter((calendar) => enabledIds.has(calendar.id));
+	}
+
 	getConnectionGeneration(): number {
 		return this.oauthService.getConnectionGeneration("google");
 	}
@@ -536,7 +577,9 @@ export class GoogleCalendarService extends CalendarProvider {
 	/**
 	 * Refreshes all enabled Google calendars using incremental sync when possible
 	 */
-	async refreshAllCalendars(options: { propagateErrors?: boolean } = {}): Promise<void> {
+	async refreshAllCalendars(
+		options: { propagateErrors?: boolean; forceFullSync?: boolean } = {}
+	): Promise<void> {
 		try {
 			const isConnected = await this.oauthService.isConnected("google");
 			if (!isConnected) {
@@ -548,9 +591,20 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			// Get enabled calendar IDs from settings
 			const enabledCalendarIds = this.getEnabledCalendarIds();
+			if (options.forceFullSync) {
+				// A manual full refresh must cover every enabled calendar, not just
+				// calendars that happen to have a stale incremental sync token.
+				await Promise.all(enabledCalendarIds.map((calendarId) => this.clearSyncToken(calendarId)));
+			}
 
 			// Get current cached events
 			let cachedEvents = this.cache.get("all") || [];
+			const enabledCalendarSet = new Set(enabledCalendarIds);
+			cachedEvents = cachedEvents.filter(
+				(event) =>
+					!event.subscriptionId.startsWith("google-") ||
+					enabledCalendarSet.has(event.subscriptionId.slice("google-".length))
+			);
 
 			// Fetch events from each enabled calendar
 			for (const calendarId of enabledCalendarIds) {
@@ -684,7 +738,7 @@ export class GoogleCalendarService extends CalendarProvider {
 			return;
 		}
 
-		await this.refreshAllCalendars({ propagateErrors: true });
+		await this.refreshAllCalendars({ propagateErrors: true, forceFullSync: true });
 		this.lastManualRefresh = Date.now();
 	}
 
@@ -863,12 +917,44 @@ export class GoogleCalendarService extends CalendarProvider {
 	}
 
 	/**
+	 * Fetch a single event by ID without mutating the local event cache.
+	 * This is used to recover from an idempotent create that raced on another
+	 * TaskNotes instance and returned HTTP 409.
+	 */
+	async getEvent(calendarId: string, eventId: string): Promise<ICSEvent> {
+		validateCalendarId(calendarId);
+		validateEventId(eventId);
+
+		try {
+			const token = await this.oauthService.getValidToken("google");
+			const response = await this.withRetry(async () => {
+				return await requestUrl({
+					url: `${this.baseUrl}/calendars/${encodeURIComponent(calendarId)}/events/${encodeURIComponent(eventId)}`,
+					method: "GET",
+					headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+				});
+			}, `Get event ${eventId}`);
+
+			return this.convertToICSEvent(response.json as GoogleCalendarEvent, calendarId);
+		} catch (error) {
+			if (error.status === 404) {
+				throw new EventNotFoundError(eventId);
+			}
+			if (error.status === 401 || error.status === 403) {
+				throw new TokenExpiredError("google");
+			}
+			throw new GoogleCalendarError(`Failed to fetch event: ${error.message}`, error.status);
+		}
+	}
+
+	/**
 	 * Creates a new Google Calendar event
 	 * For tests, accepts simplified event format and returns ICSEvent
 	 */
 	async createEvent(
 		calendarId: string,
 		event: {
+			id?: string;
 			title?: string;
 			summary?: string;
 			description?: string;
@@ -903,6 +989,7 @@ export class GoogleCalendarService extends CalendarProvider {
 
 			// Build Google Calendar API payload
 			const payload: GoogleCalendarEventPayload = {
+				id: event.id,
 				summary: summary,
 				description: event.description,
 				location: event.location,

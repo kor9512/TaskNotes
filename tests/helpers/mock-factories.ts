@@ -368,6 +368,7 @@ export const PluginFactory = {
         modify: jest.fn().mockResolvedValue(undefined),
         delete: jest.fn().mockResolvedValue(undefined),
         read: jest.fn().mockResolvedValue(''),
+        getMarkdownFiles: jest.fn().mockReturnValue([]),
         getAbstractFileByPath: jest.fn().mockImplementation((path) => {
           return new TFile(path);
         }),

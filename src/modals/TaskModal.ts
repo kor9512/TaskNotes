@@ -1,4 +1,4 @@
-import { App, Modal, TAbstractFile, TFile } from "obsidian";
+import { App, Modal, Setting, TAbstractFile, TFile } from "obsidian";
 
 type Nullable<T> = T | null;
 
@@ -331,6 +331,8 @@ export abstract class TaskModal extends Modal {
 	protected recurrenceRule = "";
 	protected recurrenceAnchor: "scheduled" | "completion" = "scheduled";
 	protected reminders: Reminder[] = [];
+	protected googleCalendarId = "";
+	protected initialGoogleCalendarId = "";
 
 	// User-defined fields (dynamic based on settings)
 	protected userFields: Record<string, unknown> = {};
@@ -730,6 +732,43 @@ export abstract class TaskModal extends Modal {
 			return;
 		}
 		this.createFieldsFromConfig(container, config);
+		this.createGoogleCalendarField(container);
+	}
+
+	protected createGoogleCalendarField(container: HTMLElement): void {
+		const setting = new Setting(container).setName(this.t("modals.task.googleCalendar.name"));
+		const dropdown = setting.controlEl.createEl("select");
+		const calendars =
+			this.plugin.googleCalendarService?.getEnabledCalendars?.() ||
+			this.plugin.googleCalendarService?.getAvailableCalendars?.() ||
+			[];
+		const defaultOption = dropdown.createEl("option", {
+			text: this.t("modals.task.googleCalendar.useDefaultTarget"),
+			value: "",
+		});
+		defaultOption.selected = !this.googleCalendarId;
+
+		const hasCurrentCalendar = calendars.some((calendar) => calendar.id === this.googleCalendarId);
+		if (this.googleCalendarId && !hasCurrentCalendar) {
+			const missingOption = dropdown.createEl("option", {
+				text: this.t("modals.task.googleCalendar.unavailable", { id: this.googleCalendarId }),
+				value: this.googleCalendarId,
+			});
+			missingOption.selected = true;
+			setting.setDesc(this.t("modals.task.googleCalendar.unavailableDescription"));
+		}
+
+		for (const calendar of calendars) {
+			const option = dropdown.createEl("option", {
+				text: calendar.summary || calendar.id,
+				value: calendar.id,
+			});
+			option.selected = calendar.id === this.googleCalendarId;
+		}
+
+		dropdown.addEventListener("change", () => {
+			this.googleCalendarId = dropdown.value;
+		});
 	}
 
 	protected createFieldsFromConfig(container: HTMLElement, config: ModalFieldsConfigLike): void {

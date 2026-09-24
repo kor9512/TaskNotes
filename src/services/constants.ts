@@ -28,7 +28,7 @@ export const GOOGLE_CALENDAR_CONSTANTS = {
 	VIEW_RANGE: {
 		/** Days to look back from today during a fresh sync */
 		DAYS_BEFORE: 180,
-		/** Days to look ahead from today */
+		/** Days to look ahead from today during a full sync */
 		DAYS_AFTER: 90,
 	},
 

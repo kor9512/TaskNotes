@@ -1014,6 +1014,101 @@ export function renderIntegrationsTab(
 	// Initial render
 	void renderMicrosoftCalendarCard();
 
+	// Calendar routing and subscriptions are independent from task export. The
+	// user-facing value is the calendar name; IDs are shown only as reference
+	// metadata while the stable IDs remain stored in plugin data.
+	createSettingGroup(
+		container,
+		{
+			heading: "Calendar routing",
+			description: "Choose which connected calendars TaskNotes can display and route tasks to.",
+		},
+		(group) => {
+			group.addSetting((setting) => {
+				setting.settingEl.addClass("tasknotes-calendar-routing-setting");
+				setting.setName("Calendars shown in TaskNotes");
+				setting.setDesc("Enable a calendar to subscribe to and display it in TaskNotes.");
+				setting.controlEl.createDiv({ cls: "tasknotes-calendar-routing-divider" });
+				const listEl = setting.controlEl.createDiv({ cls: "tasknotes-calendar-routing-list" });
+
+				const renderCalendarList = async () => {
+					listEl.empty();
+					if (!plugin.googleCalendarService) return;
+					let calendars = plugin.googleCalendarService.getAvailableCalendars();
+					if (calendars.length === 0) {
+						try {
+							calendars = await plugin.googleCalendarService.listCalendars();
+						} catch {
+							listEl.createSpan({ text: "No calendars available" });
+							return;
+						}
+					}
+					for (const calendar of calendars) {
+						const row = listEl.createDiv({ cls: "tasknotes-calendar-routing-row" });
+						const calendarColor = calendar.backgroundColor || "#4285f4";
+						row.style.setProperty("--tn-calendar-color", calendarColor);
+						const colorSwatch = row.createEl("input", {
+							cls: "tasknotes-calendar-routing-color",
+							type: "color",
+							value: calendarColor,
+						});
+						colorSwatch.setAttribute("aria-label", `Color for ${calendar.summary}`);
+						colorSwatch.addEventListener("change", async () => {
+							try {
+								await plugin.googleCalendarService?.updateCalendarColor(calendar.id, colorSwatch.value);
+								row.style.setProperty("--tn-calendar-color", colorSwatch.value);
+								new Notice(`Updated ${calendar.summary} color`);
+							} catch (error) {
+								new Notice(`Failed to update ${calendar.summary} color`);
+								colorSwatch.value = calendarColor;
+							}
+						});
+						const nameBox = row.createDiv({ cls: "tasknotes-calendar-routing-name-box" });
+						nameBox.createSpan({
+							cls: "tasknotes-calendar-routing-name",
+							text: calendar.summary + (calendar.primary ? " (Primary)" : ""),
+						});
+						const idBox = row.createDiv({ cls: "tasknotes-calendar-routing-id-box" });
+						idBox.createSpan({
+							cls: "tasknotes-calendar-routing-id",
+							text: calendar.id,
+						});
+						const toggleLabel = row.createEl("label", { cls: "tasknotes-calendar-routing-toggle" });
+						const toggle = toggleLabel.createEl("input", { type: "checkbox" });
+						toggleLabel.createSpan({ cls: "tasknotes-calendar-routing-toggle-track" });
+						toggle.checked = plugin.settings.enabledGoogleCalendars.includes(calendar.id);
+						toggle.addEventListener("change", async () => {
+								const enabled = toggle.checked;
+								const selected = new Set(plugin.settings.enabledGoogleCalendars);
+								if (enabled) selected.add(calendar.id);
+								else selected.delete(calendar.id);
+								plugin.settings.enabledGoogleCalendars = Array.from(selected);
+								if (
+									!enabled &&
+									plugin.settings.googleCalendarExport.targetCalendarId === calendar.id
+								) {
+									plugin.settings.googleCalendarExport.targetCalendarId =
+										Array.from(selected)[0] || "";
+								}
+								save();
+								try {
+									await plugin.googleCalendarService?.manualRefresh();
+									new Notice(enabled ? `Subscribed to ${calendar.summary}` : `Unsubscribed from ${calendar.summary}`);
+								} catch (error) {
+									new Notice(`Calendar refresh failed: ${error instanceof Error ? error.message : String(error)}`);
+								}
+						});
+					}
+				};
+
+				void renderCalendarList();
+				plugin.googleCalendarService?.on("data-changed", () => {
+					if (listEl.isConnected) void renderCalendarList();
+				});
+			});
+		}
+	);
+
 	// Google Calendar Task Export Section
 	createSettingGroup(
 		container,
@@ -1092,7 +1187,10 @@ export function renderIntegrationsTab(
 								});
 							}
 						}
-						for (const cal of calendars) {
+						const enabledIds = new Set(
+							plugin.googleCalendarService.getEnabledCalendars().map((calendar) => calendar.id)
+						);
+						for (const cal of calendars.filter((calendar) => enabledIds.has(calendar.id))) {
 							const option = dropdown.createEl("option", {
 								text:
 									cal.summary +

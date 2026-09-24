@@ -2010,6 +2010,11 @@ export const en: TranslationTree = {
 					connectFirst: "Connect Google Calendar first",
 					primarySuffix: " (Primary)",
 				},
+				enabledCalendars: {
+					name: "Calendars shown in TaskNotes",
+					description: "Select the Google calendars that TaskNotes should subscribe to and display.",
+					noCalendars: "No calendars available. Connect Google Calendar first.",
+				},
 				syncTrigger: {
 					name: "Sync trigger",
 					description: "Which task date should trigger calendar event creation.",
@@ -2631,7 +2636,7 @@ export const en: TranslationTree = {
 				remindLater: "Remind me later",
 			},
 		},
-		task: {
+			task: {
 			titlePlaceholder: "What needs to be done?",
 			titleLabel: "Title",
 			titleDetailedPlaceholder: "Task title...",
@@ -2677,6 +2682,12 @@ export const en: TranslationTree = {
 				},
 			},
 			customFieldsLabel: "Custom fields",
+			googleCalendar: {
+				name: "Google Calendar",
+				useDefaultTarget: "Use default target calendar",
+				unavailable: "Unavailable calendar ({id})",
+				unavailableDescription: "This calendar is no longer available. Choose another calendar.",
+			},
 			actions: {
 				due: "Set due date",
 				scheduled: "Set scheduled date",
@@ -3008,6 +3019,10 @@ export const en: TranslationTree = {
 				syncToGoogleNotConfigured: "Google Calendar sync not configured",
 				syncToGoogleSuccess: "Task synced to Google Calendar",
 				syncToGoogleFailed: "Failed to sync task to Google Calendar",
+				setTaskTarget: "Set TaskNotes Google Calendar",
+				useDefaultTarget: "Use default target calendar",
+				overrideSaved: "TaskNotes Google Calendar override saved",
+				defaultRestored: "TaskNotes default Google Calendar restored",
 			},
 			recurrence: "Recurrence",
 			clearRecurrence: "Clear recurrence",

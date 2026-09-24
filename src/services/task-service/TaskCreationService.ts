@@ -421,6 +421,9 @@ export class TaskCreationService {
 
 	private async resolveTargetFolder(taskData: TaskCreationData): Promise<string> {
 		const { runtime } = this.deps;
+		if (taskData.folder?.trim()) {
+			return this.deps.processFolderTemplate(taskData.folder, taskData);
+		}
 		if (
 			taskData.creationContext === "inline-conversion" ||
 			taskData.creationContext === "modal-inline-creation"

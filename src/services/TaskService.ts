@@ -1810,7 +1810,8 @@ export class TaskService {
 					await this.plugin.taskCalendarSyncService.deleteTaskFromCalendarByPath(
 						task.path,
 						task.googleCalendarEventId,
-						task.googleCalendarExceptionEventId
+						task.googleCalendarExceptionEventId,
+						this.plugin.taskCalendarSyncService.getTaskTargetCalendarId(task)
 					);
 				} catch (error) {
 					tasknotesLogger.warn("Failed to delete task from Google Calendar:", {

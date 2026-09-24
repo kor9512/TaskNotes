@@ -1866,6 +1866,11 @@ export const ko: TranslationTree = {
 					connectFirst: "먼저 Google 캘린더를 연결하세요",
 					primarySuffix: " (기본)"
 				},
+				enabledCalendars: {
+					name: "TaskNotes에 표시할 캘린더",
+					description: "TaskNotes가 구독하고 표시할 Google 캘린더를 선택하세요.",
+					noCalendars: "사용 가능한 캘린더가 없습니다. 먼저 Google 캘린더를 연결하세요.",
+				},
 				syncTrigger: {
 					name: "동기화 트리거",
 					description: "어떤 작업 날짜가 캘린더 이벤트 생성을 트리거할지 설정합니다.",
@@ -2456,7 +2461,7 @@ export const ko: TranslationTree = {
 				remindLater: "나중에 알림"
 			}
 		},
-		task: {
+			task: {
 			titlePlaceholder: "무엇을 해야 하나요?",
 			titleLabel: "제목",
 			titleDetailedPlaceholder: "작업 제목...",
@@ -2502,6 +2507,12 @@ export const ko: TranslationTree = {
 				}
 			},
 			customFieldsLabel: "사용자 지정 필드",
+			googleCalendar: {
+				name: "Google 캘린더",
+				useDefaultTarget: "기본 대상 캘린더 사용",
+				unavailable: "사용할 수 없는 캘린더 ({id})",
+				unavailableDescription: "이 캘린더는 더 이상 사용할 수 없습니다. 다른 캘린더를 선택하세요.",
+			},
 			actions: {
 				due: "마감일 설정",
 				scheduled: "예정일 설정",

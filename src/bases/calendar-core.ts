@@ -1811,8 +1811,19 @@ export async function generateCalendarEvents(
 
 	// Add ICS events with date range filtering
 	if (showICSEvents && plugin.icsSubscriptionService) {
+		const taskCalendarEventIds = new Set(
+			tasks
+				.map((task) => task.googleCalendarEventId)
+				.filter((eventId): eventId is string => typeof eventId === "string" && eventId.length > 0)
+		);
 		const icsEvents = plugin.icsSubscriptionService.getAllEvents();
 		for (const icsEvent of icsEvents) {
+			if (icsEvent.subscriptionId.startsWith("google-")) {
+				const managedEventId = icsEvent.id.split("-").pop();
+				if (managedEventId && taskCalendarEventIds.has(managedEventId)) {
+					continue;
+				}
+			}
 			if (isDateInVisibleRange(icsEvent.start, visibleStart, visibleEnd)) {
 				const calendarEvent = createICSEvent(icsEvent, plugin);
 				if (calendarEvent) {

@@ -31,3 +31,14 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 
 -->
+
+## Added
+
+- Added per-task Google Calendar target selection in task creation, edit, and context menus. The selected calendar is stored by stable calendar ID while the UI displays the current calendar name.
+- Added a warning when a task references a Google Calendar that is no longer available.
+- Added experimental OAuth storage and authorization modes for mobile-friendly setups. Secret Storage is the default; Plaintext mode shares client credentials and connection tokens through plugin settings, and authorization can use the desktop callback or copy/paste flow. Plaintext mode exposes refresh tokens in synced `data.json` and should only be used deliberately.
+
+## Fixed
+
+- Google all-day task events now use the task due date as the exclusive event end date, allowing scheduled-to-due spans to display across multiple days.
+- Calendar changes now remove the previous-calendar event before creating the replacement and preserve the resolved target across retry paths.

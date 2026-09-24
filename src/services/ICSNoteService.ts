@@ -35,6 +35,36 @@ interface EventSeriesIndex {
 export class ICSNoteService {
 	constructor(private plugin: TaskNotesPlugin) {}
 
+	/** Resolve the display name for ICS, Google, and Microsoft events. */
+	private getCalendarDisplayName(icsEvent: ICSEvent): string {
+		const subscriptionName = this.plugin.icsSubscriptionService
+			.getSubscriptions()
+			.find((subscription) => subscription.id === icsEvent.subscriptionId)?.name;
+		if (subscriptionName) return subscriptionName;
+
+		if (icsEvent.subscriptionId.startsWith("google-")) {
+			const calendarId = icsEvent.subscriptionId.slice("google-".length);
+			return (
+				findProviderCalendar(
+					this.plugin.googleCalendarService?.getAvailableCalendars() ?? [],
+					calendarId
+				)?.summary || "Google Calendar"
+			);
+		}
+
+		if (icsEvent.subscriptionId.startsWith("microsoft-")) {
+			const calendarId = icsEvent.subscriptionId.slice("microsoft-".length);
+			return (
+				findProviderCalendar(
+					this.plugin.microsoftCalendarService?.getAvailableCalendars() ?? [],
+					calendarId
+				)?.summary || "Microsoft Calendar"
+			);
+		}
+
+		return "Unknown Calendar";
+	}
+
 	private translate(key: TranslationKey, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
@@ -228,10 +258,7 @@ export class ICSNoteService {
 	): Promise<{ file: TFile; taskInfo: TaskInfo }> {
 		try {
 			// Get the subscription name for context
-			const subscription = this.plugin.icsSubscriptionService
-				.getSubscriptions()
-				.find((sub) => sub.id === icsEvent.subscriptionId);
-			const subscriptionName = subscription?.name || "Unknown Calendar";
+			const subscriptionName = this.getCalendarDisplayName(icsEvent);
 
 			// Convert ICS event to task creation data
 			const scheduledValue =
@@ -256,11 +283,12 @@ export class ICSNoteService {
 				contexts:
 					overrides?.contexts || (icsEvent.location ? [icsEvent.location] : undefined),
 				projects: overrides?.projects,
-				tags: overrides?.tags || [this.plugin.fieldMapper.toUserField("icsEventTag")],
+				tags: overrides?.tags || [this.plugin.settings.taskTag],
 				timeEstimate: overrides?.timeEstimate || this.calculateEventDuration(icsEvent),
 				details:
 					overrides?.details || this.buildICSEventDetails(icsEvent, subscriptionName),
-				icsEventId: [icsEvent.id],
+				customFrontmatter: this.getGoogleTaskFrontmatter(icsEvent, subscriptionName),
+				folder: this.getImportedTaskFolder(subscriptionName),
 				creationContext: "ics-event",
 				dateCreated: getCurrentTimestamp(),
 				dateModified: getCurrentTimestamp(),
@@ -272,7 +300,9 @@ export class ICSNoteService {
 
 			// Create the task using the existing TaskService
 			// Disable defaults since ICS events have their own data
-			return await this.plugin.taskService.createTask(taskData, { applyDefaults: false });
+			const result = await this.plugin.taskService.createTask(taskData, { applyDefaults: false });
+			await this.removeMaterializedICSNotes(icsEvent.id, result.file.path);
+			return result;
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
 			tasknotesLogger.error("Error creating task from ICS event:", {
@@ -283,6 +313,42 @@ export class ICSNoteService {
 			});
 			throw new Error(`Failed to create task from ICS event: ${errorMessage}`);
 		}
+	}
+
+	/** Remove old read-only ICS materializations after their event becomes a task. */
+	private async removeMaterializedICSNotes(eventId: string, keepPath: string): Promise<void> {
+		for (const file of this.plugin.app.vault.getMarkdownFiles()) {
+			if (file.path === keepPath) continue;
+			const frontmatter = this.plugin.app.metadataCache.getFileCache(file)?.frontmatter;
+			const tags = Array.isArray(frontmatter?.tags) ? frontmatter.tags : [];
+			const eventIds = Array.isArray(frontmatter?.icsEventId)
+				? frontmatter.icsEventId
+				: [frontmatter?.icsEventId];
+			if (!tags.includes("ics_event") || !eventIds.includes(eventId)) continue;
+			try {
+				await this.plugin.app.fileManager.trashFile(file);
+			} catch (error) {
+				tasknotesLogger.warn("Failed to remove materialized ICS note after task conversion", {
+					category: "persistence",
+					operation: "remove-materialized-ics-note",
+					error,
+				});
+			}
+		}
+	}
+
+	private getImportedTaskFolder(calendarName: string): string {
+		const safeCalendarName = calendarName.replace(/[<>:"/\\|?*]/g, "_").trim() || "Calendar";
+		const tasksFolder = this.plugin.settings.tasksFolder?.trim();
+		return tasksFolder ? `${tasksFolder}/${safeCalendarName}` : safeCalendarName;
+	}
+
+	private getGoogleTaskFrontmatter(
+		icsEvent: ICSEvent,
+		calendarName: string
+	): Record<string, unknown> | undefined {
+		if (!icsEvent.subscriptionId.startsWith("google-")) return undefined;
+		return { googleCalendarName: calendarName };
 	}
 
 	/**
@@ -364,10 +430,7 @@ export class ICSNoteService {
 	): Promise<{ file: TFile; noteInfo: NoteInfo }> {
 		try {
 			// Get the subscription name for context
-			const subscription = this.plugin.icsSubscriptionService
-				.getSubscriptions()
-				.find((sub) => sub.id === icsEvent.subscriptionId);
-			const subscriptionName = subscription?.name || "Unknown Calendar";
+			const subscriptionName = this.getCalendarDisplayName(icsEvent);
 
 			// For all-day events with date-only format (YYYY-MM-DD), append T00:00:00 to parse as local midnight
 			const startDateStr =
@@ -381,8 +444,14 @@ export class ICSNoteService {
 				overrides?.title || `${icsEvent.title} - ${format(eventStartDate, "PPP")}`;
 
 			// Determine folder (safely handle missing icsIntegration settings)
+			const configuredFolder = this.plugin.settings.icsIntegration?.defaultNoteFolder || "";
+			const calendarFolder = subscriptionName.replace(/[<>:"/\\|?*]/g, "_").trim();
 			const rawFolder =
-				overrides?.folder || this.plugin.settings.icsIntegration?.defaultNoteFolder || "";
+				overrides?.folder ||
+				configuredFolder ||
+				(icsEvent.subscriptionId.startsWith("google-")
+					? `Calendar/${calendarFolder || "Google"}`
+					: "Calendar/Events");
 
 			// Process folder template with ICS-specific data
 			const folder = processFolderTemplate(rawFolder, {
@@ -454,6 +523,9 @@ export class ICSNoteService {
 				tags: [this.plugin.fieldMapper.toUserField("icsEventTag")],
 				[this.plugin.fieldMapper.toUserField("icsEventId")]: [icsEvent.id],
 			};
+			if (icsEvent.subscriptionId.startsWith("google-")) {
+				frontmatter.googleCalendarName = subscriptionName;
+			}
 
 			let bodyContent = this.buildICSEventDetails(icsEvent, subscriptionName);
 

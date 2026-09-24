@@ -16,6 +16,29 @@ if (!(global as any).TextEncoder) {
 	(global as any).TextEncoder = TextEncoder;
 }
 
+// jsdom has no WebCrypto; stable Google event IDs hash with crypto.subtle.digest.
+// Node's subtle.digest settles outside the microtask queue, which breaks tests that
+// step through syncs with `await Promise.resolve()`, so SHA-256 is answered synchronously.
+if (!(global as any).crypto?.subtle) {
+	const nodeCrypto = require("crypto");
+	const webcrypto = nodeCrypto.webcrypto;
+	Object.defineProperty(global, "crypto", {
+		value: {
+			getRandomValues: webcrypto.getRandomValues.bind(webcrypto),
+			randomUUID: webcrypto.randomUUID.bind(webcrypto),
+			subtle: {
+				importKey: webcrypto.subtle.importKey.bind(webcrypto.subtle),
+				sign: webcrypto.subtle.sign.bind(webcrypto.subtle),
+				digest: (_algorithm: string, data: ArrayBufferView | ArrayBuffer) => {
+					const bytes = nodeCrypto.createHash("sha256").update(Buffer.from(data as ArrayBuffer)).digest();
+					return Promise.resolve(bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.length));
+				},
+			},
+		},
+		configurable: true,
+	});
+}
+
 if (!(global as any).TextDecoder) {
 	(global as any).TextDecoder = TextDecoder;
 }

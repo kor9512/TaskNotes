@@ -4,6 +4,7 @@ import TaskNotesPlugin from "../main";
 import { GoogleCalendarService } from "./GoogleCalendarService";
 import {
 	GoogleCalendarEventIndexEntry,
+	ICSEvent,
 	PendingGoogleCalendarDeletion,
 	PendingGoogleCalendarSync,
 	TaskInfo,
@@ -155,6 +156,22 @@ export class TaskCalendarSyncService {
 	constructor(plugin: TaskNotesPlugin, googleCalendarService: GoogleCalendarService) {
 		this.plugin = plugin;
 		this.googleCalendarService = googleCalendarService;
+	}
+
+	/** Persist a task-specific Google Calendar target through the vault mutation boundary. */
+	async setTaskCalendarOverride(file: TFile, calendarId?: string): Promise<void> {
+		await processVaultFrontMatterWithinMutation(this.plugin.app, file, (frontmatter) => {
+			if (calendarId) {
+				const calendar = this.googleCalendarService
+					.getAvailableCalendars()
+					.find((item) => item.id === calendarId);
+				frontmatter.googleCalendarName = calendar?.summary || calendarId;
+				delete frontmatter.googleCalendarId;
+			} else {
+				delete frontmatter.googleCalendarId;
+				delete frontmatter.googleCalendarName;
+			}
+		});
 	}
 
 	private static getTaskCalendarCacheKey(taskPath: string, calendarId?: string): string {
@@ -330,6 +347,28 @@ export class TaskCalendarSyncService {
 
 	private getConnectionGeneration(): number {
 		return this.googleCalendarService.getConnectionGeneration?.() ?? 0;
+	}
+
+	/**
+	 * Resolve the calendar for an individual task. A note may override the
+	 * global export target with a `googleCalendarName` frontmatter property.
+	 */
+	getTaskTargetCalendarId(task: TaskInfo): string {
+		const file = this.plugin.app.vault.getAbstractFileByPath(task.path);
+		const frontmatter = file instanceof TFile
+			? this.plugin.app.metadataCache?.getFileCache(file)?.frontmatter
+			: undefined;
+		const overrideId = frontmatter?.googleCalendarId;
+		const overrideName = frontmatter?.googleCalendarName ?? frontmatter?.googleCalendar;
+		// Optional call: service stubs without calendar routing fall back to the global target.
+		const resolvedOverride =
+			this.googleCalendarService.resolveCalendarId?.(
+				typeof overrideId === "string" ? overrideId : undefined
+			) ||
+			this.googleCalendarService.resolveCalendarId?.(
+				typeof overrideName === "string" ? overrideName : undefined
+			);
+		return resolvedOverride || this.plugin.settings.googleCalendarExport.targetCalendarId;
 	}
 
 	private async assertConnectionGenerationCurrent(
@@ -2470,17 +2509,32 @@ export class TaskCalendarSyncService {
 		calendarId: string,
 		expectedConnectionGeneration: number
 	): Promise<string> {
-		const createdEvent = await this.withGoogleRateLimit(async () => {
-			await this.assertConnectionGenerationCurrent(expectedConnectionGeneration);
-			return this.googleCalendarService.createEvent(
-				calendarId,
-				{
-					...eventData,
-					isAllDay: !!eventData.start.date,
-				},
-				expectedConnectionGeneration
-			);
-		});
+		// Google supports a caller-supplied event ID. Deriving it from the stable
+		// note path and calendar makes concurrent creates from multiple devices
+		// converge on one event instead of producing two random IDs.
+		const stableEventId = await this.getStableGoogleEventId(task.path, calendarId);
+		let createdEvent: ICSEvent;
+		try {
+			createdEvent = await this.withGoogleRateLimit(async () => {
+				await this.assertConnectionGenerationCurrent(expectedConnectionGeneration);
+				return this.googleCalendarService.createEvent(
+					calendarId,
+					{
+						...eventData,
+						id: stableEventId,
+						isAllDay: !!eventData.start.date,
+					},
+					expectedConnectionGeneration
+				);
+			});
+		} catch (error) {
+			// A second device may win the same deterministic insert. Recover the
+			// existing event instead of retrying POST and creating another event.
+			if (getErrorStatus(error) !== 409) {
+				throw error;
+			}
+			createdEvent = await this.googleCalendarService.getEvent(calendarId, stableEventId);
+		}
 
 		// Extract the actual event ID from the ICSEvent ID format.
 		// Format is "google-{calendarId}-{eventId}". Calendar IDs can contain
@@ -2502,6 +2556,17 @@ export class TaskCalendarSyncService {
 			throw error;
 		}
 		return eventId;
+	}
+
+	private async getStableGoogleEventId(taskPath: string, calendarId: string): Promise<string> {
+		const data = new TextEncoder().encode(`tasknotes:${calendarId}:${taskPath}`);
+		const digest = await crypto.subtle.digest("SHA-256", data);
+		const hex = Array.from(new Uint8Array(digest))
+			.map((value) => value.toString(16).padStart(2, "0"))
+			.join("");
+		// Google event IDs accept lowercase base32hex characters. Hex is a
+		// compliant subset and keeps this ID deterministic across devices.
+		return `tn${hex}`;
 	}
 
 	private shouldCreateDetachedRecurringException(task: TaskInfo): boolean {
@@ -2713,7 +2778,11 @@ export class TaskCalendarSyncService {
 	async syncTaskToCalendar(
 		task: TaskInfo,
 		previous?: TaskInfo,
-		options: { queueOnFailure?: boolean; connectionGeneration?: number } = {}
+		options: {
+			queueOnFailure?: boolean;
+			connectionGeneration?: number;
+			targetCalendarId?: string;
+		} = {}
 	): Promise<boolean> {
 		const queueOnFailure = options.queueOnFailure ?? true;
 		const connectionGeneration =
@@ -2725,7 +2794,7 @@ export class TaskCalendarSyncService {
 
 		const settings = this.plugin.settings.googleCalendarExport;
 		const existingEventId = this.getTaskEventId(task);
-		const targetCalendarId = settings.targetCalendarId;
+		const targetCalendarId = options.targetCalendarId || this.getTaskTargetCalendarId(task);
 
 		try {
 			if (!this.isEnabled()) {
@@ -2846,6 +2915,22 @@ export class TaskCalendarSyncService {
 
 			// Check if it's a 404 error (event was deleted externally)
 			if (getErrorStatus(error) === 404 && existingEventId) {
+				// If the task moved to another calendar, remove the old-calendar
+				// event before creating the replacement. The retry must retain the
+				// resolved target because the cache may not yet include a freshly
+				// written per-task calendar override.
+				const oldEntry = (await this.getEventIndex()).find(
+					(item) => item.taskPath === task.path && item.eventId === existingEventId
+				);
+				if (oldEntry && oldEntry.calendarId !== targetCalendarId) {
+					await this.deleteOrQueueCalendarEvent(
+						task.path,
+						oldEntry.calendarId,
+						oldEntry.eventId,
+						connectionGeneration
+					);
+					await this.removeEventIndexForEvent(oldEntry.calendarId, oldEntry.eventId);
+				}
 				// Clear the stale link and retry as create
 				await this.removeTaskEventId(task.path, connectionGeneration);
 				// Retry without the link - refetch task to get updated version
@@ -2854,6 +2939,7 @@ export class TaskCalendarSyncService {
 					return this.syncTaskToCalendar(updatedTask, previous, {
 						...options,
 						connectionGeneration,
+						targetCalendarId,
 					});
 				}
 			}
@@ -3235,7 +3321,8 @@ export class TaskCalendarSyncService {
 	async deleteTaskFromCalendarByPath(
 		taskPath: string,
 		eventId?: string,
-		...additionalEventIds: Array<string | undefined>
+		exceptionEventId?: string,
+		taskCalendarId?: string
 	): Promise<boolean> {
 		if (!this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
 			return true;
@@ -3243,7 +3330,7 @@ export class TaskCalendarSyncService {
 
 		const connectionGeneration = this.getConnectionGeneration();
 		const settings = this.plugin.settings.googleCalendarExport;
-		const eventIds = [eventId, ...additionalEventIds].filter(
+		const eventIds = [eventId, exceptionEventId].filter(
 			(id): id is string => typeof id === "string" && id.length > 0
 		);
 
@@ -3251,7 +3338,7 @@ export class TaskCalendarSyncService {
 			return true;
 		}
 
-		const targetCalendarId = settings.targetCalendarId;
+		const targetCalendarId = taskCalendarId || settings.targetCalendarId;
 		if (!targetCalendarId) {
 			tasknotesLogger.warn(
 				"[TaskCalendarSync] Cannot delete task events without target calendar:",
