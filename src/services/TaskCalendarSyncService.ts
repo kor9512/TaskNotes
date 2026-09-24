@@ -349,6 +349,16 @@ export class TaskCalendarSyncService {
 		return this.googleCalendarService.getConnectionGeneration?.() ?? 0;
 	}
 
+	/** Raw `googleCalendarId`/`googleCalendarName` override from the note, if any. */
+	private getTaskCalendarOverride(task: TaskInfo): string | undefined {
+		const file = this.plugin.app.vault.getAbstractFileByPath?.(task.path);
+		const frontmatter = file instanceof TFile
+			? this.plugin.app.metadataCache?.getFileCache(file)?.frontmatter
+			: undefined;
+		const value = frontmatter?.googleCalendarId ?? frontmatter?.googleCalendarName ?? frontmatter?.googleCalendar;
+		return typeof value === "string" && value.trim() ? value.trim() : undefined;
+	}
+
 	/**
 	 * Resolve the calendar for an individual task. A note may override the
 	 * global export target with a `googleCalendarName` frontmatter property.
@@ -565,7 +575,12 @@ export class TaskCalendarSyncService {
 	}
 
 	private getCalendarRelevantFingerprint(task: TaskInfo): string {
+		// Include the note's calendar override only when set, so a calendar change made
+		// outside Obsidian (e.g. synced from another device) moves the event, while
+		// fingerprints of notes without an override stay identical to older versions.
+		const calendarOverride = this.getTaskCalendarOverride(task);
 		return JSON.stringify({
+			...(calendarOverride ? { calendar: calendarOverride } : {}),
 			title: task.title || "",
 			status: task.status || "",
 			priority: task.priority || "",

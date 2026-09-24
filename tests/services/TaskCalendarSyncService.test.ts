@@ -313,6 +313,23 @@ describe("TaskCalendarSyncService", () => {
         });
     });
 
+    it("changes the calendar fingerprint only when a calendar override is set or changed", () => {
+        const file = Object.create(TFile.prototype);
+        mockPlugin.app.vault.getAbstractFileByPath = jest.fn().mockReturnValue(file);
+        let frontmatter: Record<string, unknown> = {};
+        mockPlugin.app.metadataCache = { getFileCache: jest.fn(() => ({ frontmatter })) };
+        const task = { path: "Tasks/route.md", title: "Route", scheduled: "2026-10-01T08:30" };
+        const fingerprint = () => (syncService as any).getCalendarRelevantFingerprint(task);
+
+        const noOverride = fingerprint();
+        expect(JSON.parse(noOverride)).not.toHaveProperty("calendar");
+        frontmatter = { googleCalendarName: "Schedule" };
+        const schedule = fingerprint();
+        expect(schedule).not.toBe(noOverride);
+        frontmatter = { googleCalendarName: "♡" };
+        expect(fingerprint()).not.toBe(schedule);
+    });
+
     it("resolves a task calendar override from frontmatter before the global target", () => {
         const file = Object.create(TFile.prototype);
         mockPlugin.app.vault.getAbstractFileByPath = jest.fn().mockReturnValue(file);
