@@ -2142,18 +2142,44 @@ export class TaskCalendarSyncService {
 			endDate.setDate(endDate.getDate() + 1);
 			return { date: format(endDate, "yyyy-MM-dd") };
 		} else {
-			// Timed events: use duration
-			const duration = task.timeEstimate || settings.defaultEventDuration;
 			if (!startInfo.dateTime) {
 				return {};
 			}
 			const startDate = new Date(startInfo.dateTime);
+			const dueEnd = this.getTimedEndFromDue(startDate, task.due);
+			if (dueEnd) {
+				return {
+					dateTime: format(dueEnd, "yyyy-MM-dd'T'HH:mm:ssxxx"),
+					timeZone: startInfo.timeZone,
+				};
+			}
+			// Timed events without a later due: use duration
+			const duration = task.timeEstimate || settings.defaultEventDuration;
 			const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
 			return {
 				dateTime: format(endDate, "yyyy-MM-dd'T'HH:mm:ssxxx"),
 				timeZone: startInfo.timeZone,
 			};
 		}
+	}
+
+	/**
+	 * A timed event ends at the task's due when due is later than the start: a
+	 * timed due ends at that moment, a date-only due on a later day ends when
+	 * that day ends (next local midnight). Otherwise the caller uses duration.
+	 */
+	private getTimedEndFromDue(startDate: Date, due?: string): Date | undefined {
+		if (!due) return undefined;
+		let dueEnd: Date;
+		if (due.includes("T")) {
+			dueEnd = new Date(due);
+		} else {
+			if (due <= format(startDate, "yyyy-MM-dd")) return undefined;
+			dueEnd = new Date(due + "T00:00:00");
+			dueEnd.setDate(dueEnd.getDate() + 1);
+		}
+		if (isNaN(dueEnd.getTime()) || dueEnd.getTime() <= startDate.getTime()) return undefined;
+		return dueEnd;
 	}
 
 	/**

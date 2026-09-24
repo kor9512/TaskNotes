@@ -259,6 +259,47 @@ describe("TaskCalendarSyncService", () => {
         });
     });
 
+    describe("timed events end at due", () => {
+        beforeEach(() => {
+            mockPlugin.settings.googleCalendarExport.createAsAllDay = false;
+        });
+
+        it("ends at a timed due later the same day", () => {
+            const event = syncService.taskToCalendarEvent({
+                path: "Tasks/work-day.md",
+                title: "Work day",
+                scheduled: "2026-10-01T08:30",
+                due: "2026-10-01T18:00",
+            });
+            expect(new Date(event.end.dateTime).getTime() - new Date(event.start.dateTime).getTime())
+                .toBe((9 * 60 + 30) * 60 * 1000);
+        });
+
+        it("ends when a later date-only due day ends", () => {
+            const event = syncService.taskToCalendarEvent({
+                path: "Tasks/trip.md",
+                title: "Trip",
+                scheduled: "2026-10-01T08:30",
+                due: "2026-10-03",
+            });
+            const end = new Date(event.end.dateTime);
+            expect([end.getDate(), end.getHours(), end.getMinutes()]).toEqual([4, 0, 0]);
+        });
+
+        it("keeps the duration when due is same-day date-only, earlier, or absent", () => {
+            for (const due of ["2026-10-01", "2026-10-01T07:00", undefined]) {
+                const event = syncService.taskToCalendarEvent({
+                    path: "Tasks/short.md",
+                    title: "Short",
+                    scheduled: "2026-10-01T08:30",
+                    due,
+                });
+                expect(new Date(event.end.dateTime).getTime() - new Date(event.start.dateTime).getTime())
+                    .toBe(60 * 60 * 1000);
+            }
+        });
+    });
+
     it("falls back to a one-day event when due is absent", () => {
         const event = syncService.taskToCalendarEvent({
             path: "Tasks/single-day.md",
