@@ -13,6 +13,8 @@ This page documents generated defaults. It is reference material for understandi
 
 Generated `.base` files are regular vault files. When you change task identification, field mapping, status, or priority settings, existing files keep their current content until you edit them. To replace the configured default files with templates generated from your current settings, use **Settings → TaskNotes → Views & base files → Update files** or run the **TaskNotes: Update default base files** command. Automation clients can call `api.bases.updateDefaultFiles()` from the runtime API or `POST /api/bases/default-files/update` from the local HTTP API. These update actions overwrite the configured default `.base` files, including any manual edits in those files.
 
+Custom priority labels and priority/status values are escaped in generated expressions, so apostrophes, double quotes, backslashes, and line breaks do not break the generated formulas or YAML. YAML quoting and line wrapping may differ from the examples below without changing the formulas. If an existing generated file cannot open after these settings were customized, regenerate it using **Update default base files** (this replaces manual edits).
+
 ## Default settings assumptions
 
 The examples below assume:
@@ -22,6 +24,8 @@ The examples below assume:
 - **Statuses**: `none`, `open`, `in-progress`, `done` (only `done` is completed)
 - **Priorities**: `none`, `low`, `normal`, `high` (sorted by weight)
 - **Visible properties**: `status`, `priority`, `due`, `scheduled`, `projects`, `contexts`, `tags`, `blocked`, `blocking`
+
+When property identification is incomplete (either the name or value is blank), generated task filters match no tasks, just like TaskNotes' task lookup. They do not fall back to tags or match every note with that property. Configure both fields before generating or updating default files.
 
 When task identification uses a property instead of a tag, generated filters reference the identifying note property with bracket notation and list-tolerant matching, such as `list(note["Task Type"]).contains(true)`. This keeps filters valid when custom property names contain spaces or other characters that cannot be used with dot notation, and matches tasks whose identifying property is stored as either a scalar value or a list containing that value.
 

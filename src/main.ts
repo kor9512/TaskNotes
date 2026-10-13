@@ -1393,6 +1393,10 @@ export default class TaskNotesPlugin extends Plugin {
 		return this.taskActionCoordinator.stopTimeTracking(task);
 	}
 
+	async stopActiveTimeTracking(): Promise<void> {
+		await this.taskActionCoordinator.stopActiveTimeTracking();
+	}
+
 	/**
 	 * Gets the active time tracking session for a task
 	 */
@@ -1508,7 +1512,8 @@ export default class TaskNotesPlugin extends Plugin {
 	 */
 	async convertTaskToTaskNote(editor: Editor): Promise<void> {
 		try {
-			const cursor = editor.getCursor();
+			// The selection's head may be at ch:0 of the next, unselected line.
+			const cursor = editor.getCursor("from");
 
 			// Check if instant convert service is available
 			if (!this.instantTaskConvertService) {

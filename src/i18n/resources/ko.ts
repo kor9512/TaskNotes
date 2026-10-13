@@ -910,6 +910,9 @@ export const ko: TranslationTree = {
 						exactOnly: "정확한 작업 태그만"
 					}
 				},
+				propertyNamePlaceholder: "속성 이름 입력",
+				propertyValuePlaceholder: "속성 값 입력",
+				incompletePropertyWarning: "속성 이름과 값을 모두 입력하세요. 예시 텍스트는 저장된 설정이 아닙니다. 둘 다 설정해야 TaskNotes가 작업을 식별할 수 있습니다. 기존 .base 필터도 이 설정과 일치해야 합니다.",
 				taskProperty: {
 					name: "작업 속성 이름",
 					description: "프론트매터 속성 이름 (예: \"category\")"
@@ -1245,6 +1248,10 @@ export const ko: TranslationTree = {
 				}
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "속성 키를 입력하세요.",
+					duplicateKey: "다른 속성이 이미 이 키를 사용하고 있습니다.",
+				},
 				header: "사용자 지정 필드",
 				description: "뷰 전체에서 유형 인식 필터 옵션으로 나타나는 사용자 지정 프론트매터 속성을 정의합니다. 각 행: 표시 이름, 속성 이름, 유형.",
 				addNew: {
@@ -1884,6 +1891,10 @@ export const ko: TranslationTree = {
 					name: "종일 이벤트로 생성",
 					description: "활성화하면 작업이 종일 이벤트로 생성됩니다. 비활성화하면 시간 추정을 기간으로 사용합니다."
 				},
+				showAllDayAsFree: {
+					name: "종일 작업 일정을 '한가함'으로 표시",
+					description: "종일로 변환된 작업을 포함하여 종일로 내보낸 작업은 가용 시간을 차단하지 않습니다. 시간이 지정된 일정은 바쁨으로 유지됩니다. 기존 일정에 변경 사항을 적용하려면 모든 작업 동기화를 실행하세요.",
+				},
 				defaultDuration: {
 					name: "기본 이벤트 기간",
 					description: "시간이 지정된 이벤트의 기간(분) (작업에 시간 추정이 없을 때 사용)."
@@ -2274,6 +2285,7 @@ export const ko: TranslationTree = {
 		viewReleaseNotes: "릴리스 노트 보기",
 		startTimeTrackingCurrentTask: "현재 작업의 시간 추적 시작",
 		stopTimeTrackingCurrentTask: "현재 작업의 시간 추적 중지",
+		stopActiveTimeTracking: "진행 중인 시간 추적 중지",
 		startTimeTrackingWithSelector: "시간 추적 시작 (작업 선택)",
 		editTimeEntries: "시간 기록 편집 (작업 선택)",
 		createOrOpenTask: "작업 만들기 또는 열기",
@@ -2778,6 +2790,8 @@ export const ko: TranslationTree = {
 			}
 		},
 		timeTracking: {
+			noActiveTasks: "진행 중인 시간 추적 세션을 찾을 수 없습니다",
+			stopFailed: "진행 중인 시간 추적 세션을 불러오지 못했습니다",
 			noTasksAvailable: "시간을 추적할 수 있는 작업이 없습니다",
 			started: "{taskTitle}에 대한 시간 추적이 시작되었습니다",
 			startFailed: "시간 추적 시작 실패"

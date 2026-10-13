@@ -38,6 +38,10 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 - Added a warning when a task references a Google Calendar that is no longer available.
 - Added experimental OAuth storage and authorization modes for mobile-friendly setups. Secret Storage is the default; Plaintext mode shares client credentials and connection tokens through plugin settings, and authorization can use the desktop callback or copy/paste flow. Plaintext mode exposes refresh tokens in synced `data.json` and should only be used deliberately.
 
+## Changed
+
+## Removed
+
 ## Fixed
 
 - Google all-day task events now use the task due date as the exclusive event end date, allowing scheduled-to-due spans to display across multiple days.

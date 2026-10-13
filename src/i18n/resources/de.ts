@@ -910,6 +910,9 @@ export const de: TranslationTree = {
 						exactOnly: "Nur exakter Aufgaben-Tag"
 					}
 				},
+				propertyNamePlaceholder: "Eigenschaftsnamen eingeben",
+				propertyValuePlaceholder: "Eigenschaftswert eingeben",
+				incompletePropertyWarning: "Geben Sie einen Eigenschaftsnamen und einen Wert ein. Beispieltext ist keine gespeicherte Konfiguration. TaskNotes kann Aufgaben erst erkennen, wenn beide festgelegt sind. Bestehende .base-Filter müssen diesen Einstellungen entsprechen.",
 				taskProperty: {
 					name: "Aufgabeneigenschaftsname",
 					description: "Der Frontmatter-Eigenschaftsname (z.B. \"category\")"
@@ -1249,6 +1252,10 @@ export const de: TranslationTree = {
 				}
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "Gib einen Eigenschaftsschlüssel ein.",
+					duplicateKey: "Eine andere Eigenschaft verwendet diesen Schlüssel bereits.",
+				},
 				header: "Benutzerdefinierte Felder",
 				description: "Definiere benutzerdefinierte Frontmatter-Eigenschaften, die als typisierte Filteroptionen in allen Ansichten erscheinen. Jede Zeile: Anzeigename, Eigenschaftsname, Typ.",
 				addNew: {
@@ -1879,6 +1886,10 @@ export const de: TranslationTree = {
 					name: "Als Ganztagesereignisse erstellen",
 					description: "Wenn aktiviert, werden Aufgaben als Ganztagesereignisse erstellt. Wenn deaktiviert, wird die Zeitschätzung für die Dauer verwendet."
 				},
+				showAllDayAsFree: {
+					name: "Ganztägige Aufgabenereignisse als frei anzeigen",
+					description: "Ganztägige Aufgabenexporte blockieren die Verfügbarkeit nicht, auch bei in ganztägige Ereignisse umgewandelten Aufgaben. Ereignisse mit Uhrzeit bleiben beschäftigt. Nutzen Sie die Synchronisierung aller Aufgaben, um bestehende Ereignisse zu aktualisieren.",
+				},
 				defaultDuration: {
 					name: "Standard-Ereignisdauer",
 					description: "Dauer in Minuten für zeitgesteuerte Ereignisse (wird verwendet, wenn die Aufgabe keine Zeitschätzung hat)."
@@ -2269,6 +2280,7 @@ export const de: TranslationTree = {
 		viewReleaseNotes: "Versionshinweise anzeigen",
 		startTimeTrackingCurrentTask: "Zeiterfassung für die aktuelle Aufgabe starten",
 		stopTimeTrackingCurrentTask: "Zeiterfassung für die aktuelle Aufgabe stoppen",
+		stopActiveTimeTracking: "Aktive Zeiterfassung stoppen",
 		startTimeTrackingWithSelector: "Zeiterfassung starten (Aufgabe auswählen)",
 		editTimeEntries: "Zeiteinträge bearbeiten (Aufgabe auswählen)",
 		createOrOpenTask: "Aufgabe erstellen oder öffnen",
@@ -2767,6 +2779,8 @@ export const de: TranslationTree = {
 			}
 		},
 		timeTracking: {
+			noActiveTasks: "Keine aktive Zeiterfassung gefunden",
+			stopFailed: "Aktive Zeiterfassungen konnten nicht geladen werden",
 			noTasksAvailable: "Keine Aufgaben zur Zeiterfassung verfügbar",
 			started: "Zeiterfassung gestartet für: {taskTitle}",
 			startFailed: "Starten der Zeiterfassung fehlgeschlagen"

@@ -955,6 +955,9 @@ export const en: TranslationTree = {
 						exactOnly: "Exact task tag only",
 					},
 				},
+				propertyNamePlaceholder: "Enter property name",
+				propertyValuePlaceholder: "Enter property value",
+				incompletePropertyWarning: "Enter both a property name and value. Example text is not saved configuration. TaskNotes cannot identify tasks until both are set. Existing .base filters must match these settings.",
 				taskProperty: {
 					name: "Task property name",
 					description: 'The frontmatter property name (e.g., "category")',
@@ -1336,6 +1339,10 @@ export const en: TranslationTree = {
 				},
 			},
 			customUserFields: {
+				validation: {
+					emptyKey: "Enter a property key.",
+					duplicateKey: "Another property already uses this key.",
+				},
 				header: "Custom user fields",
 				description:
 					"Define custom frontmatter properties to appear as type-aware filter options across views. Each row: Display name, property name, type.",
@@ -2029,6 +2036,11 @@ export const en: TranslationTree = {
 					description:
 						"When enabled, tasks are created as all-day events. When disabled, uses time estimate for duration.",
 				},
+				showAllDayAsFree: {
+					name: "Show all-day task events as free",
+					description:
+						"All-day task exports do not block availability, including tasks converted to all-day. Timed events stay busy. Run sync all tasks to apply changes to existing events.",
+				},
 				defaultDuration: {
 					name: "Default event duration",
 					description:
@@ -2454,6 +2466,7 @@ export const en: TranslationTree = {
 		viewReleaseNotes: "View release notes",
 		startTimeTrackingCurrentTask: "Start time tracking for current task",
 		stopTimeTrackingCurrentTask: "Stop time tracking for current task",
+		stopActiveTimeTracking: "Stop active time tracking",
 		startTimeTrackingWithSelector: "Start time tracking (select task)",
 		editTimeEntries: "Edit time entries (select task)",
 		createOrOpenTask: "Create or open task",
@@ -2960,6 +2973,8 @@ export const en: TranslationTree = {
 			noTasksAvailable: "No tasks available to track time for",
 			started: "Started tracking time for: {taskTitle}",
 			startFailed: "Failed to start time tracking",
+			noActiveTasks: "No active time tracking session found",
+			stopFailed: "Failed to load active time tracking sessions",
 		},
 		timeEntry: {
 			mustHaveSpecificTime:

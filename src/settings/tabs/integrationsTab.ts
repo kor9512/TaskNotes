@@ -857,7 +857,8 @@ export function renderIntegrationsTab(
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
 									await oauthService.disconnect("microsoft");
-									plugin.microsoftCalendarService?.clearCache();
+									// OAuthService already shows the disconnect notice.
+									await plugin.microsoftCalendarService?.disconnect();
 									plugin.settings.enabledMicrosoftCalendars = [];
 									save();
 									await renderMicrosoftCalendarCard();
@@ -946,6 +947,7 @@ export function renderIntegrationsTab(
 					}
 					new Notice("Connecting to Microsoft Calendar…");
 					await oauthService.authenticate("microsoft");
+					await plugin.microsoftCalendarService?.initialize();
 									void renderMicrosoftCalendarCard();
 								} catch (error) {
 									tasknotesLogger.error("Failed to connect:", {
@@ -972,6 +974,7 @@ export function renderIntegrationsTab(
 												);
 												copyPasteInput.input.value = "";
 												stopMicrosoftCopyPasteCountdown();
+												await plugin.microsoftCalendarService?.initialize();
 												void renderMicrosoftCalendarCard();
 											} catch (error) {
 												new Notice(`Failed to connect: ${getErrorMessage(error)}`);
@@ -1313,6 +1316,23 @@ export function renderIntegrationsTab(
 						getValue: () => plugin.settings.googleCalendarExport.createAsAllDay,
 						setValue: async (value: boolean) => {
 							plugin.settings.googleCalendarExport.createAsAllDay = value;
+							save();
+						},
+					})
+			);
+
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(
+							"settings.integrations.googleCalendarExport.showAllDayAsFree.name"
+						),
+						desc: translate(
+							"settings.integrations.googleCalendarExport.showAllDayAsFree.description"
+						),
+						getValue: () => plugin.settings.googleCalendarExport.showAllDayAsFree,
+						setValue: async (value: boolean) => {
+							plugin.settings.googleCalendarExport.showAllDayAsFree = value;
 							save();
 						},
 					})

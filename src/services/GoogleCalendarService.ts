@@ -74,6 +74,13 @@ export class GoogleCalendarService extends CalendarProvider {
 	private availableCalendars: ProviderCalendar[] = [];
 	private calendarColors: Map<string, string> = new Map(); // Map calendar ID to color
 	private lastManualRefresh = 0; // Timestamp of last manual refresh for rate limiting
+	private syncStatus: { lastSuccess: string | null; calendarErrors: { calendarId: string; message: string }[]; calendarsChecked: number } = {
+		lastSuccess: null, calendarErrors: [], calendarsChecked: 0,
+	};
+
+	getSyncStatus() {
+		return { ...this.syncStatus, calendarErrors: this.syncStatus.calendarErrors.map((error) => ({ ...error })) };
+	}
 
 	constructor(plugin: TaskNotesPlugin, oauthService: OAuthService) {
 		super();
@@ -246,7 +253,8 @@ export class GoogleCalendarService extends CalendarProvider {
 	 * Clears the sync token for a calendar (forces full resync)
 	 */
 	private async clearSyncToken(calendarId: string): Promise<void> {
-		if (!(calendarId in this.plugin.settings.googleCalendarSyncTokens)) {
+		const syncTokens = this.plugin.settings.googleCalendarSyncTokens;
+		if (!syncTokens || !(calendarId in syncTokens)) {
 			return;
 		}
 		delete this.plugin.settings.googleCalendarSyncTokens[calendarId];
@@ -598,13 +606,9 @@ export class GoogleCalendarService extends CalendarProvider {
 			}
 
 			// Get current cached events
-			let cachedEvents = this.cache.get("all") || [];
-			const enabledCalendarSet = new Set(enabledCalendarIds);
-			cachedEvents = cachedEvents.filter(
-				(event) =>
-					!event.subscriptionId.startsWith("google-") ||
-					enabledCalendarSet.has(event.subscriptionId.slice("google-".length))
-			);
+			// getAllEvents() drops events from calendars that are no longer enabled.
+			let cachedEvents = this.getAllEvents();
+			const calendarErrors: { calendarId: string; message: string }[] = [];
 
 			// Fetch events from each enabled calendar
 			for (const calendarId of enabledCalendarIds) {
@@ -656,6 +660,7 @@ export class GoogleCalendarService extends CalendarProvider {
 						operation: "fetch-events-calendar",
 						error: error,
 					});
+					calendarErrors.push({ calendarId, message: error instanceof Error ? error.message : String(error) });
 					// Continue with other calendars
 				}
 			}
@@ -663,8 +668,16 @@ export class GoogleCalendarService extends CalendarProvider {
 			// Update cache
 			this.cache.set("all", cachedEvents);
 
-			// Emit data-changed event
+			this.syncStatus = {
+				lastSuccess: calendarErrors.length === 0 ? new Date().toISOString() : this.syncStatus.lastSuccess,
+				calendarErrors,
+				calendarsChecked: enabledCalendarIds.length,
+			};
+			// Publish successful calendars even when other calendars failed.
 			this.emit("data-changed");
+			if (calendarErrors.length > 0 && options.propagateErrors) {
+				throw new Error(calendarErrors.map(({ calendarId, message }) => `${calendarId}: ${message}`).join("\n"));
+			}
 		} catch (error) {
 			tasknotesLogger.error("Failed to refresh Google calendars:", {
 				category: "provider",
@@ -694,7 +707,8 @@ export class GoogleCalendarService extends CalendarProvider {
 	 */
 	getAllEvents(): ICSEvent[] {
 		const events = this.cache.get("all") || [];
-		return events;
+		const enabled = new Set(this.getEnabledCalendarIds().map((id) => `google-${id}`));
+		return events.filter((event) => enabled.has(event.subscriptionId));
 	}
 
 	/**
@@ -760,6 +774,7 @@ export class GoogleCalendarService extends CalendarProvider {
 		calendarId: string,
 		eventId: string,
 		updates: {
+			transparency?: "opaque" | "transparent";
 			title?: string;
 			summary?: string;
 			description?: string;
@@ -810,6 +825,9 @@ export class GoogleCalendarService extends CalendarProvider {
 			// Support both 'title' and 'summary'
 			if (updates.title !== undefined || updates.summary !== undefined) {
 				payload.summary = updates.summary || updates.title;
+			}
+			if (updates.transparency !== undefined) {
+				payload.transparency = updates.transparency;
 			}
 			if (updates.description !== undefined) {
 				payload.description = updates.description;
@@ -955,6 +973,7 @@ export class GoogleCalendarService extends CalendarProvider {
 		calendarId: string,
 		event: {
 			id?: string;
+			transparency?: "opaque" | "transparent";
 			title?: string;
 			summary?: string;
 			description?: string;
@@ -994,6 +1013,10 @@ export class GoogleCalendarService extends CalendarProvider {
 				description: event.description,
 				location: event.location,
 			};
+
+			if (event.transparency !== undefined) {
+				payload.transparency = event.transparency;
+			}
 
 			// Add reminders if provided
 			if (event.reminders) {
