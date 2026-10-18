@@ -183,27 +183,6 @@ function startOAuthCopyPasteCountdown(
 	};
 }
 
-function waitForOAuthCopyPasteInput(input: HTMLInputElement): Promise<string | null> {
-	const currentValue = input.value.trim();
-	if (currentValue) return Promise.resolve(currentValue);
-
-	input.focus();
-	return new Promise((resolve) => {
-		const timeout = window.setTimeout(() => {
-			input.removeEventListener("input", onInput);
-			resolve(null);
-		}, 300000);
-		const onInput = () => {
-			const value = input.value.trim();
-			if (!value) return;
-			window.clearTimeout(timeout);
-			input.removeEventListener("input", onInput);
-			resolve(value);
-		};
-		input.addEventListener("input", onInput);
-	});
-}
-
 function createOAuthCredentialControls(
 	plugin: TaskNotesPlugin,
 	provider: OAuthProvider,
@@ -636,7 +615,7 @@ export function renderIntegrationsTab(
 						stopGoogleCopyPasteCountdown = startOAuthCopyPasteCountdown(copyPasteInput.status, expiresAt);
 						return;
 									}
-									new Notice("Connecting to Google Calendar…");
+									new Notice("Connecting to Google calendar…");
 									await oauthService.authenticate("google");
 									new Notice("Connected. Loading Google calendars…");
 									await plugin.googleCalendarService?.refreshAllCalendars({ propagateErrors: true });
@@ -659,7 +638,7 @@ export function renderIntegrationsTab(
 										variant: "primary" as const,
 										onClick: async () => {
 											try {
-												new Notice("Connecting to Google Calendar…");
+												new Notice("Connecting to Google calendar…");
 												await plugin.oauthService?.connectCopyPasteAuthorization(
 													"google",
 													copyPasteInput.input.value
@@ -945,7 +924,7 @@ export function renderIntegrationsTab(
 						stopMicrosoftCopyPasteCountdown = startOAuthCopyPasteCountdown(copyPasteInput.status, expiresAt);
 						return;
 					}
-					new Notice("Connecting to Microsoft Calendar…");
+					new Notice("Connecting to Microsoft calendar…");
 					await oauthService.authenticate("microsoft");
 					await plugin.microsoftCalendarService?.initialize();
 									void renderMicrosoftCalendarCard();
@@ -967,7 +946,7 @@ export function renderIntegrationsTab(
 										variant: "primary" as const,
 										onClick: async () => {
 											try {
-												new Notice("Connecting to Microsoft Calendar…");
+												new Notice("Connecting to Microsoft calendar…");
 												await plugin.oauthService?.connectCopyPasteAuthorization(
 													"microsoft",
 													copyPasteInput.input.value
@@ -1029,8 +1008,8 @@ export function renderIntegrationsTab(
 		(group) => {
 			group.addSetting((setting) => {
 				setting.settingEl.addClass("tasknotes-calendar-routing-setting");
-				setting.setName("Calendars shown in TaskNotes");
-				setting.setDesc("Enable a calendar to subscribe to and display it in TaskNotes.");
+				setting.setName(translate("settings.integrations.googleCalendarExport.enabledCalendars.name"));
+				setting.setDesc(translate("settings.integrations.googleCalendarExport.enabledCalendars.description"));
 				setting.controlEl.createDiv({ cls: "tasknotes-calendar-routing-divider" });
 				const listEl = setting.controlEl.createDiv({ cls: "tasknotes-calendar-routing-list" });
 
@@ -1056,16 +1035,16 @@ export function renderIntegrationsTab(
 							value: calendarColor,
 						});
 						colorSwatch.setAttribute("aria-label", `Color for ${calendar.summary}`);
-						colorSwatch.addEventListener("change", async () => {
+						colorSwatch.addEventListener("change", () => runAsyncSettingCallback(async () => {
 							try {
 								await plugin.googleCalendarService?.updateCalendarColor(calendar.id, colorSwatch.value);
 								row.style.setProperty("--tn-calendar-color", colorSwatch.value);
 								new Notice(`Updated ${calendar.summary} color`);
-							} catch (error) {
+							} catch {
 								new Notice(`Failed to update ${calendar.summary} color`);
 								colorSwatch.value = calendarColor;
 							}
-						});
+						}));
 						const nameBox = row.createDiv({ cls: "tasknotes-calendar-routing-name-box" });
 						nameBox.createSpan({
 							cls: "tasknotes-calendar-routing-name",
@@ -1080,7 +1059,7 @@ export function renderIntegrationsTab(
 						const toggle = toggleLabel.createEl("input", { type: "checkbox" });
 						toggleLabel.createSpan({ cls: "tasknotes-calendar-routing-toggle-track" });
 						toggle.checked = plugin.settings.enabledGoogleCalendars.includes(calendar.id);
-						toggle.addEventListener("change", async () => {
+						toggle.addEventListener("change", () => runAsyncSettingCallback(async () => {
 								const enabled = toggle.checked;
 								const selected = new Set(plugin.settings.enabledGoogleCalendars);
 								if (enabled) selected.add(calendar.id);
@@ -1100,7 +1079,7 @@ export function renderIntegrationsTab(
 								} catch (error) {
 									new Notice(`Calendar refresh failed: ${error instanceof Error ? error.message : String(error)}`);
 								}
-						});
+						}));
 					}
 				};
 
@@ -1544,7 +1523,7 @@ export function renderIntegrationsTab(
 									new Notice(configurationIssue);
 									return;
 								}
-							new Notice("Syncing all tasks to Google Calendar…");
+							new Notice("Syncing all tasks to Google calendar…");
 							try {
 								const results = await plugin.taskCalendarSyncService.syncAllTasks();
 								new Notice(

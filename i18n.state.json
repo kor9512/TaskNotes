@@ -3976,6 +3976,14 @@
       "source": "1d5d9e14e6b6541bc31c38623049716e8c4b7e73",
       "translation": "52098c026a74d9e35ecb6c4f4ac533364edcd791"
     },
+    "settings.integrations.oauthCredentialStorage.name": null,
+    "settings.integrations.oauthCredentialStorage.description": null,
+    "settings.integrations.oauthCredentialStorage.options.secret": null,
+    "settings.integrations.oauthCredentialStorage.options.plaintext": null,
+    "settings.integrations.oauthAuthorizationMode.name": null,
+    "settings.integrations.oauthAuthorizationMode.description": null,
+    "settings.integrations.oauthAuthorizationMode.options.desktop": null,
+    "settings.integrations.oauthAuthorizationMode.options.copyPaste": null,
     "settings.integrations.mobileCalendar.disable.name": {
       "source": "6e520b27bdc72c9f1024cc83ad7112b00650b905",
       "translation": "054ff36a6dbe025bb11d594cdd383966ef5e7b08"
@@ -4608,6 +4616,9 @@
       "source": "6aa7a8a5d67e1af219adc10b5a90323cba411343",
       "translation": "b2d7cb57b0ae049f0599c40e73b2d6ce8b2bdbb2"
     },
+    "settings.integrations.googleCalendarExport.enabledCalendars.name": null,
+    "settings.integrations.googleCalendarExport.enabledCalendars.description": null,
+    "settings.integrations.googleCalendarExport.enabledCalendars.noCalendars": null,
     "settings.integrations.googleCalendarExport.syncTrigger.name": {
       "source": "a9c6916ed299370eaba665a0c08d8aa6a42505bb",
       "translation": "ffc11a1498978ce4cf52fa7306d05e70cb76414d"
@@ -6360,6 +6371,10 @@
       "source": "d1f86d5227e987ad9feec36387a01f71ac50987e",
       "translation": "7d3d8436efecaa9f20ce24761b137b89eac2bdcc"
     },
+    "modals.task.googleCalendar.name": null,
+    "modals.task.googleCalendar.useDefaultTarget": null,
+    "modals.task.googleCalendar.unavailable": null,
+    "modals.task.googleCalendar.unavailableDescription": null,
     "modals.task.actions.due": {
       "source": "ecf07cea2d2a6681f6074ac3d82bcae990c04a8d",
       "translation": "ea17eb3a01fafaa08a2c6068709006374270596c"
@@ -7248,6 +7263,10 @@
       "source": "cf874861c171987e28af7f10e4174836f724ed27",
       "translation": "bd58442abe41c1c5d9b279780d191b32ee5c88ec"
     },
+    "contextMenus.task.calendar.setTaskTarget": null,
+    "contextMenus.task.calendar.useDefaultTarget": null,
+    "contextMenus.task.calendar.overrideSaved": null,
+    "contextMenus.task.calendar.defaultRestored": null,
     "contextMenus.task.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "31786adb16beeaebf49f5d8ca82ee5cdd77aff84"
@@ -12986,6 +13005,14 @@
       "source": "1d5d9e14e6b6541bc31c38623049716e8c4b7e73",
       "translation": "8217fb3a597d05761a158faa147637db12972f26"
     },
+    "settings.integrations.oauthCredentialStorage.name": null,
+    "settings.integrations.oauthCredentialStorage.description": null,
+    "settings.integrations.oauthCredentialStorage.options.secret": null,
+    "settings.integrations.oauthCredentialStorage.options.plaintext": null,
+    "settings.integrations.oauthAuthorizationMode.name": null,
+    "settings.integrations.oauthAuthorizationMode.description": null,
+    "settings.integrations.oauthAuthorizationMode.options.desktop": null,
+    "settings.integrations.oauthAuthorizationMode.options.copyPaste": null,
     "settings.integrations.mobileCalendar.disable.name": {
       "source": "6e520b27bdc72c9f1024cc83ad7112b00650b905",
       "translation": "f7463f15663bf3a85caca8d45443fa5b6e6c830b"
@@ -13618,6 +13645,9 @@
       "source": "6aa7a8a5d67e1af219adc10b5a90323cba411343",
       "translation": "b26ac1b37a3817c1de128226e3032284b48f2cc9"
     },
+    "settings.integrations.googleCalendarExport.enabledCalendars.name": null,
+    "settings.integrations.googleCalendarExport.enabledCalendars.description": null,
+    "settings.integrations.googleCalendarExport.enabledCalendars.noCalendars": null,
     "settings.integrations.googleCalendarExport.syncTrigger.name": {
       "source": "a9c6916ed299370eaba665a0c08d8aa6a42505bb",
       "translation": "3b0354940cce47637eebfe27ceb58f8f453212a4"
@@ -15370,6 +15400,10 @@
       "source": "d1f86d5227e987ad9feec36387a01f71ac50987e",
       "translation": "f801a31165b3ed6f937579f5d006937f4e7f9d0e"
     },
+    "modals.task.googleCalendar.name": null,
+    "modals.task.googleCalendar.useDefaultTarget": null,
+    "modals.task.googleCalendar.unavailable": null,
+    "modals.task.googleCalendar.unavailableDescription": null,
     "modals.task.actions.due": {
       "source": "ecf07cea2d2a6681f6074ac3d82bcae990c04a8d",
       "translation": "912590ebaf2895ce8451d7fbdd2fd45532f39c1e"
@@ -16258,6 +16292,10 @@
       "source": "cf874861c171987e28af7f10e4174836f724ed27",
       "translation": "34bcf63e4e3e7f74d9c19d25fdd2ddccc39e4987"
     },
+    "contextMenus.task.calendar.setTaskTarget": null,
+    "contextMenus.task.calendar.useDefaultTarget": null,
+    "contextMenus.task.calendar.overrideSaved": null,
+    "contextMenus.task.calendar.defaultRestored": null,
     "contextMenus.task.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "a11310c8459688e1e71051c34e1275459bf822f1"
@@ -21996,6 +22034,14 @@
       "source": "1d5d9e14e6b6541bc31c38623049716e8c4b7e73",
       "translation": "c603e83a6d1d917e980d02cee0dc5cca972e6e8d"
     },
+    "settings.integrations.oauthCredentialStorage.name": null,
+    "settings.integrations.oauthCredentialStorage.description": null,
+    "settings.integrations.oauthCredentialStorage.options.secret": null,
+    "settings.integrations.oauthCredentialStorage.options.plaintext": null,
+    "settings.integrations.oauthAuthorizationMode.name": null,
+    "settings.integrations.oauthAuthorizationMode.description": null,
+    "settings.integrations.oauthAuthorizationMode.options.desktop": null,
+    "settings.integrations.oauthAuthorizationMode.options.copyPaste": null,
     "settings.integrations.mobileCalendar.disable.name": {
       "source": "6e520b27bdc72c9f1024cc83ad7112b00650b905",
       "translation": "be19825fc9f8eff212e8506d97032e54d823ba1d"
@@ -22628,6 +22674,9 @@
       "source": "6aa7a8a5d67e1af219adc10b5a90323cba411343",
       "translation": "b26ac1b37a3817c1de128226e3032284b48f2cc9"
     },
+    "settings.integrations.googleCalendarExport.enabledCalendars.name": null,
+    "settings.integrations.googleCalendarExport.enabledCalendars.description": null,
+    "settings.integrations.googleCalendarExport.enabledCalendars.noCalendars": null,
     "settings.integrations.googleCalendarExport.syncTrigger.name": {
       "source": "a9c6916ed299370eaba665a0c08d8aa6a42505bb",
       "translation": "37c7808153aeed407494967a5f0d15abc066af66"
@@ -24380,6 +24429,10 @@
       "source": "d1f86d5227e987ad9feec36387a01f71ac50987e",
       "translation": "3b3eae0b1b54b8f551d41a0dea45ab0c79b93b7a"
     },
+    "modals.task.googleCalendar.name": null,
+    "modals.task.googleCalendar.useDefaultTarget": null,
+    "modals.task.googleCalendar.unavailable": null,
+    "modals.task.googleCalendar.unavailableDescription": null,
     "modals.task.actions.due": {
       "source": "ecf07cea2d2a6681f6074ac3d82bcae990c04a8d",
       "translation": "9d1c189a967291eebcffac65e0e60247ead079fc"
@@ -25268,6 +25321,10 @@
       "source": "cf874861c171987e28af7f10e4174836f724ed27",
       "translation": "02277fdd5360b4c6b808b996179dfd63a682156a"
     },
+    "contextMenus.task.calendar.setTaskTarget": null,
+    "contextMenus.task.calendar.useDefaultTarget": null,
+    "contextMenus.task.calendar.overrideSaved": null,
+    "contextMenus.task.calendar.defaultRestored": null,
     "contextMenus.task.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "a1e1903a7ee91c0a90e6208f97b4a7fb12c448d3"
@@ -31006,6 +31063,14 @@
       "source": "1d5d9e14e6b6541bc31c38623049716e8c4b7e73",
       "translation": "93898b212d23bd89de129e380206728a2beb3920"
     },
+    "settings.integrations.oauthCredentialStorage.name": null,
+    "settings.integrations.oauthCredentialStorage.description": null,
+    "settings.integrations.oauthCredentialStorage.options.secret": null,
+    "settings.integrations.oauthCredentialStorage.options.plaintext": null,
+    "settings.integrations.oauthAuthorizationMode.name": null,
+    "settings.integrations.oauthAuthorizationMode.description": null,
+    "settings.integrations.oauthAuthorizationMode.options.desktop": null,
+    "settings.integrations.oauthAuthorizationMode.options.copyPaste": null,
     "settings.integrations.mobileCalendar.disable.name": {
       "source": "6e520b27bdc72c9f1024cc83ad7112b00650b905",
       "translation": "b4087dcdfc0d365f79f444f53a9221d9e0253284"
@@ -31638,6 +31703,9 @@
       "source": "6aa7a8a5d67e1af219adc10b5a90323cba411343",
       "translation": "94320aad6cd4ca66fcb317487760229207a563ae"
     },
+    "settings.integrations.googleCalendarExport.enabledCalendars.name": null,
+    "settings.integrations.googleCalendarExport.enabledCalendars.description": null,
+    "settings.integrations.googleCalendarExport.enabledCalendars.noCalendars": null,
     "settings.integrations.googleCalendarExport.syncTrigger.name": {
       "source": "a9c6916ed299370eaba665a0c08d8aa6a42505bb",
       "translation": "8b81efb8bd8f0daccd13e0bc797b34a39eabc8e1"
@@ -33390,6 +33458,10 @@
       "source": "d1f86d5227e987ad9feec36387a01f71ac50987e",
       "translation": "f98bcee411bb492921551ff3e6d1dd449ecfe287"
     },
+    "modals.task.googleCalendar.name": null,
+    "modals.task.googleCalendar.useDefaultTarget": null,
+    "modals.task.googleCalendar.unavailable": null,
+    "modals.task.googleCalendar.unavailableDescription": null,
     "modals.task.actions.due": {
       "source": "ecf07cea2d2a6681f6074ac3d82bcae990c04a8d",
       "translation": "66bd7e64ba93ecb64a23e690462b5264b3906040"
@@ -34278,6 +34350,10 @@
       "source": "cf874861c171987e28af7f10e4174836f724ed27",
       "translation": "18a2e75f2f20386396a20e2926faaa0109abf699"
     },
+    "contextMenus.task.calendar.setTaskTarget": null,
+    "contextMenus.task.calendar.useDefaultTarget": null,
+    "contextMenus.task.calendar.overrideSaved": null,
+    "contextMenus.task.calendar.defaultRestored": null,
     "contextMenus.task.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "f5969b332b9a921a81f68cec1c26712f421d4156"
@@ -40016,6 +40092,38 @@
       "source": "1d5d9e14e6b6541bc31c38623049716e8c4b7e73",
       "translation": "22facfb6e513e03c831954167a484feb91701b01"
     },
+    "settings.integrations.oauthCredentialStorage.name": {
+      "source": "7911497dfbfeb73f2c07c6f78991981d6f8ec563",
+      "translation": "1afe806306fbfb4d9d3a1ad9a46b9c6e6c05865c"
+    },
+    "settings.integrations.oauthCredentialStorage.description": {
+      "source": "20e0629677e5baa1923684f5fdb6f7fa6556724f",
+      "translation": "04ddc09a3b917a215c4495d5fa84b287b5aed573"
+    },
+    "settings.integrations.oauthCredentialStorage.options.secret": {
+      "source": "d1259932620d14c435f11b448b522de883eddf8a",
+      "translation": "77067cfe28a306c824a93c87001b7da05aa2de2a"
+    },
+    "settings.integrations.oauthCredentialStorage.options.plaintext": {
+      "source": "b5fe13207845b07f267b65f3922aebbbda5b197d",
+      "translation": "476dce360908bcdda681ef12543e88b7a1d4339d"
+    },
+    "settings.integrations.oauthAuthorizationMode.name": {
+      "source": "d110f64d189d3d5c1bdf2645315fda3e3c411dfa",
+      "translation": "c2b1a1befd53d4fb456143debb2e8151211d2fc8"
+    },
+    "settings.integrations.oauthAuthorizationMode.description": {
+      "source": "9de1cbf8995a0e1244e9ea273854cb854c1691c5",
+      "translation": "dd5dc8ccff049e608044ab12028f03cda5bf6cff"
+    },
+    "settings.integrations.oauthAuthorizationMode.options.desktop": {
+      "source": "d71ea8231c49527fa0fe412f4219d6d442ed0d07",
+      "translation": "5b27590940a18bfee02dc7dd6894e6e0258764cc"
+    },
+    "settings.integrations.oauthAuthorizationMode.options.copyPaste": {
+      "source": "31fbb4cac2fee15bc519d28942a540d095b69ac3",
+      "translation": "1ba6a592628d7be977014211aff2461165c3aa61"
+    },
     "settings.integrations.mobileCalendar.disable.name": {
       "source": "6e520b27bdc72c9f1024cc83ad7112b00650b905",
       "translation": "8f4e24ccc813789664b2ffbfe8d791a9976d3ceb"
@@ -40647,6 +40755,18 @@
     "settings.integrations.googleCalendarExport.targetCalendar.primarySuffix": {
       "source": "6aa7a8a5d67e1af219adc10b5a90323cba411343",
       "translation": "34988861a70c5194ff95bf5d8f8ea1ec4607427e"
+    },
+    "settings.integrations.googleCalendarExport.enabledCalendars.name": {
+      "source": "6302c92cf8fb34094446ffc60b391f63aaeddb9e",
+      "translation": "fbb51537ee58f22ac00f840e2731d21c7ddd5177"
+    },
+    "settings.integrations.googleCalendarExport.enabledCalendars.description": {
+      "source": "f1f3773ec501c8f995e01d6810d0155890836b7d",
+      "translation": "66889a85c4a57fe4f29fc4c776ad57c043f9dfc5"
+    },
+    "settings.integrations.googleCalendarExport.enabledCalendars.noCalendars": {
+      "source": "ea7fafadf3ec2f96146ed4c1fd8da7f906f9ed99",
+      "translation": "8e08d06a2bbe8d94cdb15f1d5959dbf9f29e7279"
     },
     "settings.integrations.googleCalendarExport.syncTrigger.name": {
       "source": "a9c6916ed299370eaba665a0c08d8aa6a42505bb",
@@ -42400,6 +42520,22 @@
       "source": "d1f86d5227e987ad9feec36387a01f71ac50987e",
       "translation": "eb9ac080fb66e2cc6662c0217533c0d0e3186a76"
     },
+    "modals.task.googleCalendar.name": {
+      "source": "570374e4e4cc42f26e069bb5d791b5bbe89e4068",
+      "translation": "e3a9a8e61ce6d58425c2feed2607a7c08b539ba3"
+    },
+    "modals.task.googleCalendar.useDefaultTarget": {
+      "source": "5c6ab8c06ae6347e08a3919e0f5644ff0a7e20d1",
+      "translation": "1d724e97b17459e30394d0c8f840dcf79b904042"
+    },
+    "modals.task.googleCalendar.unavailable": {
+      "source": "1be631eb2c78f70f01f555c39c622e1a55dcf58e",
+      "translation": "80ab41f449bd9c00ded5ad3089b22c8c61ffa444"
+    },
+    "modals.task.googleCalendar.unavailableDescription": {
+      "source": "0000da376d6c07958029c677e4a1430edd479bc1",
+      "translation": "0879236b3321a6585d6b6e801938be34de8ed431"
+    },
     "modals.task.actions.due": {
       "source": "ecf07cea2d2a6681f6074ac3d82bcae990c04a8d",
       "translation": "3a62361e71f557ce405601c25bd33821c05e8c15"
@@ -43288,6 +43424,10 @@
       "source": "cf874861c171987e28af7f10e4174836f724ed27",
       "translation": "7b5c015bb5ac5f8ce6ce9ce046b4b1fab1a09f6b"
     },
+    "contextMenus.task.calendar.setTaskTarget": null,
+    "contextMenus.task.calendar.useDefaultTarget": null,
+    "contextMenus.task.calendar.overrideSaved": null,
+    "contextMenus.task.calendar.defaultRestored": null,
     "contextMenus.task.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "b65a1e0b3cadf3bb2e7a75790c3faa29a455554e"
@@ -49026,6 +49166,14 @@
       "source": "1d5d9e14e6b6541bc31c38623049716e8c4b7e73",
       "translation": "2feba49c24ada6c9ca22aefbd99080543d278587"
     },
+    "settings.integrations.oauthCredentialStorage.name": null,
+    "settings.integrations.oauthCredentialStorage.description": null,
+    "settings.integrations.oauthCredentialStorage.options.secret": null,
+    "settings.integrations.oauthCredentialStorage.options.plaintext": null,
+    "settings.integrations.oauthAuthorizationMode.name": null,
+    "settings.integrations.oauthAuthorizationMode.description": null,
+    "settings.integrations.oauthAuthorizationMode.options.desktop": null,
+    "settings.integrations.oauthAuthorizationMode.options.copyPaste": null,
     "settings.integrations.mobileCalendar.disable.name": {
       "source": "6e520b27bdc72c9f1024cc83ad7112b00650b905",
       "translation": "9ad03186cc7b115a04656549ce8bfd3500b19aac"
@@ -49658,6 +49806,9 @@
       "source": "6aa7a8a5d67e1af219adc10b5a90323cba411343",
       "translation": "b26ac1b37a3817c1de128226e3032284b48f2cc9"
     },
+    "settings.integrations.googleCalendarExport.enabledCalendars.name": null,
+    "settings.integrations.googleCalendarExport.enabledCalendars.description": null,
+    "settings.integrations.googleCalendarExport.enabledCalendars.noCalendars": null,
     "settings.integrations.googleCalendarExport.syncTrigger.name": {
       "source": "a9c6916ed299370eaba665a0c08d8aa6a42505bb",
       "translation": "5de216cabf468e8652eef2210e43209e0419e8ef"
@@ -51410,6 +51561,10 @@
       "source": "d1f86d5227e987ad9feec36387a01f71ac50987e",
       "translation": "cb455885fc6834e1d21311690e47948e9897fc5f"
     },
+    "modals.task.googleCalendar.name": null,
+    "modals.task.googleCalendar.useDefaultTarget": null,
+    "modals.task.googleCalendar.unavailable": null,
+    "modals.task.googleCalendar.unavailableDescription": null,
     "modals.task.actions.due": {
       "source": "ecf07cea2d2a6681f6074ac3d82bcae990c04a8d",
       "translation": "77c16f47795dffb1d8c7f69374f0129fe955d6da"
@@ -52298,6 +52453,10 @@
       "source": "cf874861c171987e28af7f10e4174836f724ed27",
       "translation": "ff19cf0404444a18eabca7e54501155614a09775"
     },
+    "contextMenus.task.calendar.setTaskTarget": null,
+    "contextMenus.task.calendar.useDefaultTarget": null,
+    "contextMenus.task.calendar.overrideSaved": null,
+    "contextMenus.task.calendar.defaultRestored": null,
     "contextMenus.task.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "214469f5cc1695d05fa9154b92960cad62d68429"
@@ -58036,6 +58195,14 @@
       "source": "1d5d9e14e6b6541bc31c38623049716e8c4b7e73",
       "translation": "20ca2d8de2414631f815faf8f2186b1658be9271"
     },
+    "settings.integrations.oauthCredentialStorage.name": null,
+    "settings.integrations.oauthCredentialStorage.description": null,
+    "settings.integrations.oauthCredentialStorage.options.secret": null,
+    "settings.integrations.oauthCredentialStorage.options.plaintext": null,
+    "settings.integrations.oauthAuthorizationMode.name": null,
+    "settings.integrations.oauthAuthorizationMode.description": null,
+    "settings.integrations.oauthAuthorizationMode.options.desktop": null,
+    "settings.integrations.oauthAuthorizationMode.options.copyPaste": null,
     "settings.integrations.mobileCalendar.disable.name": {
       "source": "6e520b27bdc72c9f1024cc83ad7112b00650b905",
       "translation": "f76af702a8d2afd60074a46bf729fdf573b5b791"
@@ -58668,6 +58835,9 @@
       "source": "6aa7a8a5d67e1af219adc10b5a90323cba411343",
       "translation": "7a1f9776756733c944d1163e89ee2bd6c357f5ac"
     },
+    "settings.integrations.googleCalendarExport.enabledCalendars.name": null,
+    "settings.integrations.googleCalendarExport.enabledCalendars.description": null,
+    "settings.integrations.googleCalendarExport.enabledCalendars.noCalendars": null,
     "settings.integrations.googleCalendarExport.syncTrigger.name": {
       "source": "a9c6916ed299370eaba665a0c08d8aa6a42505bb",
       "translation": "590ae6a8a2ddbb5172d993e4b557c7dbc785db2c"
@@ -60420,6 +60590,10 @@
       "source": "d1f86d5227e987ad9feec36387a01f71ac50987e",
       "translation": "2808dd841af40296a1083d396549e6c47a7ac4d1"
     },
+    "modals.task.googleCalendar.name": null,
+    "modals.task.googleCalendar.useDefaultTarget": null,
+    "modals.task.googleCalendar.unavailable": null,
+    "modals.task.googleCalendar.unavailableDescription": null,
     "modals.task.actions.due": {
       "source": "ecf07cea2d2a6681f6074ac3d82bcae990c04a8d",
       "translation": "23ba71c9ff6b67a5966dea1e8b9eaa24137a6575"
@@ -61308,6 +61482,10 @@
       "source": "cf874861c171987e28af7f10e4174836f724ed27",
       "translation": "a294eea58c349e1f8e661a09f546780241a1a7bb"
     },
+    "contextMenus.task.calendar.setTaskTarget": null,
+    "contextMenus.task.calendar.useDefaultTarget": null,
+    "contextMenus.task.calendar.overrideSaved": null,
+    "contextMenus.task.calendar.defaultRestored": null,
     "contextMenus.task.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "107232ba34a46152dd3a329fa95083c480bc0acd"
@@ -67046,6 +67224,14 @@
       "source": "1d5d9e14e6b6541bc31c38623049716e8c4b7e73",
       "translation": "793dccb55ccc24e14c51eb0db51c7436af4ce9f2"
     },
+    "settings.integrations.oauthCredentialStorage.name": null,
+    "settings.integrations.oauthCredentialStorage.description": null,
+    "settings.integrations.oauthCredentialStorage.options.secret": null,
+    "settings.integrations.oauthCredentialStorage.options.plaintext": null,
+    "settings.integrations.oauthAuthorizationMode.name": null,
+    "settings.integrations.oauthAuthorizationMode.description": null,
+    "settings.integrations.oauthAuthorizationMode.options.desktop": null,
+    "settings.integrations.oauthAuthorizationMode.options.copyPaste": null,
     "settings.integrations.mobileCalendar.disable.name": {
       "source": "6e520b27bdc72c9f1024cc83ad7112b00650b905",
       "translation": "2050a07cf09a359da574ade36be2556899b5aafb"
@@ -67678,6 +67864,9 @@
       "source": "6aa7a8a5d67e1af219adc10b5a90323cba411343",
       "translation": "3a30e40f008c4efa1bf929478c5f1c8ce3f712bb"
     },
+    "settings.integrations.googleCalendarExport.enabledCalendars.name": null,
+    "settings.integrations.googleCalendarExport.enabledCalendars.description": null,
+    "settings.integrations.googleCalendarExport.enabledCalendars.noCalendars": null,
     "settings.integrations.googleCalendarExport.syncTrigger.name": {
       "source": "a9c6916ed299370eaba665a0c08d8aa6a42505bb",
       "translation": "2065b1010d228769cf55e4c72f2b10c5a67978b2"
@@ -69430,6 +69619,10 @@
       "source": "d1f86d5227e987ad9feec36387a01f71ac50987e",
       "translation": "40516c8f045553da81624db7da31da311d942c51"
     },
+    "modals.task.googleCalendar.name": null,
+    "modals.task.googleCalendar.useDefaultTarget": null,
+    "modals.task.googleCalendar.unavailable": null,
+    "modals.task.googleCalendar.unavailableDescription": null,
     "modals.task.actions.due": {
       "source": "ecf07cea2d2a6681f6074ac3d82bcae990c04a8d",
       "translation": "f026d9b9641613528baa06c0e18ed8d76071aab5"
@@ -70318,6 +70511,10 @@
       "source": "cf874861c171987e28af7f10e4174836f724ed27",
       "translation": "50cb97376d54a93aae893f974e51fb9ebbc9ee82"
     },
+    "contextMenus.task.calendar.setTaskTarget": null,
+    "contextMenus.task.calendar.useDefaultTarget": null,
+    "contextMenus.task.calendar.overrideSaved": null,
+    "contextMenus.task.calendar.defaultRestored": null,
     "contextMenus.task.recurrence": {
       "source": "f7ad40f58caa3ee3d9e72be4378d5acf7807f657",
       "translation": "6e708ba759df876033086fc8c687785ca4c74b6c"
