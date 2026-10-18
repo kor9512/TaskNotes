@@ -3,10 +3,12 @@ import { Menu, Notice, TFile, setIcon } from "obsidian";
 import type { BasesView, BasesViewFactory } from "obsidian";
 import TaskNotesPlugin from "../main";
 import { BasesViewBase } from "./BasesViewBase";
+import { readBasesViewConfigValue, readBasesViewPropertyId } from "./basesViewConfig";
 import { TaskInfo } from "../types";
 import { identifyTaskNotesFromBasesData } from "./helpers";
 import { createTaskCard, showTaskContextMenu, type TaskCardOptions } from "../ui/TaskCard";
 import { getTaskCardPropertyValue } from "../ui/taskCardPropertyAccess";
+import { normalizeTaskSignatureValue } from "./taskSignatureValue";
 import { renderGroupTitle } from "./groupTitleRenderer";
 import { type LinkServices } from "../ui/renderers/linkRenderer";
 import { DateContextMenu } from "../components/DateContextMenu";
@@ -308,23 +310,22 @@ export class TaskListView extends BasesViewBase {
 		}
 
 		try {
-			this.subGroupPropertyId = this.config.getAsPropertyId("subGroup");
+			const get = (key: string): unknown => readBasesViewConfigValue(this.config, key);
+			this.subGroupPropertyId = readBasesViewPropertyId(this.config, "subGroup");
 			// Read enableSearch toggle (default: false for backward compatibility)
-			const enableSearchValue = this.config.get("enableSearch");
+			const enableSearchValue = get("enableSearch");
 			this.enableSearch = (enableSearchValue as boolean) ?? false;
-			const defaultCollapsedStateValue = this.config.get("defaultCollapsedState");
+			const defaultCollapsedStateValue = get("defaultCollapsedState");
 
 			this.defaultCollapsedState =
 				defaultCollapsedStateValue === "Collapsed" || defaultCollapsedStateValue === "1"
 					? "Collapsed"
 					: "Expanded";
-			const expandedRelationshipFilterModeValue = this.config.get(
-				"expandedRelationshipFilterMode"
-			);
+			const expandedRelationshipFilterModeValue = get("expandedRelationshipFilterMode");
 			this.expandedRelationshipFilterMode = normalizeExpandedRelationshipFilterMode(
 				expandedRelationshipFilterModeValue
 			);
-			this.hideTopLevelSubtasks = this.config.get("hideTopLevelSubtasks") === true;
+			this.hideTopLevelSubtasks = get("hideTopLevelSubtasks") === true;
 			// Mark config as successfully loaded
 			this.configLoaded = true;
 		} catch (e) {
@@ -2888,13 +2889,16 @@ export class TaskListView extends BasesViewBase {
 		// Snapshot task data, not just a hand-maintained subset: badges and controls
 		// also depend on fields that may not be selected as visible properties.
 		// Raw Bases entries are live objects (and can be circular); resolve only
-		// displayed values through the same accessor used by task cards instead.
-		return JSON.stringify({
-			task: { ...task, basesData: undefined },
-			visibleValues: visibleProperties.map((property) =>
-				getTaskCardPropertyValue(task, property, this.plugin)
-			),
-		});
+		// displayed values through the same accessor used by task cards instead,
+		// then normalize any Bases Values those accessors return.
+		return JSON.stringify(
+			normalizeTaskSignatureValue({
+				task: { ...task, basesData: undefined },
+				visibleValues: visibleProperties.map((property) =>
+					getTaskCardPropertyValue(task, property, this.plugin)
+				),
+			})
+		);
 	}
 
 	private buildCardRenderSignature(

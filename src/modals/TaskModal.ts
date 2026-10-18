@@ -563,7 +563,7 @@ export abstract class TaskModal extends Modal {
 	protected getCoreActionIconSpecs(): TaskModalActionIconSpec[] {
 		return [
 			{
-				iconName: "dot-square",
+				iconName: "circle",
 				tooltip: this.t("modals.task.actions.status"),
 				onClick: (_, event) => {
 					this.showStatusContextMenu(event);
