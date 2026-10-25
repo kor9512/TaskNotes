@@ -95,6 +95,31 @@ export const en: TranslationTree = {
 			expandAllGroups: "Expand all groups",
 			collapseAllGroups: "Collapse all groups",
 			noTasksFound: "No tasks found for the selected filters.",
+			movement: {
+				parentAdd: "Add as subtask",
+				parentChoose: "Add as subtask of…",
+				parentPreview: "Add as subtask of {parent}. Other projects stay unchanged.",
+				parentSelf: "A task cannot be its own parent.",
+				parentCycle: "Cannot add a task under one of its descendants.",
+				parentAlready: "Already a subtask of {parent}.",
+				parentUnavailable: "Both tasks must still exist and be TaskNotes tasks.",
+				parentAssigned: "Added as a subtask of {parent}.",
+				handle: "Move task",
+				moveTo: "Move to a group",
+				keepSubgroup: "Keep current subgroup",
+				moveUp: "Move up",
+				moveDown: "Move down",
+				moved: "Task moved.",
+				undo: "Undo",
+				undoConflict: "Cannot undo: this task changed after the move.",
+				undoFailed: "Could not undo this move.",
+				noValue: "No value",
+				otherDestinations: "Other destinations",
+				readOnly: "Cannot change {properties}: these groups are read-only.",
+				unresolved: "Cannot determine the {properties} values for this destination.",
+				noChange: "Already in this group.",
+				failed: "Could not move the task. Check the task and try again.",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "this ungrouped list",
@@ -513,6 +538,58 @@ export const en: TranslationTree = {
 			features: "Features",
 			integrations: "Integrations",
 		},
+		modalFields: {
+			header: "Task modal fields configuration",
+			description:
+				"Configure which fields appear in task creation and edit modals. Drag fields to reorder them within each group.",
+			splitLayout: {
+				name: "Split layout on wide screens",
+				description:
+					"When enabled, the details editor appears in a right column on screens 900px or wider. When disabled, the modal uses a stacked layout.",
+			},
+			tabMovesFocus: {
+				name: "Tab moves focus in details editor",
+				description:
+					"When enabled, Tab moves from the details editor to the next modal field and Shift+Tab moves to the previous field. When disabled, Tab and Shift+Tab use the markdown editor's indentation behavior.",
+			},
+			sync: {
+				name: "Sync user fields",
+				description:
+					"Click to sync custom user fields from task properties settings into this configuration.",
+				button: "Sync user fields",
+				notice: "User fields synced to modal configuration",
+			},
+			reset: {
+				name: "Reset to defaults",
+				description:
+					"Reset all field configurations to their default values. This will remove any custom configurations.",
+				button: "Reset to defaults",
+				confirmTitle: "Reset field configuration",
+				confirmMessage:
+					"Are you sure you want to reset field configuration to defaults? This will remove any custom field configurations.",
+				confirmText: "Reset",
+				cancelText: "Cancel",
+				notice: "Field configuration reset to defaults",
+			},
+			initError: "Error: Could not initialize field configuration",
+			manager: {
+				invalidConfig: "Error: Invalid field configuration. Please reset to defaults.",
+				emptyGroup: "No fields in this group",
+				enabled: "Enabled:",
+				showInCreation: "Show in creation:",
+				showInEdit: "Show in edit:",
+				group: "Group:",
+				fieldId: "ID: {id}",
+				fieldKey: "Key: {key}",
+				noKey: "No key set",
+				fieldTypes: {
+					core: "Core",
+					user: "User",
+					dependency: "Dependency",
+					organization: "Organization",
+				},
+			},
+		},
 		features: {
 			inlineTasks: {
 				header: "Inline tasks",
@@ -572,6 +649,11 @@ export const en: TranslationTree = {
 					name: "Default to scheduled",
 					description:
 						"When NLP detects a date without context, treat it as scheduled rather than due",
+				},
+				enterToSubmit: {
+					name: "Enter saves task",
+					description:
+						"In the natural language input, press Enter to save the task. Shift+Enter inserts a newline, and Ctrl/Cmd+Enter still saves.",
 				},
 				language: {
 					name: "NLP language",
@@ -2396,6 +2478,16 @@ export const en: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Language changed to {language}.",
+		recurringCompletion: {
+			completed: "Completed occurrence: {date}",
+			incomplete: "Marked incomplete: {date}",
+			next: "Next: {date}",
+			noNext: "No next occurrence",
+			undo: "Undo",
+			undone: "Recurring task change undone.",
+			conflict: "Cannot undo: this occurrence or its schedule has changed.",
+			failed: "Could not undo the recurring task change.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} is available.",
 			action: "Open in community plugins",
@@ -3319,6 +3411,21 @@ export const en: TranslationTree = {
 			notices: {
 				// NotificationService uses Notice for in-app notifications
 				// but the message comes from the reminder content, so no hardcoded strings to translate
+			},
+			missed: {
+				prefixToday: "Missed reminder ({time})",
+				prefixOnDay: "Missed reminder ({day}, {time})",
+				message: "{prefix}: {text}",
+				dueWas: "{title} was due {when}",
+				dueIs: "{title} is due {when}",
+				scheduledWas: "{title} was scheduled {when}",
+				scheduledIs: "{title} is scheduled {when}",
+				whenTodayAt: "at {time}",
+				whenOnDayAt: "on {day} at {time}",
+				whenOnDay: "on {day}",
+				whenToday: "today",
+				summaryTitle: "{count} missed TaskNotes reminders",
+				summaryMore: "{titles} and {count} more",
 			},
 		},
 	},

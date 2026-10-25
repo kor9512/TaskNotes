@@ -93,6 +93,31 @@ export const ko: TranslationTree = {
 			expandAllGroups: "모든 그룹 펼치기",
 			collapseAllGroups: "모든 그룹 접기",
 			noTasksFound: "선택한 필터에 해당하는 작업이 없습니다.",
+			movement: {
+				parentAdd: "하위 작업으로 추가",
+				parentChoose: "상위 작업 선택…",
+				parentPreview: "{parent}의 하위 작업으로 추가합니다. 다른 프로젝트는 변경되지 않습니다.",
+				parentSelf: "작업은 자신의 상위 작업이 될 수 없습니다.",
+				parentCycle: "작업을 자신의 하위 작업 아래에 추가할 수 없습니다.",
+				parentAlready: "이미 {parent}의 하위 작업입니다.",
+				parentUnavailable: "두 작업이 모두 존재하며 TaskNotes 작업이어야 합니다.",
+				parentAssigned: "{parent}의 하위 작업으로 추가했습니다.",
+				handle: "작업 이동",
+				moveTo: "그룹으로 이동",
+				keepSubgroup: "현재 하위 그룹 유지",
+				moveUp: "위로 이동",
+				moveDown: "아래로 이동",
+				moved: "작업을 이동했습니다.",
+				undo: "실행 취소",
+				undoConflict: "이동 후 작업이 변경되어 실행 취소할 수 없습니다.",
+				undoFailed: "이동을 실행 취소하지 못했습니다.",
+				noValue: "값 없음",
+				otherDestinations: "다른 이동 대상",
+				readOnly: "{properties}을(를) 변경할 수 없습니다. 이 그룹은 읽기 전용입니다.",
+				unresolved: "이 대상의 {properties} 값을 확인할 수 없습니다.",
+				noChange: "이미 이 그룹에 있습니다.",
+				failed: "작업을 이동하지 못했습니다. 작업을 확인하고 다시 시도하세요.",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "이 그룹 없는 목록",
@@ -500,6 +525,52 @@ export const ko: TranslationTree = {
 			features: "기능",
 			integrations: "통합"
 		},
+		modalFields: {
+			header: "작업 모달의 필드 구성",
+			description: "작업 생성 및 편집 모달에 표시할 필드를 구성합니다. 필드를 드래그하여 각 그룹 내에서 순서를 변경하세요.",
+			splitLayout: {
+				name: "넓은 화면에서 분할 레이아웃",
+				description: "활성화하면 900px 이상 화면에서 세부사항 편집기가 오른쪽 열에 나타납니다. 비활성화하면 모달이 스택 레이아웃을 사용합니다."
+			},
+			tabMovesFocus: {
+				name: "세부사항 편집기에서 Tab으로 포커스 이동",
+				description: "활성화하면 Tab이 세부사항 편집기에서 다음 모달 필드로, Shift+Tab이 이전 필드로 포커스를 이동합니다. 비활성화하면 Tab과 Shift+Tab은 Markdown 편집기의 들여쓰기 동작을 사용합니다."
+			},
+			sync: {
+				name: "사용자 필드 동기화",
+				description: "클릭하여 작업 속성 설정의 사용자 지정 필드를 이 구성으로 동기화합니다.",
+				button: "사용자 필드 동기화",
+				notice: "사용자 필드가 모달 구성에 동기화되었습니다"
+			},
+			reset: {
+				name: "기본값으로 재설정",
+				description: "모든 필드 구성을 기본값으로 재설정합니다. 사용자 지정 구성이 모두 제거됩니다.",
+				button: "기본값으로 재설정",
+				confirmTitle: "필드 구성을 기본값으로 재설정",
+				confirmMessage: "필드 구성을 기본값으로 재설정하시겠습니까? 모든 사용자 지정 필드 구성이 제거됩니다.",
+				confirmText: "재설정",
+				cancelText: "취소",
+				notice: "필드 구성이 기본값으로 재설정되었습니다"
+			},
+			initError: "오류: 필드 구성을 초기화할 수 없습니다",
+			manager: {
+				invalidConfig: "오류: 필드 구성이 잘못되었습니다. 기본값으로 재설정하세요.",
+				emptyGroup: "이 그룹에 필드가 없습니다",
+				enabled: "사용:",
+				showInCreation: "생성할 때 표시:",
+				showInEdit: "편집할 때 표시:",
+				group: "그룹:",
+				fieldId: "ID: {id}",
+				fieldKey: "키: {key}",
+				noKey: "키가 설정되지 않음",
+				fieldTypes: {
+					core: "기본",
+					user: "사용자",
+					dependency: "의존성",
+					organization: "정리",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "인라인 작업",
@@ -552,6 +623,10 @@ export const ko: TranslationTree = {
 				defaultToScheduled: {
 					name: "예정일로 기본 설정",
 					description: "NLP가 컨텍스트 없이 날짜를 감지하면 마감일 대신 예정일로 처리"
+				},
+				enterToSubmit: {
+					name: "Enter로 작업 저장",
+					description: "자연어 입력에서 Enter를 누르면 작업이 저장됩니다. Shift+Enter는 줄바꿈을 삽입하며, Ctrl/Cmd+Enter로도 계속 저장할 수 있습니다."
 				},
 				language: {
 					name: "NLP 언어",
@@ -2228,6 +2303,16 @@ export const ko: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "언어가 {language}(으)로 변경되었습니다.",
+		recurringCompletion: {
+			completed: "완료한 반복 일정: {date}",
+			incomplete: "미완료로 변경: {date}",
+			next: "다음: {date}",
+			noNext: "다음 반복 일정 없음",
+			undo: "실행 취소",
+			undone: "반복 작업 변경을 취소했습니다.",
+			conflict: "실행 취소할 수 없습니다. 이 반복 일정이나 예약이 변경되었습니다.",
+			failed: "반복 작업 변경을 취소하지 못했습니다.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} 릴리스를 사용할 수 있습니다.",
 			action: "커뮤니티 플러그인에서 열기"
@@ -3121,7 +3206,24 @@ export const ko: TranslationTree = {
 			notices: {
 				exportFailed: "TaskNotes 자동 내보내기 실패: {error}"
 			}
-		}
+		},
+		notification: {
+			missed: {
+				prefixToday: "놓친 알림 ({time})",
+				prefixOnDay: "놓친 알림 ({day}, {time})",
+				message: "{prefix}: {text}",
+				dueWas: "{title}의 마감 기한({when})이 지났습니다",
+				dueIs: "{title}의 마감 기한은 {when}입니다",
+				scheduledWas: "{title}의 예정 일시({when})가 지났습니다",
+				scheduledIs: "{title}의 예정 일시는 {when}입니다",
+				whenTodayAt: "{time}",
+				whenOnDayAt: "{day} {time}",
+				whenOnDay: "{day}",
+				whenToday: "오늘",
+				summaryTitle: "놓친 TaskNotes 알림 {count}개",
+				summaryMore: "{titles} 외 {count}개",
+			},
+		},
 	},
 	ui: {
 		icsCard: {

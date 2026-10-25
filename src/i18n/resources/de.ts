@@ -93,6 +93,31 @@ export const de: TranslationTree = {
 			expandAllGroups: "Alle Gruppen ausklappen",
 			collapseAllGroups: "Alle Gruppen einklappen",
 			noTasksFound: "Keine Aufgaben für die gewählten Filter gefunden.",
+			movement: {
+				parentAdd: "Als Unteraufgabe hinzufügen",
+				parentChoose: "Als Unteraufgabe hinzufügen zu…",
+				parentPreview: "Als Unteraufgabe von {parent} hinzufügen. Andere Projekte bleiben unverändert.",
+				parentSelf: "Eine Aufgabe kann nicht ihre eigene übergeordnete Aufgabe sein.",
+				parentCycle: "Eine Aufgabe kann keiner ihrer Unteraufgaben untergeordnet werden.",
+				parentAlready: "Bereits eine Unteraufgabe von {parent}.",
+				parentUnavailable: "Beide Aufgaben müssen noch existieren und TaskNotes-Aufgaben sein.",
+				parentAssigned: "Als Unteraufgabe von {parent} hinzugefügt.",
+				handle: "Aufgabe verschieben",
+				moveTo: "In eine Gruppe verschieben",
+				keepSubgroup: "Aktuelle Untergruppe beibehalten",
+				moveUp: "Nach oben verschieben",
+				moveDown: "Nach unten verschieben",
+				moved: "Aufgabe verschoben.",
+				undo: "Rückgängig",
+				undoConflict: "Rückgängig nicht möglich: Die Aufgabe wurde nach dem Verschieben geändert.",
+				undoFailed: "Das Verschieben konnte nicht rückgängig gemacht werden.",
+				noValue: "Kein Wert",
+				otherDestinations: "Weitere Ziele",
+				readOnly: "{properties} können nicht geändert werden: Diese Gruppen sind schreibgeschützt.",
+				unresolved: "Die Werte für {properties} können für dieses Ziel nicht ermittelt werden.",
+				noChange: "Bereits in dieser Gruppe.",
+				failed: "Die Aufgabe konnte nicht verschoben werden. Prüfe die Aufgabe und versuche es erneut.",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "diese ungegliederte Liste",
@@ -500,6 +525,52 @@ export const de: TranslationTree = {
 			features: "Funktionen",
 			integrations: "Integrationen"
 		},
+		modalFields: {
+			header: "Feldkonfiguration des Aufgaben-Modals",
+			description: "Konfigurieren Sie, welche Felder in den Modalen zur Aufgabenerstellung und -bearbeitung angezeigt werden. Ziehen Sie Felder, um sie innerhalb jeder Gruppe neu anzuordnen.",
+			splitLayout: {
+				name: "Geteiltes Layout auf breiten Bildschirmen",
+				description: "Wenn aktiviert, erscheint der Detail-Editor auf Bildschirmen mit 900 px oder mehr in einer rechten Spalte. Wenn deaktiviert, verwendet das Modal ein gestapeltes Layout."
+			},
+			tabMovesFocus: {
+				name: "Tabulator bewegt den Fokus im Detail-Editor",
+				description: "Wenn aktiviert, bewegt Tab den Fokus vom Detail-Editor zum nächsten Modalfeld und Umschalt+Tab zum vorherigen Feld. Wenn deaktiviert, verwenden Tab und Umschalt+Tab das Einrückungsverhalten des Markdown-Editors."
+			},
+			sync: {
+				name: "Benutzerfelder synchronisieren",
+				description: "Klicken Sie, um benutzerdefinierte Felder aus den Aufgabeneigenschaften-Einstellungen in diese Konfiguration zu synchronisieren.",
+				button: "Benutzerfelder synchronisieren",
+				notice: "Benutzerfelder wurden mit der Modalkonfiguration synchronisiert"
+			},
+			reset: {
+				name: "Auf Standardwerte zurücksetzen",
+				description: "Setzt alle Feldkonfigurationen auf ihre Standardwerte zurück. Dadurch werden alle benutzerdefinierten Konfigurationen entfernt.",
+				button: "Auf Standardwerte zurücksetzen",
+				confirmTitle: "Felderkonfiguration zurücksetzen",
+				confirmMessage: "Möchten Sie die Feldkonfiguration wirklich auf die Standardwerte zurücksetzen? Dadurch werden alle benutzerdefinierten Feldkonfigurationen entfernt.",
+				confirmText: "Zurücksetzen",
+				cancelText: "Abbrechen",
+				notice: "Feldkonfiguration auf Standardwerte zurückgesetzt"
+			},
+			initError: "Fehler: Feldkonfiguration konnte nicht initialisiert werden",
+			manager: {
+				invalidConfig: "Fehler: Ungültige Feldkonfiguration. Bitte auf Standardwerte zurücksetzen.",
+				emptyGroup: "Keine Felder in dieser Gruppe",
+				enabled: "Aktiviert:",
+				showInCreation: "Bei der Erstellung anzeigen:",
+				showInEdit: "Bei der Bearbeitung anzeigen:",
+				group: "Gruppe:",
+				fieldId: "ID: {id}",
+				fieldKey: "Schlüssel: {key}",
+				noKey: "Kein Schlüssel festgelegt",
+				fieldTypes: {
+					core: "Kern",
+					user: "Benutzerdefiniert",
+					dependency: "Abhängigkeit",
+					organization: "Organisation",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "Inline-Aufgaben",
@@ -552,6 +623,10 @@ export const de: TranslationTree = {
 				defaultToScheduled: {
 					name: "Standardmäßig geplant",
 					description: "Wenn NLP ein Datum ohne Kontext erkennt, behandle es als geplant statt fällig"
+				},
+				enterToSubmit: {
+					name: "Enter speichert Aufgabe",
+					description: "Im Eingabefeld für natürliche Sprache speichert Enter die Aufgabe. Umschalt+Enter fügt einen Zeilenumbruch ein, und Strg/Cmd+Enter speichert weiterhin."
 				},
 				language: {
 					name: "NLP-Sprache",
@@ -2223,6 +2298,16 @@ export const de: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Sprache geändert zu {language}.",
+		recurringCompletion: {
+			completed: "Erledigtes Vorkommen: {date}",
+			incomplete: "Als unerledigt markiert: {date}",
+			next: "Nächstes: {date}",
+			noNext: "Kein weiteres Vorkommen",
+			undo: "Rückgängig",
+			undone: "Änderung der wiederkehrenden Aufgabe rückgängig gemacht.",
+			conflict: "Rückgängig nicht möglich: Dieses Vorkommen oder sein Termin wurde geändert.",
+			failed: "Die Änderung der wiederkehrenden Aufgabe konnte nicht rückgängig gemacht werden.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} ist verfügbar.",
 			action: "In Community-Plugins öffnen"
@@ -3110,7 +3195,24 @@ export const de: TranslationTree = {
 			notices: {
 				exportFailed: "TaskNotes Auto-Export fehlgeschlagen: {error}"
 			}
-		}
+		},
+		notification: {
+			missed: {
+				prefixToday: "Verpasste Erinnerung ({time})",
+				prefixOnDay: "Verpasste Erinnerung ({day}, {time})",
+				message: "{prefix}: {text}",
+				dueWas: "{title} war {when} fällig",
+				dueIs: "{title} ist {when} fällig",
+				scheduledWas: "{title} war {when} geplant",
+				scheduledIs: "{title} ist {when} geplant",
+				whenTodayAt: "um {time}",
+				whenOnDayAt: "am {day} um {time}",
+				whenOnDay: "am {day}",
+				whenToday: "heute",
+				summaryTitle: "{count} verpasste TaskNotes-Erinnerungen",
+				summaryMore: "{titles} und {count} weitere",
+			},
+		},
 	},
 	ui: {
 		icsCard: {

@@ -93,6 +93,31 @@ export const fr: TranslationTree = {
 			expandAllGroups: "Déplier tous les groupes",
 			collapseAllGroups: "Replier tous les groupes",
 			noTasksFound: "Aucune tâche trouvée pour les filtres sélectionnés.",
+			movement: {
+				parentAdd: "Ajouter comme sous-tâche",
+				parentChoose: "Ajouter comme sous-tâche de…",
+				parentPreview: "Ajouter comme sous-tâche de {parent}. Les autres projets restent inchangés.",
+				parentSelf: "Une tâche ne peut pas être son propre parent.",
+				parentCycle: "Impossible d’ajouter une tâche sous l’une de ses descendantes.",
+				parentAlready: "Déjà une sous-tâche de {parent}.",
+				parentUnavailable: "Les deux tâches doivent encore exister et être des tâches TaskNotes.",
+				parentAssigned: "Ajoutée comme sous-tâche de {parent}.",
+				handle: "Déplacer la tâche",
+				moveTo: "Déplacer vers un groupe",
+				keepSubgroup: "Conserver le sous-groupe actuel",
+				moveUp: "Monter",
+				moveDown: "Descendre",
+				moved: "Tâche déplacée.",
+				undo: "Annuler",
+				undoConflict: "Annulation impossible : la tâche a été modifiée après le déplacement.",
+				undoFailed: "Impossible d’annuler ce déplacement.",
+				noValue: "Aucune valeur",
+				otherDestinations: "Autres destinations",
+				readOnly: "Impossible de modifier {properties} : ces groupes sont en lecture seule.",
+				unresolved: "Impossible de déterminer les valeurs de {properties} pour cette destination.",
+				noChange: "Déjà dans ce groupe.",
+				failed: "Impossible de déplacer la tâche. Vérifiez la tâche et réessayez.",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "cette liste non groupée",
@@ -500,6 +525,52 @@ export const fr: TranslationTree = {
 			features: "Fonctionnalités",
 			integrations: "Intégrations"
 		},
+		modalFields: {
+			header: "Configuration des champs de la modale de tâches",
+			description: "Configurez les champs affichés dans les modaux de création et de modification de tâches. Glissez les champs pour les réordonner dans chaque groupe.",
+			splitLayout: {
+				name: "Mise en page divisée sur grands écrans",
+				description: "Lorsque cette option est activée, l'éditeur de détails apparaît dans une colonne de droite sur les écrans de 900 px ou plus. Lorsqu'elle est désactivée, le modal utilise une mise en page empilée."
+			},
+			tabMovesFocus: {
+				name: "La tabulation déplace le focus dans l'éditeur de détails",
+				description: "Lorsque cette option est activée, Tab déplace le focus de l'éditeur de détails vers le champ suivant du modal et Maj+Tab vers le champ précédent. Lorsqu'elle est désactivée, Tab et Maj+Tab utilisent le comportement d'indentation de l'éditeur Markdown."
+			},
+			sync: {
+				name: "Synchroniser les champs utilisateur",
+				description: "Cliquez pour synchroniser les champs utilisateur personnalisés des paramètres de propriétés de tâches dans cette configuration.",
+				button: "Synchroniser les champs utilisateur",
+				notice: "Champs utilisateur synchronisés avec la configuration du modal"
+			},
+			reset: {
+				name: "Rétablir les valeurs par défaut",
+				description: "Rétablit toutes les configurations de champs sur leurs valeurs par défaut. Cela supprimera toutes les configurations personnalisées.",
+				button: "Rétablir les valeurs par défaut",
+				confirmTitle: "Réinitialisation de la configuration des champs",
+				confirmMessage: "Voulez-vous vraiment rétablir la configuration des champs par défaut ? Cela supprimera toutes les configurations de champs personnalisées.",
+				confirmText: "Réinitialiser",
+				cancelText: "Annuler",
+				notice: "Configuration des champs rétablie aux valeurs par défaut"
+			},
+			initError: "Erreur : Impossible d'initialiser la configuration des champs",
+			manager: {
+				invalidConfig: "Erreur : Configuration des champs invalide. Veuillez rétablir les valeurs par défaut.",
+				emptyGroup: "Aucun champ dans ce groupe",
+				enabled: "Activé :",
+				showInCreation: "Afficher lors de la création :",
+				showInEdit: "Afficher lors de la modification :",
+				group: "Groupe :",
+				fieldId: "ID : {id}",
+				fieldKey: "Clé : {key}",
+				noKey: "Aucune clé définie",
+				fieldTypes: {
+					core: "Principal",
+					user: "Utilisateur",
+					dependency: "Dépendance",
+					organization: "Organisation",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "Tâches dans les notes",
@@ -552,6 +623,10 @@ export const fr: TranslationTree = {
 				defaultToScheduled: {
 					name: "Planifié par défaut",
 					description: "Si une date est détectée sans contexte, la considérer comme planifiée plutôt qu'échéance"
+				},
+				enterToSubmit: {
+					name: "Entrée enregistre la tâche",
+					description: "Dans la saisie en langage naturel, appuyez sur Entrée pour enregistrer la tâche. Maj+Entrée insère un saut de ligne, et Ctrl/Cmd+Entrée enregistre toujours."
 				},
 				language: {
 					name: "Langue du NLP",
@@ -2223,6 +2298,16 @@ export const fr: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Langue changée pour {language}.",
+		recurringCompletion: {
+			completed: "Occurrence terminée : {date}",
+			incomplete: "Marquée comme non terminée : {date}",
+			next: "Prochaine : {date}",
+			noNext: "Aucune prochaine occurrence",
+			undo: "Annuler",
+			undone: "Modification de la tâche récurrente annulée.",
+			conflict: "Impossible d’annuler : cette occurrence ou sa planification a changé.",
+			failed: "Impossible d’annuler la modification de la tâche récurrente.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} est disponible.",
 			action: "Ouvrir dans les plugins communautaires"
@@ -3110,7 +3195,24 @@ export const fr: TranslationTree = {
 			notices: {
 				exportFailed: "Échec de l'export automatique TaskNotes : {error}"
 			}
-		}
+		},
+		notification: {
+			missed: {
+				prefixToday: "Rappel manqué ({time})",
+				prefixOnDay: "Rappel manqué ({day}, {time})",
+				message: "{prefix} : {text}",
+				dueWas: "La tâche « {title} » arrivait à échéance {when}",
+				dueIs: "La tâche « {title} » arrive à échéance {when}",
+				scheduledWas: "La tâche « {title} » était prévue {when}",
+				scheduledIs: "La tâche « {title} » est prévue {when}",
+				whenTodayAt: "à {time}",
+				whenOnDayAt: "le {day} à {time}",
+				whenOnDay: "le {day}",
+				whenToday: "aujourd'hui",
+				summaryTitle: "{count} rappels TaskNotes manqués",
+				summaryMore: "{titles} et {count} autres",
+			},
+		},
 	},
 	ui: {
 		icsCard: {

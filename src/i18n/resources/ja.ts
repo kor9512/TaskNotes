@@ -93,6 +93,31 @@ export const ja: TranslationTree = {
 			expandAllGroups: "すべてのグループを展開",
 			collapseAllGroups: "すべてのグループを折りたたみ",
 			noTasksFound: "選択されたフィルターにタスクが見つかりませんでした。",
+			movement: {
+				parentAdd: "サブタスクとして追加",
+				parentChoose: "サブタスクの親を選択…",
+				parentPreview: "{parent} のサブタスクとして追加します。他のプロジェクトは変更されません。",
+				parentSelf: "タスクを自身の親にすることはできません。",
+				parentCycle: "子孫タスクの下にタスクを追加することはできません。",
+				parentAlready: "すでに {parent} のサブタスクです。",
+				parentUnavailable: "両方のタスクが存在し、TaskNotes のタスクである必要があります。",
+				parentAssigned: "{parent} のサブタスクとして追加しました。",
+				handle: "タスクを移動",
+				moveTo: "グループに移動",
+				keepSubgroup: "現在のサブグループを維持",
+				moveUp: "上へ移動",
+				moveDown: "下へ移動",
+				moved: "タスクを移動しました。",
+				undo: "元に戻す",
+				undoConflict: "移動後にタスクが変更されたため、元に戻せません。",
+				undoFailed: "この移動を元に戻せませんでした。",
+				noValue: "値なし",
+				otherDestinations: "その他の移動先",
+				readOnly: "{properties} は変更できません。これらのグループは読み取り専用です。",
+				unresolved: "この移動先の {properties} の値を特定できません。",
+				noChange: "すでにこのグループにあります。",
+				failed: "タスクを移動できませんでした。タスクを確認して、もう一度お試しください。",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "この未グループ化リスト",
@@ -500,6 +525,52 @@ export const ja: TranslationTree = {
 			features: "機能",
 			integrations: "統合"
 		},
+		modalFields: {
+			header: "タスクモーダルのフィールド設定",
+			description: "タスク作成モーダルと編集モーダルに表示するフィールドを設定します。フィールドをドラッグして各グループ内で並べ替えできます。",
+			splitLayout: {
+				name: "ワイド画面で分割レイアウト",
+				description: "有効にすると、900px 以上の画面で詳細エディタが右側の列に表示されます。無効にすると、モーダルは積み重ねレイアウトを使用します。"
+			},
+			tabMovesFocus: {
+				name: "詳細エディタで Tab キーがフォーカスを移動",
+				description: "有効にすると、Tab キーで詳細エディタから次のモーダルフィールドへ、Shift+Tab キーで前のフィールドへフォーカスが移動します。無効にすると、Tab キーと Shift+Tab キーは Markdown エディタのインデント動作を使用します。"
+			},
+			sync: {
+				name: "ユーザーフィールドを同期",
+				description: "クリックして、タスクプロパティ設定のカスタムユーザーフィールドをこの設定に同期します。",
+				button: "ユーザーフィールドを同期",
+				notice: "ユーザーフィールドがモーダル設定に同期されました"
+			},
+			reset: {
+				name: "既定値にリセット",
+				description: "すべてのフィールド設定を既定値にリセットします。カスタム設定はすべて削除されます。",
+				button: "既定値にリセット",
+				confirmTitle: "フィールド設定を既定値にリセット",
+				confirmMessage: "フィールド設定を既定値にリセットしますか？カスタムフィールド設定はすべて削除されます。",
+				confirmText: "リセット",
+				cancelText: "キャンセル",
+				notice: "フィールド設定が既定値にリセットされました"
+			},
+			initError: "エラー: フィールド設定を初期化できませんでした",
+			manager: {
+				invalidConfig: "エラー: フィールド設定が無効です。既定値にリセットしてください。",
+				emptyGroup: "このグループにはフィールドがありません",
+				enabled: "有効:",
+				showInCreation: "作成時に表示：",
+				showInEdit: "編集時に表示：",
+				group: "グループ:",
+				fieldId: "ID: {id}",
+				fieldKey: "キー: {key}",
+				noKey: "キーが設定されていません",
+				fieldTypes: {
+					core: "コア",
+					user: "ユーザー",
+					dependency: "依存関係",
+					organization: "整理",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "インラインタスク",
@@ -552,6 +623,10 @@ export const ja: TranslationTree = {
 				defaultToScheduled: {
 					name: "デフォルトで予定に設定",
 					description: "NLPがコンテキストなしで日付を検出した場合、期限ではなく予定として扱う"
+				},
+				enterToSubmit: {
+					name: "Enter でタスクを保存",
+					description: "自然言語入力で Enter キーを押すとタスクを保存します。Shift+Enter で改行を挿入し、Ctrl/Cmd+Enter でも引き続き保存できます。"
 				},
 				language: {
 					name: "NLP言語",
@@ -2223,6 +2298,16 @@ export const ja: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "言語を{language}に変更しました。",
+		recurringCompletion: {
+			completed: "完了した繰り返し: {date}",
+			incomplete: "未完了に変更: {date}",
+			next: "次回: {date}",
+			noNext: "次回の繰り返しはありません",
+			undo: "元に戻す",
+			undone: "繰り返しタスクの変更を元に戻しました。",
+			conflict: "元に戻せません。この回または予定が変更されています。",
+			failed: "繰り返しタスクの変更を元に戻せませんでした。",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} が利用可能です。",
 			action: "コミュニティプラグインで開く"
@@ -3110,7 +3195,24 @@ export const ja: TranslationTree = {
 			notices: {
 				exportFailed: "TaskNotes自動エクスポートに失敗しました：{error}"
 			}
-		}
+		},
+		notification: {
+			missed: {
+				prefixToday: "見逃したリマインダー（{time}）",
+				prefixOnDay: "見逃したリマインダー（{day} {time}）",
+				message: "{prefix}：{text}",
+				dueWas: "{title}の期限は{when}でした",
+				dueIs: "{title}の期限は{when}です",
+				scheduledWas: "{title}は{when}に予定されていました",
+				scheduledIs: "{title}は{when}に予定されています",
+				whenTodayAt: "{time}",
+				whenOnDayAt: "{day} {time}",
+				whenOnDay: "{day}",
+				whenToday: "今日",
+				summaryTitle: "見逃したTaskNotesリマインダー：{count}件",
+				summaryMore: "{titles} ほか{count}件",
+			},
+		},
 	},
 	ui: {
 		icsCard: {

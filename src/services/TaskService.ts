@@ -35,7 +35,11 @@ import {
 	getCurrentTimestamp,
 	getDatePart,
 } from "../utils/dateUtils";
-import { getNextUncompletedOccurrence, updateToNextScheduledOccurrence } from "../core/recurrence";
+import {
+	addDTSTARTToRecurrenceRule,
+	getNextUncompletedOccurrence,
+	updateToNextScheduledOccurrence,
+} from "../core/recurrence";
 import { processFolderTemplate, TaskTemplateData, FolderTemplateOptions } from "../utils/folderTemplateProcessor";
 
 import TaskNotesPlugin from "../main";
@@ -554,7 +558,10 @@ export class TaskService {
 	/**
 	 * Toggle the status of a task between completed and open
 	 */
-	async toggleStatus(task: TaskInfo): Promise<TaskInfo> {
+	async toggleStatus(
+		task: TaskInfo,
+		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void
+	): Promise<TaskInfo> {
 		try {
 			// Determine new status
 			const isCurrentlyCompleted = this.plugin.statusManager.isCompletedStatus(task.status);
@@ -562,7 +569,9 @@ export class TaskService {
 				? this.plugin.settings.defaultTaskStatus // Revert to default open status
 				: this.plugin.statusManager.getCompletedStatuses()[0] || "done"; // Set to first completed status
 
-			return await this.updateProperty(task, "status", newStatus);
+			return onRecurringParentUpdated
+				? await this.updateProperty(task, "status", newStatus, { onRecurringParentUpdated })
+				: await this.updateProperty(task, "status", newStatus);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
 			tasknotesLogger.error("Error toggling task status:", {
@@ -590,6 +599,7 @@ export class TaskService {
 		options: {
 			silent?: boolean;
 			completionDate?: string;
+			onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void;
 			confirmClearInstances?: (cleared: {
 				complete: string[];
 				skipped: string[];
@@ -731,7 +741,8 @@ export class TaskService {
 				updatePlan.updatedTask,
 				property,
 				freshTask[property],
-				updatePlan.normalizedValue
+				updatePlan.normalizedValue,
+				options.onRecurringParentUpdated
 			);
 
 			// Step 4: Return authoritative data
@@ -769,7 +780,8 @@ export class TaskService {
 		updatedTask: TaskInfo,
 		property: keyof TaskInfo,
 		oldValue: unknown,
-		newValue: unknown
+		newValue: unknown,
+		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void
 	): Promise<void> {
 		await runTaskPropertyChangeSideEffects(
 			{
@@ -800,7 +812,8 @@ export class TaskService {
 			updatedTask,
 			property,
 			oldValue,
-			newValue
+			newValue,
+			onRecurringParentUpdated
 		);
 	}
 
@@ -956,7 +969,8 @@ export class TaskService {
 
 	async toggleRecurringTaskCompleteWithOccurrenceNotes(
 		task: TaskInfo,
-		date?: Date
+		date?: Date,
+		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void
 	): Promise<TaskInfo> {
 		const freshTask = (await this.plugin.cacheManager.getTaskInfo(task.path)) || task;
 		if (!freshTask.recurrence) {
@@ -967,7 +981,9 @@ export class TaskService {
 		const dateStr = formatDateForStorage(targetDate);
 		const existingOccurrence = await this.findMaterializedOccurrence(freshTask, targetDate);
 		if (existingOccurrence) {
-			return this.toggleStatus(existingOccurrence);
+			return onRecurringParentUpdated
+				? this.toggleStatus(existingOccurrence, onRecurringParentUpdated)
+				: this.toggleStatus(existingOccurrence);
 		}
 
 		const completeInstances = Array.isArray(freshTask.complete_instances)
@@ -980,7 +996,9 @@ export class TaskService {
 			!completeInstances.includes(dateStr)
 		) {
 			const occurrence = await this.materializeOccurrence(freshTask, targetDate);
-			return this.toggleStatus(occurrence);
+			return onRecurringParentUpdated
+				? this.toggleStatus(occurrence, onRecurringParentUpdated)
+				: this.toggleStatus(occurrence);
 		}
 
 		return this.toggleRecurringTaskComplete(freshTask, targetDate);
@@ -1005,7 +1023,7 @@ export class TaskService {
 
 		const plan = buildMaterializedOccurrenceSkipPlan({
 			occurrenceTask: freshOccurrence,
-			parentTask,
+			parentTask: this.withRecurrenceStart(parentTask),
 			skippedStatus,
 			currentTimestamp: getCurrentTimestamp(),
 			maintainDueDateOffsetInRecurring: this.plugin.settings.maintainDueDateOffsetInRecurring,
@@ -1051,7 +1069,7 @@ export class TaskService {
 
 		const plan = buildMaterializedOccurrenceUnskipPlan({
 			occurrenceTask: freshOccurrence,
-			parentTask,
+			parentTask: this.withRecurrenceStart(parentTask),
 			activeStatus: this.plugin.settings.defaultTaskStatus,
 			currentTimestamp: getCurrentTimestamp(),
 		});
@@ -1078,7 +1096,8 @@ export class TaskService {
 		updatedOccurrence: TaskInfo,
 		property: keyof TaskInfo,
 		oldValue: unknown,
-		newValue: unknown
+		newValue: unknown,
+		onRecurringParentUpdated?: (original: TaskInfo, updated: TaskInfo) => void
 	): Promise<void> {
 		if (property !== "status" || !isMaterializedOccurrenceTask(updatedOccurrence)) {
 			return;
@@ -1111,7 +1130,7 @@ export class TaskService {
 		let plan = isCompleted
 			? buildMaterializedOccurrenceCompletePlan({
 					occurrenceTask: updatedOccurrence,
-					parentTask,
+					parentTask: this.withRecurrenceStart(parentTask),
 					completedStatus: this.normalizeStatusValue(newValue),
 					currentTimestamp,
 					completionDate:
@@ -1121,7 +1140,7 @@ export class TaskService {
 				})
 			: buildMaterializedOccurrenceUncompletePlan({
 					occurrenceTask: originalOccurrence,
-					parentTask,
+					parentTask: this.withRecurrenceStart(parentTask),
 					activeStatus: this.normalizeStatusValue(newValue),
 					currentTimestamp,
 				});
@@ -1140,6 +1159,9 @@ export class TaskService {
 			plan.parentUpdates,
 			"reconcile-materialized-occurrence-parent"
 		);
+		// Capture the exact transition before asynchronous webhooks/materialization
+		// can allow unrelated parent edits to reach the live cache.
+		onRecurringParentUpdated?.(parentTask, updatedParent);
 
 		if (isCompleted && this.webhookNotifier) {
 			try {
@@ -1234,6 +1256,19 @@ export class TaskService {
 			materializeNextDate: materializeNextDate || undefined,
 			changed: true,
 		};
+	}
+
+	/**
+	 * The model's occurrence plans add DTSTART themselves with a strict parser that rejects
+	 * minute-precision times ("2025-12-30T09:00"), so add it here through the app's
+	 * normalizing wrapper first. Only the recurrence changes; scheduled keeps its format. #2328
+	 */
+	private withRecurrenceStart(task: TaskInfo): TaskInfo {
+		if (typeof task.recurrence !== "string" || !task.recurrence || task.recurrence.includes("DTSTART:")) {
+			return task;
+		}
+		const recurrence = addDTSTARTToRecurrenceRule(task);
+		return recurrence ? { ...task, recurrence } : task;
 	}
 
 	private getRescheduledOccurrenceProgressionDate(occurrenceTask: TaskInfo): string | null {

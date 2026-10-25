@@ -93,6 +93,31 @@ export const pt: TranslationTree = {
 			expandAllGroups: "Expandir Todos os Grupos",
 			collapseAllGroups: "Recolher Todos os Grupos",
 			noTasksFound: "Nenhuma tarefa encontrada para os filtros selecionados.",
+			movement: {
+				parentAdd: "Adicionar como subtarefa",
+				parentChoose: "Adicionar como subtarefa de…",
+				parentPreview: "Adicionar como subtarefa de {parent}. Os outros projetos permanecem inalterados.",
+				parentSelf: "Uma tarefa não pode ser a sua própria tarefa principal.",
+				parentCycle: "Não é possível adicionar uma tarefa sob uma das suas descendentes.",
+				parentAlready: "Já é uma subtarefa de {parent}.",
+				parentUnavailable: "Ambas as tarefas devem continuar a existir e ser tarefas do TaskNotes.",
+				parentAssigned: "Adicionada como subtarefa de {parent}.",
+				handle: "Mover tarefa",
+				moveTo: "Mover para um grupo",
+				keepSubgroup: "Manter o subgrupo atual",
+				moveUp: "Mover para cima",
+				moveDown: "Mover para baixo",
+				moved: "Tarefa movida.",
+				undo: "Desfazer",
+				undoConflict: "Não é possível desfazer: a tarefa foi alterada após ser movida.",
+				undoFailed: "Não foi possível desfazer o movimento.",
+				noValue: "Sem valor",
+				otherDestinations: "Outros destinos",
+				readOnly: "Não é possível alterar {properties}: estes grupos são somente leitura.",
+				unresolved: "Não é possível determinar os valores de {properties} para este destino.",
+				noChange: "Já está neste grupo.",
+				failed: "Não foi possível mover a tarefa. Verifique a tarefa e tente novamente.",
+			},
 			reorder: {
 				scope: {
 					ungrouped: "esta lista sem grupos",
@@ -500,6 +525,52 @@ export const pt: TranslationTree = {
 			features: "Recursos",
 			integrations: "Integrações"
 		},
+		modalFields: {
+			header: "Configuração de campos do modal de tarefas",
+			description: "Configure quais campos aparecem nos modais de criação e edição de tarefas. Arraste os campos para reordená-los dentro de cada grupo.",
+			splitLayout: {
+				name: "Layout dividido em telas largas",
+				description: "Quando ativado, o editor de detalhes aparece em uma coluna à direita em telas de 900px ou mais. Quando desativado, o modal usa um layout empilhado."
+			},
+			tabMovesFocus: {
+				name: "Tab move o foco no editor de detalhes",
+				description: "Quando ativado, Tab move do editor de detalhes para o próximo campo do modal e Shift+Tab para o campo anterior. Quando desativado, Tab e Shift+Tab usam o comportamento de indentação do editor Markdown."
+			},
+			sync: {
+				name: "Sincronizar campos de usuário",
+				description: "Clique para sincronizar campos personalizados das configurações de propriedades da tarefa para esta configuração.",
+				button: "Sincronizar campos de usuário",
+				notice: "Campos de usuário sincronizados com a configuração do modal"
+			},
+			reset: {
+				name: "Redefinir para os padrões",
+				description: "Redefine todas as configurações de campos para os valores padrão. Isso removerá todas as configurações personalizadas.",
+				button: "Redefinir para os padrões",
+				confirmTitle: "Redefinir a configuração de campos",
+				confirmMessage: "Tem certeza de que deseja redefinir a configuração de campos para os padrões? Isso removerá todas as configurações de campos personalizadas.",
+				confirmText: "Redefinir",
+				cancelText: "Cancelar",
+				notice: "Configuração de campos redefinida para os padrões"
+			},
+			initError: "Erro: Não foi possível inicializar a configuração de campos",
+			manager: {
+				invalidConfig: "Erro: Configuração de campos inválida. Redefina para os padrões.",
+				emptyGroup: "Nenhum campo neste grupo",
+				enabled: "Ativado:",
+				showInCreation: "Mostrar ao criar:",
+				showInEdit: "Mostrar ao editar:",
+				group: "Grupo:",
+				fieldId: "ID: {id}",
+				fieldKey: "Chave: {key}",
+				noKey: "Nenhuma chave definida",
+				fieldTypes: {
+					core: "Principal",
+					user: "Usuário",
+					dependency: "Dependência",
+					organization: "Organização",
+				},
+			}
+		},
 		features: {
 			inlineTasks: {
 				header: "Tarefas Embutidas",
@@ -552,6 +623,10 @@ export const pt: TranslationTree = {
 				defaultToScheduled: {
 					name: "Padrão para agendado",
 					description: "Quando a NLP detectar uma data sem contexto, tratá-la como agendada em vez de vencimento"
+				},
+				enterToSubmit: {
+					name: "Enter salva a tarefa",
+					description: "Na entrada de linguagem natural, pressione Enter para salvar a tarefa. Shift+Enter insere uma quebra de linha, e Ctrl/Cmd+Enter continua salvando."
 				},
 				language: {
 					name: "Idioma da NLP",
@@ -2225,6 +2300,16 @@ export const pt: TranslationTree = {
 	},
 	notices: {
 		languageChanged: "Idioma alterado para {language}.",
+		recurringCompletion: {
+			completed: "Ocorrência concluída: {date}",
+			incomplete: "Marcada como incompleta: {date}",
+			next: "Próxima: {date}",
+			noNext: "Sem próxima ocorrência",
+			undo: "Desfazer",
+			undone: "Alteração da tarefa recorrente desfeita.",
+			conflict: "Não é possível desfazer: esta ocorrência ou seu agendamento mudou.",
+			failed: "Não foi possível desfazer a alteração da tarefa recorrente.",
+		},
 		releaseAvailable: {
 			message: "TaskNotes {version} está disponível.",
 			action: "Abrir nos plugins da comunidade"
@@ -3114,8 +3199,23 @@ export const pt: TranslationTree = {
 			}
 		},
 		notification: {
-			notices: {}
-		}
+			notices: {},
+			missed: {
+				prefixToday: "Lembrete perdido ({time})",
+				prefixOnDay: "Lembrete perdido ({day}, {time})",
+				message: "{prefix}: {text}",
+				dueWas: "A tarefa {title} vencia {when}",
+				dueIs: "A tarefa {title} vence {when}",
+				scheduledWas: "A tarefa {title} estava agendada {when}",
+				scheduledIs: "A tarefa {title} está agendada {when}",
+				whenTodayAt: "às {time}",
+				whenOnDayAt: "em {day} às {time}",
+				whenOnDay: "em {day}",
+				whenToday: "hoje",
+				summaryTitle: "{count} lembretes do TaskNotes perdidos",
+				summaryMore: "{titles} e mais {count}",
+			},
+		},
 	},
 	ui: {
 		icsCard: {
