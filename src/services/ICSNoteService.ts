@@ -1,3 +1,6 @@
+import { formatUIDate, formatStableDate } from "../i18n/formatters";
+import { uiText } from "../i18n/runtime";
+import { msg } from "@lingui/core/macro";
 import { TFile, normalizePath } from "obsidian";
 import { format } from "date-fns";
 import { processFolderTemplate } from "../utils/folderTemplateProcessor";
@@ -11,7 +14,7 @@ import {
 } from "../utils/filenameGenerator";
 import { ensureFolderExists } from "../utils/helpers";
 import { processTemplate, ICSTemplateData } from "../utils/templateProcessor";
-import type { InterpolationValues, TranslationKey } from "../i18n";
+import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
 import { processVaultFrontMatter } from "./VaultMutationService";
@@ -48,7 +51,7 @@ export class ICSNoteService {
 				findProviderCalendar(
 					this.plugin.googleCalendarService?.getAvailableCalendars() ?? [],
 					calendarId
-				)?.summary || "Google Calendar"
+				)?.summary || uiText(msg({ message: "Google Calendar", context: "services/ICSNoteService: ICSNoteService.findEventById display" }))
 			);
 		}
 
@@ -58,14 +61,14 @@ export class ICSNoteService {
 				findProviderCalendar(
 					this.plugin.microsoftCalendarService?.getAvailableCalendars() ?? [],
 					calendarId
-				)?.summary || "Microsoft Calendar"
+				)?.summary || uiText(msg({ message: "Microsoft Calendar", context: "services/ICSNoteService: ICSNoteService.findEventById display" }))
 			);
 		}
 
-		return "Unknown Calendar";
+		return uiText(msg({ message: "Unknown Calendar", context: "services/ICSNoteService: ICSNoteService.createTaskFromICS display" }));
 	}
 
-	private translate(key: TranslationKey, variables?: InterpolationValues): string {
+	private translate(key: MessageDescriptor, variables?: InterpolationValues): string {
 		return this.plugin.i18n.translate(key, variables);
 	}
 
@@ -93,7 +96,7 @@ export class ICSNoteService {
 			const calendarId = googleEvent.subscriptionId.replace("google-", "");
 			const calendars = this.plugin.googleCalendarService?.getAvailableCalendars() ?? [];
 			const subscriptionName =
-				findProviderCalendar(calendars, calendarId)?.summary || "Google Calendar";
+				findProviderCalendar(calendars, calendarId)?.summary || uiText(msg({ message: "Google Calendar", context: "services/ICSNoteService: ICSNoteService.findEventById display" }));
 			return { event: googleEvent, subscriptionName };
 		}
 
@@ -106,7 +109,7 @@ export class ICSNoteService {
 				this.plugin.microsoftCalendarService
 					?.getAvailableCalendars()
 					.find((calendar) => calendar.id === calendarId)?.summary ||
-				"Microsoft Calendar";
+				uiText(msg({ message: "Microsoft Calendar", context: "services/ICSNoteService: ICSNoteService.findEventById display" }));
 			return { event: microsoftEvent, subscriptionName };
 		}
 
@@ -441,7 +444,7 @@ export class ICSNoteService {
 
 			// Determine note title
 			const noteTitle =
-				overrides?.title || `${icsEvent.title} - ${format(eventStartDate, "PPP")}`;
+				overrides?.title || `${icsEvent.title} - ${formatStableDate(eventStartDate, "PPP")}`;
 
 			// Determine folder (safely handle missing icsIntegration settings)
 			const configuredFolder = this.plugin.settings.icsIntegration?.defaultNoteFolder || "";
@@ -548,7 +551,7 @@ export class ICSNoteService {
 							operation: "ics-note-template-not-found",
 						});
 						publishUserNotice(this.plugin.emitter,
-							this.translate("services.icsNote.notices.templateNotFound", {
+							this.translate(msg({ message: "Template not found: {path}", context: "services.icsNote.notices.templateNotFound" }), {
 								path: templatePath,
 							})
 						);
@@ -560,7 +563,7 @@ export class ICSNoteService {
 						error: error,
 					});
 					publishUserNotice(this.plugin.emitter,
-						this.translate("services.icsNote.notices.templateProcessError", {
+						this.translate(msg({ message: "Error processing template: {template}", context: "services.icsNote.notices.templateProcessError" }), {
 							template: overrides.template,
 						})
 					);
@@ -703,7 +706,7 @@ export class ICSNoteService {
 			});
 
 			publishUserNotice(this.plugin.emitter,
-				this.translate("services.icsNote.notices.linkedToEvent", { title: icsEvent.title })
+				this.translate(msg({ message: "Linked note to ICS event: {title}", context: "services.icsNote.notices.linkedToEvent" }), { title: icsEvent.title })
 			);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : String(error);
@@ -733,7 +736,7 @@ export class ICSNoteService {
 					? icsEvent.start + "T00:00:00"
 					: icsEvent.start;
 			const startDate = new Date(startDateStr);
-			details.push(`**Start:** ${format(startDate, "PPPp")}`);
+			details.push(uiText(msg({ message: "**Start:** {value1}", context: "services/ICSNoteService: ICSNoteService.buildICSEventDetails display" }), { value1: formatUIDate(startDate, "PPPp") }));
 		}
 
 		if (icsEvent.end && !icsEvent.allDay) {
@@ -741,14 +744,14 @@ export class ICSNoteService {
 				? icsEvent.end + "T00:00:00"
 				: icsEvent.end;
 			const endDate = new Date(endDateStr);
-			details.push(`**End:** ${format(endDate, "PPPp")}`);
+			details.push(uiText(msg({ message: "**End:** {value1}", context: "services/ICSNoteService: ICSNoteService.buildICSEventDetails display" }), { value1: formatUIDate(endDate, "PPPp") }));
 		}
 
 		if (icsEvent.location) {
-			details.push(`**Location:** ${icsEvent.location}`);
+			details.push(uiText(msg({ message: "**Location:** {location}", context: "services/ICSNoteService: ICSNoteService.buildICSEventDetails display" }), { location: icsEvent.location }));
 		}
 
-		details.push(`**Calendar:** ${subscriptionName}`);
+		details.push(uiText(msg({ message: "**Calendar:** {subscriptionName}", context: "services/ICSNoteService: ICSNoteService.buildICSEventDetails display" }), { subscriptionName: subscriptionName }));
 
 		if (icsEvent.description) {
 			details.push("");
@@ -758,7 +761,7 @@ export class ICSNoteService {
 
 		if (icsEvent.url) {
 			details.push("");
-			details.push(`**Event URL:** ${icsEvent.url}`);
+			details.push(uiText(msg({ message: "**Event URL:** {url}", context: "services/ICSNoteService: ICSNoteService.buildICSEventDetails display" }), { url: icsEvent.url }));
 		}
 
 		return details.join("\n");

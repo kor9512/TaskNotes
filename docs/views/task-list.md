@@ -66,7 +66,7 @@ For existing `.base` files, add `file.tasks` in YAML manually; once present in `
 - `property`: Property to group by (e.g., `note.status`, `note.priority`)
 - `direction`: Sort direction for group headers
 
-**`hideTopLevelSubtasks`**: Optional boolean. When `true`, tasks whose Projects field links to another task in the current filtered result set are hidden as top-level rows and remain available through the parent task's expanded subtasks.
+**`hideTopLevelSubtasks`**: Optional boolean. When `true`, tasks whose Projects field links to another task in the current filtered result set are hidden as top-level rows and remain available through the parent task's expanded subtasks. Expanded subtasks in the filtered result set follow the current view's sort order, including formula sorts such as `formula.priorityWeight`. Changing that order refreshes already-expanded subtasks without needing to collapse and reopen the parent.
 
 **`filters`**: Optional filter conditions using Bases query syntax
 ```yaml
@@ -158,6 +158,7 @@ Drag a task into another group or subgroup to update its grouping properties. Th
 - Dropping on a primary group header changes only the primary property. It does not assign a subgroup value.
 - A highlighted destination previews the properties that will change. An insertion line means manual reordering instead.
 - Collapsed headers remain drop targets. While dragging, **Other destinations** offers configured empty status/priority groups and an empty value.
+- Moving a recurring task to a status marked **Completed** completes the occurrence shown on its row, as its checkbox does, instead of setting the task to that status. Other property changes in the move are not applied. If that occurrence has since been completed, skipped or rescheduled, the move changes nothing and a notice says so. See [Recurring Tasks](../features/recurring-tasks.md#completion-tracking).
 - Use the **Move task** handle to open a destination menu without dragging. When the view is sorted by manual order, the menu also offers **Move up** and **Move down** within the current group. On touch screens, tap the handle for the menu, or drag from it so ordinary row gestures remain available for scrolling. A touch move only applies after the handle has actually moved; lifting your finger in place does nothing.
 - Press Escape, or release the task back on its own row, to cancel. Holding a dragged task near the view's top or bottom edge scrolls the list.
 - Grouping by a list property such as contexts, projects, or tags groups by the whole list. Moving a task to another such group replaces its list with that group's values, and the preview shows the values before and after, for example `contexts: work, call → home, focus`. If a group's values cannot be determined from its notes' properties (for example, a tag group that only comes from inline tags), the move is blocked rather than guessed.

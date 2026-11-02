@@ -1,4 +1,7 @@
 import { requestUrl, Platform } from "obsidian";
+import { msg } from "@lingui/core/macro";
+import { uiText } from "../i18n/runtime";
+import { oauthCallbackHtml } from "../i18n/oauthCallbackHtml";
 import TaskNotesPlugin from "../main";
 import { OAuthProvider, OAuthTokens, OAuthConnection, OAuthConfig } from "../types";
 import { OAUTH_CONSTANTS } from "./constants";
@@ -184,7 +187,7 @@ export class OAuthService {
 		const timeout = window.setTimeout(() => {
 			this.pendingCopyPaste.delete(provider);
 			this.authenticationInProgress = false;
-			publishUserNotice(this.plugin.emitter, "OAuth request expired. Start again.");
+			publishUserNotice(this.plugin.emitter, uiText(msg({ message: "OAuth request expired. Start again.", context: "services.oauth.copyPasteExpired" })));
 		}, 300000);
 		this.pendingCopyPaste.set(provider, {
 			state,
@@ -195,7 +198,7 @@ export class OAuthService {
 		this.authenticationInProgress = true;
 		try {
 			await this.openAuthorizationUrl(this.buildAuthorizationUrl(config, codeChallenge, state));
-			publishUserNotice(this.plugin.emitter, "After approval, paste the redirect URL or code and connect.");
+			publishUserNotice(this.plugin.emitter, uiText(msg({ message: "After approval, paste the redirect URL or code and connect.", context: "services.oauth.copyPastePaste" })));
 			return Date.now() + 300000;
 		} catch (error) {
 			this.clearPendingCopyPaste(provider);
@@ -532,7 +535,7 @@ export class OAuthService {
 			url = new URL(req.url || "/", "http://127.0.0.1");
 		} catch {
 			res.writeHead(400, headers);
-			res.end("<!doctype html><title>Invalid callback</title>");
+			res.end(oauthCallbackHtml(this.plugin.i18n.translate(msg({ message: "Invalid callback", context: "OAuth callback title" })), "", this.plugin.i18n.getCurrentLocale()));
 			return;
 		}
 		const state = url.searchParams.get("state");
@@ -547,19 +550,25 @@ export class OAuthService {
 			(!code && !error)
 		) {
 			res.writeHead(400, headers);
-			res.end(
-				"<!doctype html><title>Invalid callback</title><p>No pending authorization matches this callback.</p>"
-			);
+			res.end(oauthCallbackHtml(
+				this.plugin.i18n.translate(msg({ message: "Invalid callback", context: "OAuth callback title" })),
+				this.plugin.i18n.translate(msg({ message: "No pending authorization matches this callback.", context: "OAuth callback description" })),
+				this.plugin.i18n.getCurrentLocale()
+			));
 			return;
 		}
 		// Consume before responding: a replay cannot resolve the pending flow.
 		this.pendingOAuthState.delete(state);
 		res.writeHead(error ? 400 : 200, headers);
-		res.end(
-			error
-				? "<!doctype html><title>Authorization failed</title><p>Authorization was not completed. Return to Obsidian.</p>"
-				: "<!doctype html><title>Authorization complete</title><p>You can close this window and return to Obsidian.</p>"
-		);
+		res.end(oauthCallbackHtml(
+			this.plugin.i18n.translate(error
+				? msg({ message: "Authorization failed", context: "OAuth callback title" })
+				: msg({ message: "Authorization complete", context: "OAuth callback title" })),
+			this.plugin.i18n.translate(error
+				? msg({ message: "Authorization was not completed. Return to Obsidian.", context: "OAuth callback description" })
+				: msg({ message: "You can close this window and return to Obsidian.", context: "OAuth callback description" })),
+			this.plugin.i18n.getCurrentLocale()
+		));
 		if (error) pending.reject(new Error("OAuth authorization failed"));
 		else pending.resolve(code as string);
 	}

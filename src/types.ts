@@ -467,11 +467,12 @@ export interface TaskInfo {
 	projects?: string[];
 	attachments?: string[]; // Ordered links to files that belong to this task
 	recurrence?: string; // RFC 5545 recurrence rule string
-	recurrence_anchor?: 'scheduled' | 'completion'; // Determines if recurrence is from scheduled date (fixed) or completion date (flexible). Defaults to 'scheduled'
+	recurrence_anchor?: "scheduled" | "completion"; // Determines if recurrence is from scheduled date (fixed) or completion date (flexible). Defaults to 'scheduled'
 	complete_instances?: string[]; // Array of dates (YYYY-MM-DD) when recurring task was completed
 	skipped_instances?: string[]; // Array of dates (YYYY-MM-DD) when recurring task was skipped
 	recurrence_parent?: string; // Link/path to the parent recurring task when this is a materialized occurrence
 	occurrence_date?: string; // Target recurrence date (YYYY-MM-DD) for materialized occurrences
+	recurrence_original_date?: string; // Original rule date (YYYY-MM-DD) of a pending moved virtual recurring occurrence
 	occurrence_materialization?: OccurrenceMaterializationMode; // Parent occurrence materialization policy
 	occurrence_next_trigger?: OccurrenceNextTrigger; // Parent policy for materializing the next occurrence
 	occurrence_template?: string; // Optional template note/link for generated occurrence notes
@@ -504,7 +505,13 @@ export interface TaskCreationData extends Partial<TaskInfo> {
 	details?: string; // Optional details/description for file content
 	folder?: string; // Optional destination folder override for imported tasks
 	parentNote?: string; // Optional parent note name/path for template variable
-	creationContext?: "inline-conversion" | "manual-creation" | "modal-inline-creation" | "api" | "import" | "ics-event"; // Context for folder determination
+	creationContext?:
+		| "inline-conversion"
+		| "manual-creation"
+		| "modal-inline-creation"
+		| "api"
+		| "import"
+		| "ics-event"; // Context for folder determination
 	customFrontmatter?: Record<string, unknown>; // Custom frontmatter properties (including user fields)
 	occurrenceFilenameTemplate?: string; // Resolved filename template for a materialized occurrence (creation-only)
 }
@@ -708,6 +715,7 @@ export interface FieldMapping {
 	contexts: string;
 	projects: string;
 	attachments: string;
+	assignees: string;
 	timeEstimate: string;
 	completedDate: string;
 	dateCreated: string;
@@ -716,6 +724,7 @@ export interface FieldMapping {
 	recurrenceAnchor: string; // User-configurable property name for recurrence_anchor field
 	recurrenceParent: string;
 	occurrenceDate: string;
+	recurrenceOriginalDate?: string; // Optional so settings saved before this field existed keep working; defaults to recurrence_original_date
 	occurrenceMaterialization: string;
 	occurrenceNextTrigger: string;
 	occurrenceTemplate: string;
@@ -735,6 +744,15 @@ export interface FieldMapping {
 	googleCalendarMovedOriginalDates: string; // Historical moved recurring dates excluded from the master event
 	reminders: string; // For task reminders
 	sortOrder: string; // Numeric ordering within column (lower = higher)
+}
+
+/**
+ * onlyIf is for callers acting on state read earlier, such as a queued drop. The
+ * occurrence is completed only if it holds for the task as the operation reads it,
+ * and a completed occurrence is never reopened.
+ */
+export interface RecurringCompletionOptions {
+	onlyIf?: (task: TaskInfo) => boolean;
 }
 
 export interface StatusConfig {
