@@ -1,6 +1,7 @@
 import type TaskNotesPlugin from "../main";
 import type { ICSEvent, TaskInfo } from "../types";
 import { createICSEvent, type CalendarEvent } from "./calendar-core";
+import { getLinkedGoogleCalendarIds } from "../fork/calendar/taskCalendar";
 import { findProviderCalendar, PRIMARY_CALENDAR_ALIAS, ProviderCalendar } from "../services/CalendarProvider";
 
 export type ExternalCalendarProvider = "ics" | "google" | "microsoft";
@@ -64,7 +65,7 @@ export function shouldIncludeExternalCalendarEvent(
  * a rendered recurring occurrence must not hide every Google instance in its series.
  */
 export function buildLinkedGoogleEventPredicate(
-	entries: readonly { task: Pick<TaskInfo, "googleCalendarEventId" | "googleCalendarExceptionEventId">; date: string }[],
+	entries: readonly { task: Pick<TaskInfo, "googleCalendarEventId" | "googleCalendarExceptionEventId"> & { path?: string }; date: string }[],
 	plugin: TaskNotesPlugin
 ): (event: ICSEvent) => boolean {
 	const targetId = plugin.settings?.googleCalendarExport?.targetCalendarId;
@@ -79,10 +80,12 @@ export function buildLinkedGoogleEventPredicate(
 			datesByEventId.set(id, dates);
 		}
 	}
+	// fork: also the task's own calendar (per-task googleCalendarName), not only the export target
+	const linkedCalendarIds = getLinkedGoogleCalendarIds(plugin, entries.map(({ task }) => task), targetId, canonicalId);
 	return (event) => {
-		if (!targetId || !event.subscriptionId.startsWith("google-")) return false;
+		if (!event.subscriptionId.startsWith("google-")) return false;
 		const calendarId = getExternalCalendarToggleId(event, "google");
-		if (canonicalId(calendarId) !== canonicalId(targetId)) return false;
+		if (!linkedCalendarIds.has(canonicalId(calendarId))) return false;
 		// Calendar ids may contain hyphens: remove the entire known prefix.
 		const prefix = `google-${calendarId}-`;
 		const rawId = (id: string) => id.startsWith(prefix) ? id.slice(prefix.length) : id;
