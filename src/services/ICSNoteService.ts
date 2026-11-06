@@ -6,7 +6,7 @@ import { format } from "date-fns";
 import { processFolderTemplate } from "../utils/folderTemplateProcessor";
 import TaskNotesPlugin from "../main";
 import { ICSEvent, TaskInfo, NoteInfo, TaskCreationData } from "../types";
-import { getCurrentTimestamp, formatDateForStorage } from "../utils/dateUtils";
+import { getCurrentTimestamp, formatDateForStorage, parseDateToUTC } from "../utils/dateUtils";
 import {
 	generateICSNoteFilename,
 	generateUniqueFilename,
@@ -369,7 +369,11 @@ export class ICSNoteService {
 					: icsEvent.start;
 			const start = new Date(startDateStr);
 			if (icsEvent.allDay) {
-				return formatDateForStorage(start);
+				// formatDateForStorage reads UTC components, so a date-only value must be parsed as UTC too.
+				// Parsed as local midnight it lands one day early in UTC+ zones (e.g. Asia/Seoul).
+				return formatDateForStorage(
+					/^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start) ? parseDateToUTC(icsEvent.start) : start
+				);
 			}
 			// Timed event: store local wall-clock without seconds
 			return format(start, "yyyy-MM-dd'T'HH:mm");
@@ -404,7 +408,10 @@ export class ICSNoteService {
 					? icsEvent.start + "T00:00:00"
 					: icsEvent.start;
 				const startDate = new Date(startDateStr);
-				return formatDateForStorage(startDate);
+				// Same as computeScheduledFromICSEvent: date-only must be parsed as UTC for formatDateForStorage.
+				return formatDateForStorage(
+					/^\d{4}-\d{2}-\d{2}$/.test(icsEvent.start) ? parseDateToUTC(icsEvent.start) : startDate
+				);
 			}
 
 			// Timed event: use the actual end time

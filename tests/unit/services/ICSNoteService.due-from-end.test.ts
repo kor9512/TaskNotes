@@ -11,14 +11,11 @@ import { PluginFactory } from '../../helpers/mock-factories';
 import { MockObsidian } from '../../helpers/obsidian-runtime';
 
 // Mock dependencies
+// Only the clock is faked. formatDateForStorage stays real: a local-time stand-in here hid the
+// all-day off-by-one (real one reads UTC components) in UTC+ zones.
 jest.mock('../../../src/utils/dateUtils', () => ({
+	...jest.requireActual('../../../src/utils/dateUtils'),
 	getCurrentTimestamp: jest.fn(() => '2025-02-12T12:00:00'),
-	formatDateForStorage: jest.fn((date: Date) => {
-		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, '0');
-		const day = String(date.getDate()).padStart(2, '0');
-		return `${year}-${month}-${day}`;
-	}),
 }));
 
 describe('ICSNoteService - Due Date from ICS End Time (Issue #1220)', () => {
