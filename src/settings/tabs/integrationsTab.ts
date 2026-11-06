@@ -39,6 +39,7 @@ import {
 	createThemeColorInput,
 	readThemeColorInput,
 	type CardSection,
+	setCardSecondaryText,
 } from "../components/CardComponent";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 
@@ -1188,7 +1189,13 @@ export function renderIntegrationsTab(
 
 				const renderCalendarList = async () => {
 					listEl.empty();
-					if (!plugin.googleCalendarService) return;
+					// Same guard as the upstream calendar dropdowns: list nothing until Google is connected.
+					const isConnected =
+						plugin.oauthService && (await plugin.oauthService.isConnected("google"));
+					if (!isConnected || !plugin.googleCalendarService) {
+						listEl.createSpan({ text: uiText(msg({ message: "No calendars available", context: "settings.integrations.calendarRouting.none" })) });
+						return;
+					}
 					let calendars = plugin.googleCalendarService.getAvailableCalendars();
 					if (calendars.length === 0) {
 						try {
@@ -1264,6 +1271,132 @@ export function renderIntegrationsTab(
 		}
 	);
 
+	/** A dropdown of the connected Google account's calendars, refreshed when they load. */
+	const configureGoogleCalendarDropdown = (
+		setting: Setting,
+		options: {
+			placeholder: string;
+			getValue: () => string;
+			setValue: (value: string) => void;
+			/** fork: list only calendars enabled in Calendar routing */
+			enabledOnly?: boolean;
+		}
+	) => {
+		const { placeholder, getValue, setValue, enabledOnly = false } = options;
+		const dropdown = setting.controlEl.createEl("select", {
+			cls: "dropdown",
+		});
+		dropdown.classList.remove(
+			"tn-static-width-100-0466783d",
+			"tn-static-width-12px-fbf353fb",
+			"tn-static-width-16px-7375d50b",
+			"tn-static-width-1px-aa77e27e",
+			"tn-static-width-60px-bd09c419",
+			"tn-static-width-80px-8573bae3"
+		);
+		dropdown.classList.add("tn-static-width-200px-2acaf3b5");
+
+		// Add placeholder option
+		dropdown.createEl("option", { text: placeholder, value: "" });
+
+		// Populate calendars if connected
+		const populateCalendars = async () => {
+			// Clear existing options except placeholder
+			while (dropdown.options.length > 1) {
+				dropdown.remove(1);
+			}
+
+			const isConnected =
+				plugin.oauthService && (await plugin.oauthService.isConnected("google"));
+			if (isConnected && plugin.googleCalendarService) {
+				// fork: fetch the list when it hasn't loaded yet, and optionally
+				// restrict it to calendars enabled in Calendar routing.
+				let calendars = plugin.googleCalendarService.getAvailableCalendars();
+				if (calendars.length === 0) {
+					try {
+						calendars = await plugin.googleCalendarService.listCalendars();
+					} catch (error) {
+						tasknotesLogger.warn("Failed to populate Google calendar list", {
+							category: "configuration",
+							operation: "populate-google-calendar-list",
+							error,
+						});
+					}
+				}
+				if (enabledOnly) {
+					const enabledIds = new Set(
+						plugin.googleCalendarService.getEnabledCalendars().map((calendar) => calendar.id)
+					);
+					calendars = calendars.filter((calendar) => enabledIds.has(calendar.id));
+				}
+				for (const cal of calendars) {
+					const option = dropdown.createEl("option", {
+						text:
+							cal.summary +
+							(cal.primary
+								? translate(
+										msg({ message: " (Primary)", context: "settings.integrations.googleCalendarExport.targetCalendar.primarySuffix" })
+									)
+								: ""),
+						value: cal.id,
+					});
+					if (cal.id === getValue()) {
+						option.selected = true;
+					}
+				}
+			} else {
+				dropdown.createEl("option", {
+					text: translate(
+						msg({ message: "Connect Google Calendar first", context: "settings.integrations.googleCalendarExport.targetCalendar.connectFirst" })
+					),
+					value: "",
+				});
+			}
+		};
+
+		void populateCalendars();
+
+		// Re-populate when calendar data is fetched after startup.
+		// Clean up the listener automatically when this settings control is detached.
+		let unsubscribeGoogleCalendarDataChanged: (() => void) | null = null;
+		let detachObserver: MutationObserver | null = null;
+		const cleanupGoogleCalendarDataChanged = () => {
+			if (unsubscribeGoogleCalendarDataChanged) {
+				unsubscribeGoogleCalendarDataChanged();
+				unsubscribeGoogleCalendarDataChanged = null;
+			}
+			if (detachObserver) {
+				detachObserver.disconnect();
+				detachObserver = null;
+			}
+		};
+
+		unsubscribeGoogleCalendarDataChanged = plugin.googleCalendarService.on(
+			"data-changed",
+			() => {
+				if (!dropdown.isConnected) {
+					cleanupGoogleCalendarDataChanged();
+					return;
+				}
+				void populateCalendars();
+			}
+		);
+
+		detachObserver = new MutationObserver(() => {
+			if (!dropdown.isConnected) {
+				cleanupGoogleCalendarDataChanged();
+			}
+		});
+		detachObserver.observe(container.ownerDocument.body, {
+			childList: true,
+			subtree: true,
+		});
+
+		dropdown.addEventListener("change", () => {
+			setValue(dropdown.value);
+		});
+	};
+
 	// Google Calendar Task Export Section
 	createSettingGroup(
 		container,
@@ -1298,119 +1431,16 @@ export function renderIntegrationsTab(
 						msg({ message: "Select which calendar to create task events in.", context: "settings.integrations.googleCalendarExport.targetCalendar.description" })
 					)
 				);
-
-				const dropdown = setting.controlEl.createEl("select", {
-					cls: "dropdown",
-				});
-				dropdown.classList.remove(
-					"tn-static-width-100-0466783d",
-					"tn-static-width-12px-fbf353fb",
-					"tn-static-width-16px-7375d50b",
-					"tn-static-width-1px-aa77e27e",
-					"tn-static-width-60px-bd09c419",
-					"tn-static-width-80px-8573bae3"
-				);
-				dropdown.classList.add("tn-static-width-200px-2acaf3b5");
-
-				// Add placeholder option
-				dropdown.createEl("option", {
-					text: translate(
+				configureGoogleCalendarDropdown(setting, {
+					placeholder: translate(
 						msg({ message: "Select a calendar...", context: "settings.integrations.googleCalendarExport.targetCalendar.placeholder" })
 					),
-					value: "",
-				});
-
-				// Populate calendars if connected
-				const populateCalendars = async () => {
-					// Clear existing options except placeholder
-					while (dropdown.options.length > 1) {
-						dropdown.remove(1);
-					}
-
-					const isConnected =
-						plugin.oauthService && (await plugin.oauthService.isConnected("google"));
-					if (isConnected && plugin.googleCalendarService) {
-						let calendars = plugin.googleCalendarService.getAvailableCalendars();
-						if (calendars.length === 0) {
-							try {
-								calendars = await plugin.googleCalendarService.listCalendars();
-							} catch (error) {
-								tasknotesLogger.warn("Failed to populate target calendar list", {
-									category: "configuration",
-									operation: "populate-target-calendar-list",
-									error,
-								});
-							}
-						}
-						const enabledIds = new Set(
-							plugin.googleCalendarService.getEnabledCalendars().map((calendar) => calendar.id)
-						);
-						for (const cal of calendars.filter((calendar) => enabledIds.has(calendar.id))) {
-							const option = dropdown.createEl("option", {
-								text:
-									cal.summary +
-									(cal.primary
-										? translate(
-												msg({ message: " (Primary)", context: "settings.integrations.googleCalendarExport.targetCalendar.primarySuffix" })
-											)
-										: ""),
-								value: cal.id,
-							});
-							if (cal.id === plugin.settings.googleCalendarExport.targetCalendarId) {
-								option.selected = true;
-							}
-						}
-					} else {
-						dropdown.createEl("option", {
-							text: translate(
-								msg({ message: "Connect Google Calendar first", context: "settings.integrations.googleCalendarExport.targetCalendar.connectFirst" })
-							),
-							value: "",
-						});
-					}
-				};
-
-				void populateCalendars();
-
-				// Re-populate when calendar data is fetched after startup.
-				// Clean up the listener automatically when this settings control is detached.
-				let unsubscribeGoogleCalendarDataChanged: (() => void) | null = null;
-				let detachObserver: MutationObserver | null = null;
-				const cleanupGoogleCalendarDataChanged = () => {
-					if (unsubscribeGoogleCalendarDataChanged) {
-						unsubscribeGoogleCalendarDataChanged();
-						unsubscribeGoogleCalendarDataChanged = null;
-					}
-					if (detachObserver) {
-						detachObserver.disconnect();
-						detachObserver = null;
-					}
-				};
-
-				unsubscribeGoogleCalendarDataChanged = plugin.googleCalendarService.on(
-					"data-changed",
-					() => {
-						if (!dropdown.isConnected) {
-							cleanupGoogleCalendarDataChanged();
-							return;
-						}
-						void populateCalendars();
-					}
-				);
-
-				detachObserver = new MutationObserver(() => {
-					if (!dropdown.isConnected) {
-						cleanupGoogleCalendarDataChanged();
-					}
-				});
-				detachObserver.observe(container.ownerDocument.body, {
-					childList: true,
-					subtree: true,
-				});
-
-				dropdown.addEventListener("change", () => {
-					plugin.settings.googleCalendarExport.targetCalendarId = dropdown.value;
-					save();
+					enabledOnly: true,
+					getValue: () => plugin.settings.googleCalendarExport.targetCalendarId,
+					setValue: (value) => {
+						plugin.settings.googleCalendarExport.targetCalendarId = value;
+						save();
+					},
 				});
 			});
 
@@ -1752,6 +1782,73 @@ export function renderIntegrationsTab(
 							if (confirmed) {
 								await plugin.taskCalendarSyncService.unlinkAllTasks(false);
 							}
+						},
+					})
+			);
+		}
+	);
+
+	// Google Calendar Timeblock Export Section
+	createSettingGroup(
+		container,
+		{
+			heading: translate(msg({ message: "Export timeblocks to Google Calendar", context: "settings.integrations.googleCalendarTimeblockExport.header" })),
+			description: translate(msg({ message: "Sync timeblocks from your daily notes to Google Calendar as events. Requires Google Calendar to be connected above.", context: "settings.integrations.googleCalendarTimeblockExport.description" })),
+		},
+		(group) => {
+			group.addSetting(
+				(setting) =>
+					void configureToggleSetting(setting, {
+						name: translate(msg({ message: "Sync timeblocks", context: "settings.integrations.googleCalendarTimeblockExport.enable.name" })),
+						desc: translate(
+							msg({ message: "Create, update and delete calendar events as you add, edit and remove timeblocks. Existing timeblocks are synced the next time you edit them.", context: "settings.integrations.googleCalendarTimeblockExport.enable.description" })
+						),
+						getValue: () => plugin.settings.googleCalendarExport.syncTimeblocks,
+						setValue: async (value: boolean) => {
+							plugin.settings.googleCalendarExport.syncTimeblocks = value;
+							save();
+						},
+					})
+			);
+
+			group.addSetting((setting) => {
+				setting.setName(
+					translate(msg({ message: "Timeblock calendar", context: "settings.integrations.googleCalendarTimeblockExport.targetCalendar.name" }))
+				);
+				setting.setDesc(
+					translate(
+						msg({ message: "Select which calendar to create timeblock events in.", context: "settings.integrations.googleCalendarTimeblockExport.targetCalendar.description" })
+					)
+				);
+				configureGoogleCalendarDropdown(setting, {
+					placeholder: translate(
+						msg({ message: "Same as task calendar", context: "settings.integrations.googleCalendarTimeblockExport.targetCalendar.sameAsTasks" })
+					),
+					getValue: () => plugin.settings.googleCalendarExport.timeblockTargetCalendarId,
+					setValue: (value) => {
+						plugin.settings.googleCalendarExport.timeblockTargetCalendarId = value;
+						save();
+					},
+				});
+			});
+
+			group.addSetting(
+				(setting) =>
+					void configureTextSetting(setting, {
+						name: translate(
+							msg({ message: "Timeblock event title template", context: "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.name" })
+						),
+						desc: translate(
+							msg({ message: "Template for timeblock event titles. Available variables: '{{title}}', '{{date}}', '{{startTime}}', '{{endTime}}'", context: "settings.integrations.googleCalendarTimeblockExport.eventTitleTemplate.description" })
+						),
+						placeholder: translate(
+							msg({ message: "'{{title}}'", context: "settings.integrations.googleCalendarExport.eventTitleTemplate.placeholder" })
+						),
+						getValue: () => plugin.settings.googleCalendarExport.timeblockEventTitleTemplate,
+						setValue: async (value: string) => {
+							plugin.settings.googleCalendarExport.timeblockEventTitleTemplate =
+								value || "{{title}}";
+							save();
 						},
 					})
 			);
@@ -2562,6 +2659,56 @@ function renderICSSubscriptionsList(
 
 		const colorInput = createThemeColorInput(subscription.color);
 		const refreshInput = createCardNumberInput(5, 1440, 5, subscription.refreshInterval || 60);
+		const filterLabel = translate(msg({ message: "Title contains:", context: "settings.integrations.subscriptionsList.titleFilter.label" }));
+		const filterInput = createCardInput(
+			"text",
+			translate(msg({ message: "Case-insensitive text, not regex; empty shows all events", context: "settings.integrations.subscriptionsList.titleFilter.help" })),
+			subscription.filter ?? ""
+		);
+		filterInput.setAttribute("aria-label", filterLabel);
+		filterInput.title = filterInput.placeholder;
+
+		// Authentication inputs (remote feeds only). The password is kept in
+		// Obsidian SecretStorage; the input never shows a stored value.
+		const authSelect = activeWindow.createEl("select");
+		authSelect.className = "tasknotes-settings__card-input";
+		const noAuthOption = authSelect.createEl("option", {
+			value: "none",
+			text: translate(
+				msg({ message: "None", context: "settings.integrations.subscriptionsList.authOptions.none" })
+			),
+		});
+		noAuthOption.selected = subscription.authType !== "basic";
+		const basicAuthOption = authSelect.createEl("option", {
+			value: "basic",
+			text: translate(
+				msg({ message: "Username and password (HTTP Basic)", context: "settings.integrations.subscriptionsList.authOptions.basic" })
+			),
+		});
+		basicAuthOption.selected = subscription.authType === "basic";
+
+		const usernameInput = createCardInput(
+			"text",
+			translate(msg({ message: "Username", context: "settings.integrations.subscriptionsList.placeholders.username" })),
+			subscription.username ?? ""
+		);
+		usernameInput.autocomplete = "off";
+
+		const passwordInput = activeWindow.createEl("input");
+		passwordInput.type = "password";
+		passwordInput.autocomplete = "new-password";
+		passwordInput.addClass("tasknotes-settings__card-input");
+		const setPasswordPlaceholder = () => {
+			passwordInput.placeholder = plugin.icsSubscriptionService?.hasPassword(subscription.id)
+				? translate(msg({ message: "Saved. Enter a new password to replace it", context: "settings.integrations.subscriptionsList.placeholders.passwordSaved" }))
+				: translate(msg({ message: "Password", context: "settings.integrations.subscriptionsList.placeholders.password" }));
+		};
+		setPasswordPlaceholder();
+
+		const authHelp = activeWindow.createDiv("setting-item-description");
+		authHelp.textContent = plugin.icsSubscriptionService.isPasswordStorageAvailable()
+			? translate(msg({ message: "Authenticated feeds must use https://. The password is stored in Obsidian's secure storage, not in plugin settings.", context: "settings.integrations.subscriptionsList.authHelp" }))
+			: translate(msg({ message: "Obsidian's secure storage is unavailable, so passwords cannot be saved on this device.", context: "settings.integrations.subscriptionsList.authStorageUnavailable" }));
 
 		// Update handlers
 		const updateSubscription = async (updates: Partial<typeof subscription>) => {
@@ -2585,6 +2732,83 @@ function renderICSSubscriptionsList(
 			}
 		};
 
+		// Authentication changes save without re-rendering the list, so the
+		// card stays open and focus can move between username and password.
+		const updateAuthRowVisibility = () => {
+			const showAuth = subscription.type === "remote";
+			const showCredentials = showAuth && authSelect.value === "basic";
+			const toggleRow = (input: HTMLElement, show: boolean) => {
+				input
+					.closest(".tasknotes-settings__card-config-row")
+					?.classList.toggle("tasknotes-settings__card-config-row--hidden", !show);
+			};
+			toggleRow(authSelect, showAuth);
+			toggleRow(usernameInput, showCredentials);
+			toggleRow(passwordInput, showCredentials);
+			toggleRow(authHelp, showCredentials);
+		};
+
+		const saveAuthUpdate = async (updates: Partial<typeof subscription>) => {
+			try {
+				const subscriptionService = plugin.icsSubscriptionService;
+				if (!subscriptionService) return;
+				await subscriptionService.updateSubscription(subscription.id, updates);
+				// updateSubscription replaces the stored object. This card skips the
+				// re-render, so point it at the new object; otherwise later toggle and
+				// type edits would mutate a detached copy.
+				subscription =
+					subscriptionService.getSubscriptions().find((s) => s.id === subscription.id) ??
+					subscription;
+				save();
+			} catch (error) {
+				tasknotesLogger.error("Error updating subscription authentication:", {
+					category: "provider",
+					operation: "updating-subscription-auth",
+					error: error,
+				});
+				new Notice(
+					translate(msg({ message: "Failed to update subscription", context: "settings.integrations.subscriptionsList.notices.updateFailure" }))
+				);
+			}
+		};
+
+		authSelect.addEventListener("change", () => {
+			const authType = authSelect.value === "basic" ? "basic" : "none";
+			updateAuthRowVisibility();
+			void saveAuthUpdate({ authType }).then(setPasswordPlaceholder);
+		});
+		usernameInput.addEventListener("change", () => {
+			void saveAuthUpdate({ username: usernameInput.value.trim() });
+		});
+		passwordInput.addEventListener("change", () => {
+			const password = passwordInput.value;
+			passwordInput.value = "";
+			if (!password) return;
+			const subscriptionService = plugin.icsSubscriptionService;
+			if (!subscriptionService) return;
+			if (!subscriptionService.isPasswordStorageAvailable()) {
+				new Notice(
+					translate(msg({ message: "Obsidian's secure storage is unavailable, so passwords cannot be saved on this device.", context: "settings.integrations.subscriptionsList.authStorageUnavailable" }))
+				);
+				return;
+			}
+			runAsyncSettingCallback(async () => {
+				try {
+					await subscriptionService.setPassword(subscription.id, password);
+				} catch (error) {
+					tasknotesLogger.error("Error saving subscription password:", {
+						category: "configuration",
+						operation: "saving-subscription-password",
+						error: error,
+					});
+					new Notice(
+						translate(msg({ message: "Failed to save the calendar password", context: "settings.integrations.subscriptionsList.notices.passwordSaveFailure" }))
+					);
+				}
+				setPasswordPlaceholder();
+			});
+		});
+
 		// Update handlers (enabledToggle handler is now in createCardToggle callback)
 		nameInput.addEventListener("blur", () => {
 			void updateSubscription({ name: nameInput.value.trim() });
@@ -2599,6 +2823,10 @@ function renderICSSubscriptionsList(
 			void updateSubscription({ refreshInterval: minutes });
 		});
 
+		filterInput.addEventListener("change", () => {
+			void updateSubscription({ filter: filterInput.value });
+		});
+
 		// Type change handler - re-render the subscription list to update input type
 		typeSelect.addEventListener("change", () => {
 			runAsyncSettingCallback(async () => {
@@ -2606,6 +2834,7 @@ function renderICSSubscriptionsList(
 
 				// Update the subscription object
 				subscription.type = newType;
+				updateAuthRowVisibility();
 				if (newType === "remote") {
 					subscription.url = subscription.filePath || ""; // Transfer old local path to url if exists
 					subscription.filePath = undefined;
@@ -2670,19 +2899,16 @@ function renderICSSubscriptionsList(
 						}
 
 						// Update the secondary text in the header
-						const secondaryText = card.querySelector(
-							".tasknotes-settings__card-secondary-text"
+						setCardSecondaryText(
+							card,
+							newType === "remote"
+								? translate(
+										msg({ message: "Remote calendar", context: "settings.integrations.subscriptionsList.statusLabels.remoteCalendar" })
+									)
+								: translate(
+										msg({ message: "Local file", context: "settings.integrations.subscriptionsList.typeOptions.local" })
+									)
 						);
-						if (secondaryText) {
-							secondaryText.textContent =
-								newType === "remote"
-									? translate(
-											msg({ message: "Remote calendar", context: "settings.integrations.subscriptionsList.statusLabels.remoteCalendar" })
-										)
-									: translate(
-											msg({ message: "Local file", context: "settings.integrations.subscriptionsList.typeOptions.local" })
-										);
-						}
 
 						// Update the type badge
 						const typeBadge = card.querySelector(
@@ -2769,6 +2995,23 @@ function renderICSSubscriptionsList(
 			{
 				label: translate(msg({ message: "Refresh (min):", context: "settings.integrations.subscriptionsList.labels.refreshMinutes" })),
 				input: refreshInput,
+			},
+			{
+				label: translate(msg({ message: "Authentication:", context: "settings.integrations.subscriptionsList.labels.authentication" })),
+				input: authSelect,
+			},
+			{
+				label: translate(msg({ message: "Username:", context: "settings.integrations.subscriptionsList.labels.username" })),
+				input: usernameInput,
+			},
+			{
+				label: translate(msg({ message: "Password:", context: "settings.integrations.subscriptionsList.labels.password" })),
+				input: passwordInput,
+			},
+			{ label: "", input: authHelp, fullWidth: true },
+			{
+				label: filterLabel,
+				input: filterInput,
 			},
 		];
 
@@ -2883,6 +3126,7 @@ function renderICSSubscriptionsList(
 				],
 			},
 		});
+		updateAuthRowVisibility();
 	});
 }
 

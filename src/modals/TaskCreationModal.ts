@@ -25,10 +25,16 @@ import {
 } from "./taskCreationFormState";
 import { applyTaskCreationSubtaskAssignments } from "./taskCreationSubtasks";
 import { NLPSuggest } from "./taskCreationSuggest";
-import { shouldShowFilenameShortenedNotice } from "../utils/filenameGenerator";
+import { getTaskFilenameNotice } from "../utils/filenameGenerator";
 import { setTaskModalDetailsEditorValue } from "./taskModalDetailsEditor";
 import { collapseTaskModalDetailsLayout } from "./taskModalLayout";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+
+import {
+	createLinkedAttachmentEntries,
+	getLinkedAttachmentReferences,
+	hasPendingAttachments,
+} from "./taskModalAttachments";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/TaskCreationModal" });
 export type { StatusSuggestion } from "./taskCreationSuggest";
@@ -651,6 +657,11 @@ export class TaskCreationModal extends TaskModal {
 			this.initializeProjectsFromStrings(formState.projectStrings);
 		}
 
+		this.attachmentEntries = createLinkedAttachmentEntries(
+			this.options.prePopulatedValues?.attachments,
+			""
+		);
+
 		this.details = this.normalizeDetails(this.details);
 		this.originalDetails = this.details;
 	}
@@ -683,16 +694,48 @@ export class TaskCreationModal extends TaskModal {
 			});
 			let createdTask = result.taskInfo;
 
-			if (
-				shouldShowFilenameShortenedNotice(
-					this.plugin.settings,
-					result.taskInfo.title,
-					result.file.basename
-				)
-			) {
+			// Disk files are copied only now that the task exists, next to its note.
+			if (hasPendingAttachments(this.attachmentEntries)) {
+				try {
+					const imported = await this.importPendingAttachments(createdTask.path);
+					try {
+						createdTask = await this.plugin.taskService.updateTask(createdTask, {
+							attachments: imported.references,
+						});
+					} catch (error) {
+						await imported.rollback();
+						throw error;
+					}
+				} catch (error) {
+					tasknotesLogger.error("Failed to import task attachments:", {
+						category: "persistence",
+						operation: "import-task-attachments",
+						error: error,
+					});
+					new Notice(
+						this.t(msg({ message: "Task created, but some attachments could not be imported: {message}", context: "modals.taskCreation.notices.attachmentImportFailure" }), {
+							message: displayError(error instanceof Error ? error.message : String(error)),
+						})
+					);
+				}
+			}
+
+			const filenameNotice = getTaskFilenameNotice(
+				this.plugin.settings,
+				result.taskInfo.title,
+				result.file.basename
+			);
+			if (filenameNotice === "shortened") {
 				new Notice(
 					this.t(msg({ message: "Task \"{title}\" created successfully (filename shortened due to length)", context: "modals.taskCreation.notices.successShortened" }), {
 						title: createdTask.title,
+					})
+				);
+			} else if (filenameNotice === "sanitized") {
+				new Notice(
+					this.t(msg({ message: "Task \"{title}\" created as file \"{filename}\". Filenames cannot contain some characters, so the full title is kept in the title property.", context: "modals.taskCreation.notices.successFilenameSanitized" }), {
+						title: createdTask.title,
+						filename: result.file.basename,
 					})
 				);
 			} else {
@@ -801,6 +844,10 @@ export class TaskCreationModal extends TaskModal {
 			taskTag: this.plugin.settings.taskTag,
 			normalizeDetails: (value) => this.normalizeDetails(value),
 		});
+		const attachments = getLinkedAttachmentReferences(this.attachmentEntries);
+		if (attachments.length > 0) {
+			taskData.attachments = attachments;
+		}
 		const prePopulatedCustomFrontmatter = this.options.prePopulatedValues?.customFrontmatter;
 		if (prePopulatedCustomFrontmatter) {
 			taskData.customFrontmatter = {

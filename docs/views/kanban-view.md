@@ -33,7 +33,7 @@ Access these options through the Bases view settings panel. In YAML, put them di
 - **Show items in multiple columns**: When enabled (default), tasks with multiple values in list properties (contexts, tags, projects) appear in each individual column. For example, a task with `contexts: [work, call]` appears in both the "work" and "call" columns. When disabled, tasks appear in a single combined column (e.g., "work, call")
 - **Hide top-level subtasks**: When enabled, tasks whose Projects field links to another task in the current filtered board are hidden as standalone cards and remain available through the parent task's expanded subtasks
 - **Column Order**: Managed automatically when dragging column headers. Stores custom column ordering
-- **Swim Lane Order**: Advanced JSON configuration for pinning swimlane rows in a stable order
+- **Swim Lane Order**: Managed automatically when dragging swimlane labels. Can also be edited as JSON to pin swimlane rows in a stable order
 A common setup is to keep one board grouped by status and another grouped by project or context, each in a separate `.base` file.
 
 ## Interface Layout
@@ -41,6 +41,8 @@ A common setup is to keep one board grouped by status and another grouped by pro
 ### Standard Layout
 
 In standard mode, the Kanban board displays a horizontal row of columns. Each column corresponds to a unique value of the `groupBy` property.
+
+When columns are grouped by Status (including a mapped status property), their backgrounds and borders use a subtle tint from the configured status colour. Swimlane column headers and cells use the same colour. Other grouping properties, unknown statuses and missing or unresolved colours keep the normal theme surface. Updating a status colour refreshes open boards.
 
 Each column includes:
 - A header showing the property value and task count
@@ -88,9 +90,17 @@ Click a card to open the task file for editing. Right-click to access the contex
 
 ## Column Operations
 
+### Collapsing Columns
+
+In a standard (non-swimlane) board, use the chevron button in a column header to collapse that column to a narrow label. Click it again, or focus the button and press Enter or Space, to expand it. You can still reorder collapsed columns or drop tasks onto them.
+
+Collapse state belongs to the current Bases session and grouping property. It survives view refreshes and switches within that pane, but is not saved in the `.base` file and resets when Obsidian restarts. Swimlane columns are unchanged.
+
 ### Reordering Columns
 
 Drag column headers to reorder columns. The new order persists across sessions and is stored in the `columnOrder` configuration.
+
+In swimlane mode, drag a swimlane label to reorder rows. The new order persists across sessions and is stored in the `swimLaneOrder` configuration. Rows hidden by search or by **Hide Empty Swimlanes** keep their positions. As with a hand-written `swimLaneOrder`, saved rows stay visible as empty rows when **Hide Empty Swimlanes** is off. Row dragging needs a mouse; on touch devices, edit `swimLaneOrder` instead.
 
 ### Drag-and-Drop Tasks
 

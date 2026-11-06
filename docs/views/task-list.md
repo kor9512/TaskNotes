@@ -59,7 +59,7 @@ views:
 For existing `.base` files, add `file.tasks` in YAML manually; once present in `order`, it appears in the Bases picker as `tasks`.
 
 **`sort`**: Array of sort criteria. Tasks are sorted by the first criterion, with ties broken by subsequent criteria.
-- `column`: Property to sort by (e.g., `due`, `scheduled`, `priority`, `title`)
+- `column`: Property to sort by (e.g., `due`, `scheduled`, `formula.priorityWeight`, `title`). Sorting by `priority` itself is alphabetical; see [Sort by priority](../guides/custom-bases.md#sort-by-priority).
 - `direction`: `ASC` (ascending) or `DESC` (descending)
 
 **`groupBy`**: Optional grouping configuration
@@ -142,7 +142,7 @@ sort:
 Multiple sort criteria:
 ```yaml
 sort:
-  - column: priority
+  - column: formula.priorityWeight
     direction: DESC
   - column: due
     direction: ASC
@@ -301,6 +301,8 @@ The Task List View provides interaction with tasks through clicking and context 
   - And more
 
 Context menu availability depends on your TaskNotes settings and task properties.
+
+For batch date changes in Task List or Kanban, Ctrl/Cmd-click individual task cards to toggle selection, or Shift-click to select a range, then right-click a selected card. Modifier-clicks on task-card bodies select tasks rather than opening their source notes; links and other card controls keep their own actions. **Scheduled date** and **Due date** include **Pick date & time…**, alongside the quick-date options. Choosing a date and optional time assigns that same value to each selected task. A date-only choice removes the time from that property; cancelling the picker changes nothing.
 
 ## Virtual Scrolling
 

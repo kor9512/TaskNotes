@@ -171,6 +171,36 @@ These controls currently create and manage finish-to-start style blockers. Advan
 
 ![Task context menu](../assets/feature-task-context-menu.png)
 
+## Attachments
+
+Attachments are files that belong to a task, such as a receipt, a scan or a PDF. They are stored as an ordered list of links in the task's `attachments` frontmatter property:
+
+```yaml
+attachments:
+  - "[[Files/receipt.png]]"
+  - "[[Files/invoice.pdf]]"
+```
+
+Each entry links to a file in the vault by its full path. The property name follows the `attachments` field mapping, and the field can be used in Bases filters, formulas and columns like other list properties.
+
+### Managing attachments in the task modals
+
+The **Attachments** field in the task creation and edit modals shows the task's attachments in order. From there you can:
+
+- **Add from vault** to pick an existing file with fuzzy search. The picker only selects files; it does not create new ones.
+- **Import file** to choose a file from your device, or drag files onto the field. Imported files are copied into the vault only when you save the task, into the folder set by Obsidian's **Default location for new attachments** setting (relative to the task note). If you cancel or discard the modal, nothing is written.
+- Select a file name to open it in a new tab.
+- Use the arrow buttons to change the order.
+- Use the remove button to unlink a file from the task. Removing an attachment never deletes the file from the vault; delete it from Obsidian's file explorer if you no longer need it.
+
+Files need a file extension, and their names can't contain `[`, `]`, `#` or `|`, because those characters would break the link. Rename such a file before attaching it. If saving fails, files that save had already copied in are moved to the trash, and they stay in the list waiting to be imported again.
+
+All controls are buttons with labels, so they can be reached with the keyboard and used on touch devices. You can hide the field, or show it only in one of the modals, in [Modal Fields Settings](../settings/modal-fields.md).
+
+### Attachment indicators
+
+Task cards show a paperclip with the number of attachments next to their other badges. Calendar views show a paperclip after the title of task events, and the event tooltip includes the attachment count.
+
 ## Automation
 
 ### Auto-Archiving
@@ -210,6 +240,25 @@ By default the actions are grouped under a single **Mark complete or skip** entr
 With the submenu grouping turned off, the same actions appear directly in the menu:
 
 ![Completion actions shown flat in the menu](../assets/feature-completion-date-actions-flat.png)
+
+## Repeating a Completed Task
+
+For tasks that come back irregularly, **TaskNotes: Repeat current task** reuses the same note instead of creating a new one. Open the completed task's note and run the command from the command palette.
+
+A confirmation appears **before any changes**. Cancel or dismiss it to leave the note unchanged. Confirming:
+
+1. Unarchives the task, moving it back to the task folder if **Move archived tasks to folder** is enabled.
+2. Saves its completion date in `complete_instances`, returns it to the default status and clears `completedDate`.
+3. Resets body checkboxes if **Reset checkboxes on recurrence** is enabled.
+4. Opens the task editor to choose new scheduled and due dates.
+
+The previous scheduled and due dates stay unchanged until you save the editor. **Cancelling that editor does not undo the confirmed repeat.**
+
+The history stores **distinct completion dates**, not every completion: repeating a task completed twice on the same date adds that date only once. A completed task without `completedDate` is reopened without adding a history entry. This history is available in frontmatter and Bases; the editor's completions calendar remains specific to recurring tasks.
+
+Recurring tasks and materialized occurrence notes cannot be repeated with this command; they already have an occurrence workflow.
+
+If a step fails, earlier changes are kept, not rolled back, and later steps are not attempted. Check the note before retrying: for example, reopening can fail after unarchiving, or a checkbox reset can fail after the task has reopened and saved its history. Archive moves follow the existing best-effort behavior: if the move fails, a notice appears and the task is still unarchived and repeated at its existing path.
 
 ## Recurring Tasks
 
