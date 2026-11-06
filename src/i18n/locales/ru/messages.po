@@ -43,6 +43,7 @@ msgstr ""
 "\n"
 "Статус: {value1}"
 
+#: src/fork/settings/calendarRouting.ts
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.primarySuffix"
 msgid " (Primary)"
@@ -2112,7 +2113,7 @@ msgctxt "OAuth callback title"
 msgid "Authorization failed"
 msgstr "Ошибка авторизации"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauth.windowExpired"
 msgid "Authorization request expired. Request a new code."
 msgstr "Срок запроса авторизации истёк. Запросите новый код."
@@ -2122,7 +2123,7 @@ msgctxt "OAuth callback description"
 msgid "Authorization was not completed. Return to Obsidian."
 msgstr "Авторизация не завершена. Вернитесь в Obsidian."
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauth.windowRemaining"
 msgid "Authorization window: {time} remaining"
 msgstr "Окно авторизации: осталось {time}"
@@ -2558,12 +2559,12 @@ msgctxt "services/errors: CalendarNotFoundError display"
 msgid "Calendar not found: {calendarId}"
 msgstr "Календарь не найден: {calendarId}"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.refreshFailed"
 msgid "Calendar refresh failed: {message}"
 msgstr "Не удалось обновить календари: {message}"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.heading"
 msgid "Calendar routing"
 msgstr "Маршрутизация календарей"
@@ -2633,7 +2634,7 @@ msgctxt "settings.integrations.calendarSubscriptions.defaultNoteFolder.placehold
 msgid "Calendar/Events"
 msgstr "Календарь/События"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.googleCalendarExport.enabledCalendars.name"
 msgid "Calendars shown in TaskNotes"
 msgstr "Календари, показываемые в TaskNotes"
@@ -2909,7 +2910,7 @@ msgctxt "views.pomodoro.buttons.chooseTask"
 msgid "Choose task..."
 msgstr "Выбрать задачу..."
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthAuthorizationMode.description"
 msgid "Choose the authorization flow. Copy/paste works without a local callback server."
 msgstr "Выберите способ авторизации. Копирование и вставка работает без локального сервера обратного вызова."
@@ -2919,7 +2920,7 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endConditionDesc
 msgid "Choose when the recurrence should end"
 msgstr "Выберите, когда повторение должно закончиться"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthCredentialStorage.description"
 msgid "Choose where client credentials will be stored. Plaintext is convenient for cross-device setup but insecure."
 msgstr "Выберите, где хранить учётные данные клиента. Открытый текст удобен для настройки на нескольких устройствах, но небезопасен."
@@ -2944,7 +2945,7 @@ msgctxt "settings.general.taskIdentification.identifyBy.description"
 msgid "Choose whether to identify tasks by tag or by a frontmatter property"
 msgstr "Выберите, идентифицировать ли задачи по тегу или по свойству frontmatter"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.description"
 msgid "Choose which connected calendars TaskNotes can display and route tasks to."
 msgstr "Выберите, какие подключённые календари TaskNotes может показывать и куда может отправлять задачи."
@@ -3119,7 +3120,7 @@ msgctxt "modals.timeblockInfo.colorLabel"
 msgid "Color"
 msgstr "Цвет"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.colorLabel"
 msgid "Color for {calendar}"
 msgstr "Цвет календаря {calendar}"
@@ -3524,6 +3525,7 @@ msgctxt "settings.integrations.oauth.connectedLoadingGoogle"
 msgid "Connected. Loading Google calendars…"
 msgstr "Подключено. Загрузка календарей Google…"
 
+#: src/fork/settings/oauthCopyPaste.ts
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.connecting"
 msgid "Connecting to {provider} calendar…"
@@ -3745,7 +3747,7 @@ msgctxt "contextMenus.ics.copyUrl"
 msgid "Copy URL"
 msgstr "Копировать URL"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthAuthorizationMode.options.copyPaste"
 msgid "Copy/paste authorization (experimental)"
 msgstr "Авторизация копированием и вставкой (экспериментально)"
@@ -4803,7 +4805,7 @@ msgctxt "settings.defaults.reminders.fields.description"
 msgid "Description:"
 msgstr "Описание:"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthAuthorizationMode.options.desktop"
 msgid "Desktop callback"
 msgstr "Обратный вызов на компьютере"
@@ -5863,6 +5865,7 @@ msgctxt "services/OAuthService: OAuthService.authenticateStandard display"
 msgid "Failed to connect to {provider}: {message}"
 msgstr "Не удалось подключиться к {provider}: {message}"
 
+#: src/fork/settings/oauthCopyPaste.ts
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.connectFailed"
 msgid "Failed to connect: {message}"
@@ -6447,7 +6450,7 @@ msgctxt "services/TaskService: TaskService.toggleStatus display"
 msgid "Failed to toggle task status: {errorMessage}"
 msgstr "Не удалось переключить статус задачи: {errorMessage}"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.colorFailed"
 msgid "Failed to update {calendar} color"
 msgstr "Не удалось обновить цвет календаря {calendar}"
@@ -6961,7 +6964,7 @@ msgctxt "contextMenus.task.calendar.google"
 msgid "Google Calendar"
 msgstr "Google Календарь"
 
-#: src/modals/TaskModal.ts
+#: src/fork/modals/googleCalendarField.ts
 msgctxt "modals.task.googleCalendar.name"
 msgid "Google Calendar"
 msgstr "Google Календарь"
@@ -8516,7 +8519,7 @@ msgctxt "settings.integrations.subscriptionsList.emptyState"
 msgid "No calendar subscriptions configured. Add a subscription to sync external calendars."
 msgstr "Подписки на календари не настроены. Добавьте подписку для синхронизации внешних календарей."
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.none"
 msgid "No calendars available"
 msgstr "Нет доступных календарей"
@@ -9048,7 +9051,7 @@ msgctxt "services/OAuthService: OAuthService.handleCallback display"
 msgid "OAuth authorization failed"
 msgstr "Ошибка авторизации OAuth"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthAuthorizationMode.name"
 msgid "OAUTH authorization method"
 msgstr "Способ авторизации OAuth"
@@ -9058,7 +9061,7 @@ msgctxt "settings.integrations.oauth.header"
 msgid "OAUTH calendar integration"
 msgstr "Интеграция календарей через OAuth"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthCredentialStorage.name"
 msgid "OAUTH credential storage"
 msgstr "Хранение учётных данных OAuth"
@@ -9073,7 +9076,7 @@ msgctxt "services/OAuthService: OAuthService.startCallbackServer display"
 msgid "OAuth listener did not expose its bound port"
 msgstr "Служба обратного вызова OAuth не предоставила назначенный порт"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauth.copyPasteLabel"
 msgid "OAuth redirect/code:"
 msgstr "Перенаправление/код OAuth:"
@@ -9098,7 +9101,7 @@ msgctxt "settings.integrations.oauth.tokenRefreshed"
 msgid "OAuth token refreshed {time}"
 msgstr "Токен OAuth обновлён {time}"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthCredentialStorage.options.secret"
 msgid "Obsidian secret storage"
 msgstr "Секретное хранилище Obsidian"
@@ -9440,7 +9443,7 @@ msgctxt "notices.audit.occurrenceOpened"
 msgid "Opened occurrence note for {date}"
 msgstr "Открыта заметка повторения за {date}"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauth.opening"
 msgid "Opening {provider} authorization…"
 msgstr "Открытие авторизации {provider}…"
@@ -9621,7 +9624,7 @@ msgctxt "services.filter.groupLabels.scheduled.past"
 msgid "Past scheduled"
 msgstr "Прошлые запланированные"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauth.pastePlaceholder"
 msgid "Paste OAuth redirect URL or authorization code"
 msgstr "Вставьте URL перенаправления OAuth или код авторизации"
@@ -9734,7 +9737,7 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options d
 msgid "Pinned Columns"
 msgstr "Закреплённые столбцы"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthCredentialStorage.options.plaintext"
 msgid "Plaintext (experimental)"
 msgstr "Открытый текст (экспериментально)"
@@ -10609,12 +10612,12 @@ msgctxt "commands.repeatCurrentTask"
 msgid "Repeat current task"
 msgstr "Повторить текущую задачу"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauth.requestAuthorization"
 msgid "Request authorization"
 msgstr "Запросить авторизацию"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauth.windowHint"
 msgid "Request authorization to start a 5-minute window."
 msgstr "Запросите авторизацию, чтобы открыть окно на 5 минут."
@@ -11099,7 +11102,7 @@ msgctxt "modals.task.organization.addSubtasksTooltip"
 msgid "Select tasks to make them subtasks of this task"
 msgstr "Выберите задачи, чтобы сделать их подзадачами этой задачи"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.googleCalendarExport.enabledCalendars.description"
 msgid "Select the Google calendars that TaskNotes should subscribe to and display."
 msgstr "Выберите календари Google, на которые TaskNotes должен подписаться и которые будет показывать."
@@ -11872,7 +11875,7 @@ msgctxt "settings.integrations.calendarSubscriptions.description"
 msgid "Subscribe to external calendars via ICS/iCal URLs to view events alongside your tasks."
 msgstr "Подпишитесь на внешние календари через URL ICS/iCal для просмотра событий вместе с задачами."
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.subscribed"
 msgid "Subscribed to {calendar}"
 msgstr "Подписка на {calendar} оформлена"
@@ -12795,7 +12798,7 @@ msgctxt "common.cannotUndo"
 msgid "This action cannot be undone."
 msgstr "Это действие нельзя отменить."
 
-#: src/modals/TaskModal.ts
+#: src/fork/modals/googleCalendarField.ts
 msgctxt "modals.task.googleCalendar.unavailableDescription"
 msgid "This calendar is no longer available. Choose another calendar."
 msgstr "Этот календарь больше недоступен. Выберите другой календарь."
@@ -13681,7 +13684,7 @@ msgctxt "modals.taskEdit.archiveAction.unarchived"
 msgid "unarchived"
 msgstr "разархивирована"
 
-#: src/modals/TaskModal.ts
+#: src/fork/modals/googleCalendarField.ts
 msgctxt "modals.task.googleCalendar.unavailable"
 msgid "Unavailable calendar ({id})"
 msgstr "Недоступный календарь ({id})"
@@ -13807,7 +13810,7 @@ msgctxt "contextMenus.task.unskipInstance"
 msgid "Unskip instance"
 msgstr "Отменить пропуск экземпляра"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.unsubscribed"
 msgid "Unsubscribed from {calendar}"
 msgstr "Подписка на {calendar} отменена"
@@ -13907,7 +13910,7 @@ msgctxt "notices.audit.update"
 msgid "Update tasks"
 msgstr "Обновить задачи"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.colorUpdated"
 msgid "Updated {calendar} color"
 msgstr "Цвет календаря {calendar} обновлён"
@@ -13969,7 +13972,7 @@ msgctxt "contextMenus.task.calendar.useDefaultTarget"
 msgid "Use default target calendar"
 msgstr "Использовать целевой календарь по умолчанию"
 
-#: src/modals/TaskModal.ts
+#: src/fork/modals/googleCalendarField.ts
 msgctxt "modals.task.googleCalendar.useDefaultTarget"
 msgid "Use default target calendar"
 msgstr "Использовать целевой календарь по умолчанию"

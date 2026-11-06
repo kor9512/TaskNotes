@@ -43,6 +43,7 @@ msgstr ""
 "\n"
 "상태: {value1}"
 
+#: src/fork/settings/calendarRouting.ts
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.primarySuffix"
 msgid " (Primary)"
@@ -2109,7 +2110,7 @@ msgctxt "OAuth callback title"
 msgid "Authorization failed"
 msgstr "인증 실패"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauth.windowExpired"
 msgid "Authorization request expired. Request a new code."
 msgstr "인증 요청이 만료되었습니다. 새 코드를 요청하세요."
@@ -2119,7 +2120,7 @@ msgctxt "OAuth callback description"
 msgid "Authorization was not completed. Return to Obsidian."
 msgstr "인증이 완료되지 않았습니다. Obsidian으로 돌아가세요."
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauth.windowRemaining"
 msgid "Authorization window: {time} remaining"
 msgstr "인증 남은 시간: {time}"
@@ -2555,12 +2556,12 @@ msgctxt "services/errors: CalendarNotFoundError display"
 msgid "Calendar not found: {calendarId}"
 msgstr "캘린더를 찾을 수 없습니다: {calendarId}"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.refreshFailed"
 msgid "Calendar refresh failed: {message}"
 msgstr "캘린더 새로고침 실패: {message}"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.heading"
 msgid "Calendar routing"
 msgstr "캘린더 연결"
@@ -2630,7 +2631,7 @@ msgctxt "settings.integrations.calendarSubscriptions.defaultNoteFolder.placehold
 msgid "Calendar/Events"
 msgstr "캘린더/이벤트"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.googleCalendarExport.enabledCalendars.name"
 msgid "Calendars shown in TaskNotes"
 msgstr "TaskNotes에 표시할 캘린더"
@@ -2906,7 +2907,7 @@ msgctxt "views.pomodoro.buttons.chooseTask"
 msgid "Choose task..."
 msgstr "작업 선택..."
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthAuthorizationMode.description"
 msgid "Choose the authorization flow. Copy/paste works without a local callback server."
 msgstr "인증 흐름을 선택합니다. 복사·붙여넣기 방식은 로컬 callback 서버 없이 동작합니다."
@@ -2916,7 +2917,7 @@ msgctxt "components.recurrenceContextMenu.customRecurrenceModal.endConditionDesc
 msgid "Choose when the recurrence should end"
 msgstr "반복이 끝나야 하는 시점 선택"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthCredentialStorage.description"
 msgid "Choose where client credentials will be stored. Plaintext is convenient for cross-device setup but insecure."
 msgstr "클라이언트 자격 증명을 저장할 위치를 선택합니다. 평문 저장은 기기 간 설정에 편리하지만 안전하지 않습니다."
@@ -2941,7 +2942,7 @@ msgctxt "settings.general.taskIdentification.identifyBy.description"
 msgid "Choose whether to identify tasks by tag or by a frontmatter property"
 msgstr "태그 또는 프런트매터 속성으로 작업을 식별할지 선택"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.description"
 msgid "Choose which connected calendars TaskNotes can display and route tasks to."
 msgstr "TaskNotes가 표시하고 작업을 보낼 수 있는 연결된 캘린더를 선택하세요."
@@ -3116,7 +3117,7 @@ msgctxt "modals.timeblockInfo.colorLabel"
 msgid "Color"
 msgstr "색상"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.colorLabel"
 msgid "Color for {calendar}"
 msgstr "{calendar} 색상"
@@ -3521,6 +3522,7 @@ msgctxt "settings.integrations.oauth.connectedLoadingGoogle"
 msgid "Connected. Loading Google calendars…"
 msgstr "연결됨. Google 캘린더를 불러오는 중…"
 
+#: src/fork/settings/oauthCopyPaste.ts
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.connecting"
 msgid "Connecting to {provider} calendar…"
@@ -3742,7 +3744,7 @@ msgctxt "contextMenus.ics.copyUrl"
 msgid "Copy URL"
 msgstr "URL 복사"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthAuthorizationMode.options.copyPaste"
 msgid "Copy/paste authorization (experimental)"
 msgstr "복사·붙여넣기 인증 (실험적)"
@@ -4800,7 +4802,7 @@ msgctxt "settings.defaults.reminders.fields.description"
 msgid "Description:"
 msgstr "설명:"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthAuthorizationMode.options.desktop"
 msgid "Desktop callback"
 msgstr "데스크톱 callback"
@@ -5860,6 +5862,7 @@ msgctxt "services/OAuthService: OAuthService.authenticateStandard display"
 msgid "Failed to connect to {provider}: {message}"
 msgstr "{provider}에 연결하지 못했습니다: {message}"
 
+#: src/fork/settings/oauthCopyPaste.ts
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.oauth.connectFailed"
 msgid "Failed to connect: {message}"
@@ -6444,7 +6447,7 @@ msgctxt "services/TaskService: TaskService.toggleStatus display"
 msgid "Failed to toggle task status: {errorMessage}"
 msgstr "작업 상태를 전환하지 못했습니다: {errorMessage}"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.colorFailed"
 msgid "Failed to update {calendar} color"
 msgstr "{calendar} 색상을 바꾸지 못했습니다"
@@ -6960,7 +6963,7 @@ msgctxt "contextMenus.task.calendar.google"
 msgid "Google Calendar"
 msgstr "Google 캘린더"
 
-#: src/modals/TaskModal.ts
+#: src/fork/modals/googleCalendarField.ts
 msgctxt "modals.task.googleCalendar.name"
 msgid "Google Calendar"
 msgstr "Google 캘린더"
@@ -8515,7 +8518,7 @@ msgctxt "settings.integrations.subscriptionsList.emptyState"
 msgid "No calendar subscriptions configured. Add a subscription to sync external calendars."
 msgstr "캘린더 구독이 설정되지 않았습니다. 외부 캘린더를 동기화하려면 구독을 추가하세요."
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.none"
 msgid "No calendars available"
 msgstr "사용 가능한 캘린더가 없습니다"
@@ -9047,7 +9050,7 @@ msgctxt "services/OAuthService: OAuthService.handleCallback display"
 msgid "OAuth authorization failed"
 msgstr "OAuth 인증에 실패했습니다"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthAuthorizationMode.name"
 msgid "OAUTH authorization method"
 msgstr "OAuth 인증 방식"
@@ -9057,7 +9060,7 @@ msgctxt "settings.integrations.oauth.header"
 msgid "OAUTH calendar integration"
 msgstr "OAuth 캘린더 연동"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthCredentialStorage.name"
 msgid "OAUTH credential storage"
 msgstr "OAuth 자격 증명 저장 방식"
@@ -9072,7 +9075,7 @@ msgctxt "services/OAuthService: OAuthService.startCallbackServer display"
 msgid "OAuth listener did not expose its bound port"
 msgstr "OAuth 리스너가 바인딩된 포트를 제공하지 않았습니다"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauth.copyPasteLabel"
 msgid "OAuth redirect/code:"
 msgstr "OAuth 리디렉션/코드:"
@@ -9097,7 +9100,7 @@ msgctxt "settings.integrations.oauth.tokenRefreshed"
 msgid "OAuth token refreshed {time}"
 msgstr "OAuth 토큰 새로고침: {time}"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthCredentialStorage.options.secret"
 msgid "Obsidian secret storage"
 msgstr "Obsidian 비밀 저장소"
@@ -9439,7 +9442,7 @@ msgctxt "notices.audit.occurrenceOpened"
 msgid "Opened occurrence note for {date}"
 msgstr "{date} 반복 항목 노트를 열었습니다"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauth.opening"
 msgid "Opening {provider} authorization…"
 msgstr "{provider} 인증 페이지를 여는 중…"
@@ -9620,7 +9623,7 @@ msgctxt "services.filter.groupLabels.scheduled.past"
 msgid "Past scheduled"
 msgstr "과거 예정"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauth.pastePlaceholder"
 msgid "Paste OAuth redirect URL or authorization code"
 msgstr "OAuth 리디렉션 URL 또는 인증 코드를 붙여넣으세요"
@@ -9733,7 +9736,7 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options d
 msgid "Pinned Columns"
 msgstr "고정된 열"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauthCredentialStorage.options.plaintext"
 msgid "Plaintext (experimental)"
 msgstr "평문 저장 (실험적)"
@@ -10608,12 +10611,12 @@ msgctxt "commands.repeatCurrentTask"
 msgid "Repeat current task"
 msgstr "현재 작업 반복"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauth.requestAuthorization"
 msgid "Request authorization"
 msgstr "인증 요청"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/oauthCopyPaste.ts
 msgctxt "settings.integrations.oauth.windowHint"
 msgid "Request authorization to start a 5-minute window."
 msgstr "인증을 요청하면 5분 동안 입력할 수 있습니다."
@@ -11098,7 +11101,7 @@ msgctxt "modals.task.organization.addSubtasksTooltip"
 msgid "Select tasks to make them subtasks of this task"
 msgstr "이 작업의 하위 작업으로 만들 작업 선택"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.googleCalendarExport.enabledCalendars.description"
 msgid "Select the Google calendars that TaskNotes should subscribe to and display."
 msgstr "TaskNotes가 구독하고 표시할 Google 캘린더를 선택하세요."
@@ -11871,7 +11874,7 @@ msgctxt "settings.integrations.calendarSubscriptions.description"
 msgid "Subscribe to external calendars via ICS/iCal URLs to view events alongside your tasks."
 msgstr "ICS/iCal URL을 통해 외부 캘린더를 구독하여 작업과 함께 이벤트를 봅니다."
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.subscribed"
 msgid "Subscribed to {calendar}"
 msgstr "{calendar} 구독함"
@@ -12794,7 +12797,7 @@ msgctxt "common.cannotUndo"
 msgid "This action cannot be undone."
 msgstr "이 작업은 실행 취소할 수 없습니다."
 
-#: src/modals/TaskModal.ts
+#: src/fork/modals/googleCalendarField.ts
 msgctxt "modals.task.googleCalendar.unavailableDescription"
 msgid "This calendar is no longer available. Choose another calendar."
 msgstr "이 캘린더는 더 이상 사용할 수 없습니다. 다른 캘린더를 선택하세요."
@@ -13680,7 +13683,7 @@ msgctxt "modals.taskEdit.archiveAction.unarchived"
 msgid "unarchived"
 msgstr "보관 해제됨"
 
-#: src/modals/TaskModal.ts
+#: src/fork/modals/googleCalendarField.ts
 msgctxt "modals.task.googleCalendar.unavailable"
 msgid "Unavailable calendar ({id})"
 msgstr "사용할 수 없는 캘린더 ({id})"
@@ -13806,7 +13809,7 @@ msgctxt "contextMenus.task.unskipInstance"
 msgid "Unskip instance"
 msgstr "회차 건너뛰기 취소"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.unsubscribed"
 msgid "Unsubscribed from {calendar}"
 msgstr "{calendar} 구독 해제함"
@@ -13906,7 +13909,7 @@ msgctxt "notices.audit.update"
 msgid "Update tasks"
 msgstr "작업 업데이트"
 
-#: src/settings/tabs/integrationsTab.ts
+#: src/fork/settings/calendarRouting.ts
 msgctxt "settings.integrations.calendarRouting.colorUpdated"
 msgid "Updated {calendar} color"
 msgstr "{calendar} 색상을 바꿨습니다"
@@ -13968,7 +13971,7 @@ msgctxt "contextMenus.task.calendar.useDefaultTarget"
 msgid "Use default target calendar"
 msgstr "기본 대상 캘린더 사용"
 
-#: src/modals/TaskModal.ts
+#: src/fork/modals/googleCalendarField.ts
 msgctxt "modals.task.googleCalendar.useDefaultTarget"
 msgid "Use default target calendar"
 msgstr "기본 대상 캘린더 사용"

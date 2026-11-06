@@ -1,7 +1,8 @@
 import { uiData } from "../i18n/dataText";
 import type { MessageDescriptor } from "@lingui/core";
 import { msg } from "@lingui/core/macro";
-import { App, Modal, Notice, Setting, TAbstractFile, TFile } from "obsidian";
+import { App, Modal, Notice, TAbstractFile, TFile } from "obsidian";
+import { createForkGoogleCalendarField } from "../fork/modals/googleCalendarField";
 
 type Nullable<T> = T | null;
 
@@ -753,38 +754,13 @@ export abstract class TaskModal extends Modal {
 	}
 
 	protected createGoogleCalendarField(container: HTMLElement): void {
-		const setting = new Setting(container).setName(this.t(msg({ message: "Google Calendar", context: "modals.task.googleCalendar.name" })));
-		const dropdown = setting.controlEl.createEl("select");
-		const calendars =
-			this.plugin.googleCalendarService?.getEnabledCalendars?.() ||
-			this.plugin.googleCalendarService?.getAvailableCalendars?.() ||
-			[];
-		const defaultOption = dropdown.createEl("option", {
-			text: this.t(msg({ message: "Use default target calendar", context: "modals.task.googleCalendar.useDefaultTarget" })),
-			value: "",
-		});
-		defaultOption.selected = !this.googleCalendarId;
-
-		const hasCurrentCalendar = calendars.some((calendar) => calendar.id === this.googleCalendarId);
-		if (this.googleCalendarId && !hasCurrentCalendar) {
-			const missingOption = dropdown.createEl("option", {
-				text: this.t(msg({ message: "Unavailable calendar ({id})", context: "modals.task.googleCalendar.unavailable" }), { id: this.googleCalendarId }),
-				value: this.googleCalendarId,
-			});
-			missingOption.selected = true;
-			setting.setDesc(this.t(msg({ message: "This calendar is no longer available. Choose another calendar.", context: "modals.task.googleCalendar.unavailableDescription" })));
-		}
-
-		for (const calendar of calendars) {
-			const option = dropdown.createEl("option", {
-				text: calendar.summary || calendar.id,
-				value: calendar.id,
-			});
-			option.selected = calendar.id === this.googleCalendarId;
-		}
-
-		dropdown.addEventListener("change", () => {
-			this.googleCalendarId = dropdown.value;
+		createForkGoogleCalendarField(container, {
+			plugin: this.plugin,
+			t: (key, params) => this.t(key, params),
+			getValue: () => this.googleCalendarId,
+			setValue: (value) => {
+				this.googleCalendarId = value;
+			},
 		});
 	}
 

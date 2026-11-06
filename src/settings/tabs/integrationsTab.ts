@@ -42,6 +42,8 @@ import {
 	setCardSecondaryText,
 } from "../components/CardComponent";
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
+import { addForkOAuthSettings, createForkCopyPasteFlow } from "../../fork/settings/oauthCopyPaste";
+import { renderForkCalendarRoutingSection } from "../../fork/settings/calendarRouting";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/Tabs/IntegrationsTab" });
 
@@ -142,52 +144,6 @@ type OAuthCredentialControls = {
 	persistPendingValues(): void;
 	hasStoredCredentials: boolean;
 };
-
-type OAuthCopyPasteControls = {
-	input: HTMLInputElement;
-	container: HTMLElement;
-	status: HTMLSpanElement;
-};
-
-function createOAuthCopyPasteInput(plugin: TaskNotesPlugin): OAuthCopyPasteControls {
-	const input = createCardInput(
-		"text",
-		uiText(msg({ message: "Paste OAuth redirect URL or authorization code", context: "settings.integrations.oauth.pastePlaceholder" })),
-		""
-	);
-	input.disabled = plugin.settings.oauthAuthorizationMode !== "copy-paste";
-	// Keep the input and its status in a dedicated block. Appending the status to
-	// the input's parent made it either invisible or squeezed into the setting row
-	// on mobile because the input is created before CardComponent attaches it.
-	const container = activeWindow.createDiv({ cls: "tasknotes-oauth-copy-paste-control" });
-	container.appendChild(input);
-	const status = container.createSpan({ cls: "tasknotes-oauth-copy-paste-status" });
-	status.textContent = uiText(msg({ message: "Request authorization to start a 5-minute window.", context: "settings.integrations.oauth.windowHint" }));
-	return { input, container, status };
-}
-
-function startOAuthCopyPasteCountdown(
-	status: HTMLSpanElement,
-	expiresAt: number
-): () => void {
-	let timer: number | null = null;
-	const update = () => {
-		const remaining = Math.max(0, expiresAt - Date.now());
-		if (remaining === 0) {
-			status.textContent = uiText(msg({ message: "Authorization request expired. Request a new code.", context: "settings.integrations.oauth.windowExpired" }));
-			if (timer !== null) window.clearInterval(timer);
-			return;
-		}
-		const totalSeconds = Math.ceil(remaining / 1000);
-		status.textContent = uiText(msg({ message: "Authorization window: {time} remaining", context: "settings.integrations.oauth.windowRemaining" }), { time: `${Math.floor(totalSeconds / 60)}:${String(totalSeconds % 60).padStart(2, "0")}` });
-	};
-	update();
-	timer = window.setInterval(update, 1000);
-	return () => {
-		if (timer !== null) window.clearInterval(timer);
-		timer = null;
-	};
-}
 
 function createOAuthCredentialControls(
 	plugin: TaskNotesPlugin,
@@ -351,53 +307,8 @@ export function renderIntegrationsTab(
 			heading: translate(msg({ message: "OAUTH calendar integration", context: "settings.integrations.oauth.header" })),
 		},
 		(group) => {
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
-					name: translate(msg({ message: "OAUTH credential storage", context: "settings.integrations.oauthCredentialStorage.name" })),
-					desc: translate(msg({ message: "Choose where client credentials will be stored. Plaintext is convenient for cross-device setup but insecure.", context: "settings.integrations.oauthCredentialStorage.description" })),
-					options: [
-						{
-							value: "secret",
-							label: translate(msg({ message: "Obsidian secret storage", context: "settings.integrations.oauthCredentialStorage.options.secret" })),
-						},
-						{
-							value: "plaintext",
-							label: translate(msg({ message: "Plaintext (experimental)", context: "settings.integrations.oauthCredentialStorage.options.plaintext" })),
-						},
-					],
-					getValue: () => plugin.settings.oauthCredentialStorage,
-					setValue: (value) => {
-						if (value !== "secret" && value !== "plaintext") return;
-						plugin.settings.oauthCredentialStorage = value;
-						save();
-					},
-				})
-			);
+			addForkOAuthSettings(group, plugin, save, () => renderIntegrationsTab(container, plugin, save));
 
-			group.addSetting((setting) =>
-				void configureDropdownSetting(setting, {
-					name: translate(msg({ message: "OAUTH authorization method", context: "settings.integrations.oauthAuthorizationMode.name" })),
-					desc: translate(msg({ message: "Choose the authorization flow. Copy/paste works without a local callback server.", context: "settings.integrations.oauthAuthorizationMode.description" })),
-					options: [
-						{
-							value: "desktop-callback",
-							label: translate(msg({ message: "Desktop callback", context: "settings.integrations.oauthAuthorizationMode.options.desktop" })),
-						},
-						{
-							value: "copy-paste",
-							label: translate(msg({ message: "Copy/paste authorization (experimental)", context: "settings.integrations.oauthAuthorizationMode.options.copyPaste" })),
-						},
-					],
-					getValue: () => plugin.settings.oauthAuthorizationMode,
-					setValue: (value) => {
-						if (value !== "desktop-callback" && value !== "copy-paste") return;
-						plugin.settings.oauthAuthorizationMode = value;
-						save();
-						// Rebuild the provider cards so the mode-specific controls change immediately.
-						renderIntegrationsTab(container, plugin, save);
-					},
-				})
-			);
 
 			group.addSetting((setting) => {
 				setting.setDesc(translate(msg({ message: "Connect Google Calendar or Microsoft Outlook to sync events into TaskNotes.", context: "settings.integrations.oauth.description" })));
@@ -615,9 +526,10 @@ export function renderIntegrationsTab(
 				uiData("your-client-id.apps.googleusercontent.com", "Example OAuth credential syntax; credential identifiers must not be translated"),
 				uiData("your-client-secret", "Example OAuth credential syntax; credential identifiers must not be translated")
 			);
-			const copyPasteInput = createOAuthCopyPasteInput(plugin);
-			const isCopyPasteMode = plugin.settings.oauthAuthorizationMode === "copy-paste";
-			let stopGoogleCopyPasteCountdown = () => {};
+			const copyPaste = createForkCopyPasteFlow(plugin, "google", "Google", async () => {
+				await plugin.googleCalendarService?.refreshAllCalendars({ propagateErrors: true });
+				void renderGoogleCalendarCard();
+			});
 
 			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
@@ -635,7 +547,7 @@ export function renderIntegrationsTab(
 						label: translate(msg({ message: "Client secret:", context: "settings.integrations.oauth.clientSecretLabel" })),
 						input: credentialControls.clientSecretInput,
 					},
-					{ label: translate(msg({ message: "OAuth redirect/code:", context: "settings.integrations.oauth.copyPasteLabel" })), input: copyPasteInput.container },
+					copyPaste.section,
 					{ label: "", input: credentialNote, fullWidth: true },
 				],
 			});
@@ -662,8 +574,8 @@ export function renderIntegrationsTab(
 					actions: {
 						buttons: [
 						{
-							text: isCopyPasteMode
-								? translate(msg({ message: "Request authorization", context: "settings.integrations.oauth.requestAuthorization" }))
+							text: copyPaste.enabled
+								? copyPaste.requestText
 								: translate(msg({ message: "Connect {provider}", context: "settings.integrations.oauth.connect" }), {
 								provider: uiData("Google Calendar", "Upstream product or console name; not plugin-authored prose"),
 							}),
@@ -674,13 +586,7 @@ export function renderIntegrationsTab(
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
 									credentialControls.persistPendingValues();
-					if (isCopyPasteMode) {
-						new Notice(uiText(msg({ message: "Opening {provider} authorization…", context: "settings.integrations.oauth.opening" }), { provider: uiData("Google", "Upstream product name; not plugin-authored prose") }));
-						const expiresAt = await oauthService.requestCopyPasteAuthorization("google");
-						stopGoogleCopyPasteCountdown();
-						stopGoogleCopyPasteCountdown = startOAuthCopyPasteCountdown(copyPasteInput.status, expiresAt);
-						return;
-									}
+									if (await copyPaste.request()) return;
 									new Notice(uiText(msg({ message: "Connecting to {provider} calendar…", context: "settings.integrations.oauth.connecting" }), { provider: uiData("Google", "Upstream product name; not plugin-authored prose") }));
 									await oauthService.authenticate("google");
 									new Notice(translate(msg({ message: "Connected. Loading Google calendars…", context: "settings.integrations.oauth.connectedLoadingGoogle" })));
@@ -700,30 +606,7 @@ export function renderIntegrationsTab(
 								}
 							},
 						},
-						...(isCopyPasteMode
-							? [
-									{
-										text: "Connect with pasted code",
-										icon: "plug",
-										variant: "primary" as const,
-										onClick: async () => {
-											try {
-												new Notice(uiText(msg({ message: "Connecting to {provider} calendar…", context: "settings.integrations.oauth.connecting" }), { provider: uiData("Google", "Upstream product name; not plugin-authored prose") }));
-												await plugin.oauthService?.connectCopyPasteAuthorization(
-													"google",
-													copyPasteInput.input.value
-												);
-												copyPasteInput.input.value = "";
-												stopGoogleCopyPasteCountdown();
-												await plugin.googleCalendarService?.refreshAllCalendars({ propagateErrors: true });
-												void renderGoogleCalendarCard();
-											} catch (error) {
-												new Notice(uiText(msg({ message: "Failed to connect: {message}", context: "settings.integrations.oauth.connectFailed" }), { message: displayError(getErrorMessage(error)) }));
-											}
-										},
-									},
-								]
-							: []),
+						...copyPaste.buttons(),
 						...(credentialControls.hasStoredCredentials
 							? [
 									{
@@ -1018,9 +901,10 @@ export function renderIntegrationsTab(
 				uiData("your-microsoft-client-id", "Example OAuth credential syntax; credential identifiers must not be translated"),
 				uiData("your-microsoft-client-secret", "Example OAuth credential syntax; credential identifiers must not be translated")
 			);
-			const copyPasteInput = createOAuthCopyPasteInput(plugin);
-			const isCopyPasteMode = plugin.settings.oauthAuthorizationMode === "copy-paste";
-			let stopMicrosoftCopyPasteCountdown = () => {};
+			const copyPaste = createForkCopyPasteFlow(plugin, "microsoft", "Microsoft", async () => {
+				await plugin.microsoftCalendarService?.initialize();
+				void renderMicrosoftCalendarCard();
+			});
 
 			const credentialNote = activeWindow.createDiv();
 			credentialNote.className = "tasknotes-credential-note";
@@ -1038,7 +922,7 @@ export function renderIntegrationsTab(
 						label: translate(msg({ message: "Client secret:", context: "settings.integrations.oauth.clientSecretLabel" })),
 						input: credentialControls.clientSecretInput,
 					},
-					{ label: translate(msg({ message: "OAuth redirect/code:", context: "settings.integrations.oauth.copyPasteLabel" })), input: copyPasteInput.container },
+					copyPaste.section,
 					{ label: "", input: credentialNote, fullWidth: true },
 				],
 			});
@@ -1065,8 +949,8 @@ export function renderIntegrationsTab(
 				actions: {
 				buttons: [
 						{
-							text: isCopyPasteMode
-								? translate(msg({ message: "Request authorization", context: "settings.integrations.oauth.requestAuthorization" }))
+							text: copyPaste.enabled
+								? copyPaste.requestText
 								: translate(msg({ message: "Connect {provider}", context: "settings.integrations.oauth.connect" }), {
 								provider: uiData("Microsoft Outlook Calendar", "Upstream product or console name; not plugin-authored prose"),
 							}),
@@ -1077,13 +961,7 @@ export function renderIntegrationsTab(
 									const oauthService = plugin.oauthService;
 									if (!oauthService) return;
 									credentialControls.persistPendingValues();
-					if (isCopyPasteMode) {
-						new Notice(uiText(msg({ message: "Opening {provider} authorization…", context: "settings.integrations.oauth.opening" }), { provider: uiData("Microsoft", "Upstream product name; not plugin-authored prose") }));
-						const expiresAt = await oauthService.requestCopyPasteAuthorization("microsoft");
-						stopMicrosoftCopyPasteCountdown();
-						stopMicrosoftCopyPasteCountdown = startOAuthCopyPasteCountdown(copyPasteInput.status, expiresAt);
-						return;
-					}
+									if (await copyPaste.request()) return;
 					new Notice(uiText(msg({ message: "Connecting to {provider} calendar…", context: "settings.integrations.oauth.connecting" }), { provider: uiData("Microsoft", "Upstream product name; not plugin-authored prose") }));
 					await oauthService.authenticate("microsoft");
 					await plugin.microsoftCalendarService?.initialize();
@@ -1102,30 +980,7 @@ export function renderIntegrationsTab(
 								}
 						},
 						},
-						...(isCopyPasteMode
-							? [
-									{
-										text: "Connect with pasted code",
-										icon: "plug",
-										variant: "primary" as const,
-										onClick: async () => {
-											try {
-												new Notice(uiText(msg({ message: "Connecting to {provider} calendar…", context: "settings.integrations.oauth.connecting" }), { provider: uiData("Microsoft", "Upstream product name; not plugin-authored prose") }));
-												await plugin.oauthService?.connectCopyPasteAuthorization(
-													"microsoft",
-													copyPasteInput.input.value
-												);
-												copyPasteInput.input.value = "";
-												stopMicrosoftCopyPasteCountdown();
-												await plugin.microsoftCalendarService?.initialize();
-												void renderMicrosoftCalendarCard();
-											} catch (error) {
-												new Notice(uiText(msg({ message: "Failed to connect: {message}", context: "settings.integrations.oauth.connectFailed" }), { message: displayError(getErrorMessage(error)) }));
-											}
-										},
-									},
-								]
-							: []),
+						...copyPaste.buttons(),
 						...(credentialControls.hasStoredCredentials
 							? [
 									{
@@ -1170,106 +1025,7 @@ export function renderIntegrationsTab(
 	// Initial render
 	void renderMicrosoftCalendarCard();
 
-	// Calendar routing and subscriptions are independent from task export. The
-	// user-facing value is the calendar name; IDs are shown only as reference
-	// metadata while the stable IDs remain stored in plugin data.
-	createSettingGroup(
-		container,
-		{
-			heading: uiText(msg({ message: "Calendar routing", context: "settings.integrations.calendarRouting.heading" })),
-			description: uiText(msg({ message: "Choose which connected calendars TaskNotes can display and route tasks to.", context: "settings.integrations.calendarRouting.description" })),
-		},
-		(group) => {
-			group.addSetting((setting) => {
-				setting.settingEl.addClass("tasknotes-calendar-routing-setting");
-				setting.setName(translate(msg({ message: "Calendars shown in TaskNotes", context: "settings.integrations.googleCalendarExport.enabledCalendars.name" })));
-				setting.setDesc(translate(msg({ message: "Select the Google calendars that TaskNotes should subscribe to and display.", context: "settings.integrations.googleCalendarExport.enabledCalendars.description" })));
-				setting.controlEl.createDiv({ cls: "tasknotes-calendar-routing-divider" });
-				const listEl = setting.controlEl.createDiv({ cls: "tasknotes-calendar-routing-list" });
-
-				const renderCalendarList = async () => {
-					listEl.empty();
-					// Same guard as the upstream calendar dropdowns: list nothing until Google is connected.
-					const isConnected =
-						plugin.oauthService && (await plugin.oauthService.isConnected("google"));
-					if (!isConnected || !plugin.googleCalendarService) {
-						listEl.createSpan({ text: uiText(msg({ message: "No calendars available", context: "settings.integrations.calendarRouting.none" })) });
-						return;
-					}
-					let calendars = plugin.googleCalendarService.getAvailableCalendars();
-					if (calendars.length === 0) {
-						try {
-							calendars = await plugin.googleCalendarService.listCalendars();
-						} catch {
-							listEl.createSpan({ text: uiText(msg({ message: "No calendars available", context: "settings.integrations.calendarRouting.none" })) });
-							return;
-						}
-					}
-					for (const calendar of calendars) {
-						const row = listEl.createDiv({ cls: "tasknotes-calendar-routing-row" });
-						const calendarColor = calendar.backgroundColor || "#4285f4";
-						row.style.setProperty("--tn-calendar-color", calendarColor);
-						const colorSwatch = row.createEl("input", {
-							cls: "tasknotes-calendar-routing-color",
-							type: "color",
-							value: calendarColor,
-						});
-						colorSwatch.setAttribute("aria-label", uiText(msg({ message: "Color for {calendar}", context: "settings.integrations.calendarRouting.colorLabel" }), { calendar: calendar.summary }));
-						colorSwatch.addEventListener("change", () => runAsyncSettingCallback(async () => {
-							try {
-								await plugin.googleCalendarService?.updateCalendarColor(calendar.id, colorSwatch.value);
-								row.style.setProperty("--tn-calendar-color", colorSwatch.value);
-								new Notice(uiText(msg({ message: "Updated {calendar} color", context: "settings.integrations.calendarRouting.colorUpdated" }), { calendar: calendar.summary }));
-							} catch {
-								new Notice(uiText(msg({ message: "Failed to update {calendar} color", context: "settings.integrations.calendarRouting.colorFailed" }), { calendar: calendar.summary }));
-								colorSwatch.value = calendarColor;
-							}
-						}));
-						const nameBox = row.createDiv({ cls: "tasknotes-calendar-routing-name-box" });
-						nameBox.createSpan({
-							cls: "tasknotes-calendar-routing-name",
-							text: calendar.summary + (calendar.primary ? uiText(msg({ message: " (Primary)", context: "settings.integrations.googleCalendarExport.targetCalendar.primarySuffix" })) : ""),
-						});
-						const idBox = row.createDiv({ cls: "tasknotes-calendar-routing-id-box" });
-						idBox.createSpan({
-							cls: "tasknotes-calendar-routing-id",
-							text: calendar.id,
-						});
-						const toggleLabel = row.createEl("label", { cls: "tasknotes-calendar-routing-toggle" });
-						const toggle = toggleLabel.createEl("input", { type: "checkbox" });
-						toggleLabel.createSpan({ cls: "tasknotes-calendar-routing-toggle-track" });
-						toggle.checked = plugin.settings.enabledGoogleCalendars.includes(calendar.id);
-						toggle.addEventListener("change", () => runAsyncSettingCallback(async () => {
-								const enabled = toggle.checked;
-								const selected = new Set(plugin.settings.enabledGoogleCalendars);
-								if (enabled) selected.add(calendar.id);
-								else selected.delete(calendar.id);
-								plugin.settings.enabledGoogleCalendars = Array.from(selected);
-								if (
-									!enabled &&
-									plugin.settings.googleCalendarExport.targetCalendarId === calendar.id
-								) {
-									plugin.settings.googleCalendarExport.targetCalendarId =
-										Array.from(selected)[0] || "";
-								}
-								save();
-								try {
-									await plugin.googleCalendarService?.manualRefresh();
-									new Notice(enabled ? uiText(msg({ message: "Subscribed to {calendar}", context: "settings.integrations.calendarRouting.subscribed" }), { calendar: calendar.summary }) : uiText(msg({ message: "Unsubscribed from {calendar}", context: "settings.integrations.calendarRouting.unsubscribed" }), { calendar: calendar.summary }));
-								} catch (error) {
-									new Notice(uiText(msg({ message: "Calendar refresh failed: {message}", context: "settings.integrations.calendarRouting.refreshFailed" }), { message: displayError(getErrorMessage(error)) }));
-								}
-						}));
-					}
-				};
-
-				void renderCalendarList();
-				plugin.googleCalendarService?.on("data-changed", () => {
-					if (listEl.isConnected) void renderCalendarList();
-				});
-			});
-		}
-	);
+	renderForkCalendarRoutingSection(container, plugin, save);
 
 	/** A dropdown of the connected Google account's calendars, refreshed when they load. */
 	const configureGoogleCalendarDropdown = (
