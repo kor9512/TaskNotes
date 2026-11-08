@@ -2,6 +2,7 @@ import { observeTranslation as mockObserveTranslation, englishText as mockEnglis
 import { TaskCalendarSyncService } from "../../src/services/TaskCalendarSyncService";
 import { TaskInfo } from "../../src/types";
 import { TFile } from "obsidian";
+import { DEFAULT_FORK_FEATURES } from "../../src/fork/featureFlags";
 
 describe("TaskCalendarSyncService", () => {
     let syncService: any;
@@ -298,108 +299,130 @@ describe("TaskCalendarSyncService", () => {
         expect(syncService.processRecoveryQueues).toHaveBeenCalledTimes(2);
     });
 
-    it("uses due as the exclusive end for multi-day all-day events", () => {
-        const event = syncService.taskToCalendarEvent({
+    it("keeps upstream event ends when fork features are off", () => {
+        const allDay = syncService.taskToCalendarEvent({
             path: "Tasks/date-span.md",
             title: "Date span",
             scheduled: "2026-09-17",
             due: "2026-09-20",
         });
-
-        expect(event).toMatchObject({
-            start: { date: "2026-09-17" },
-            end: { date: "2026-09-21" },
-        });
+        expect(allDay).toMatchObject({ end: { date: "2026-09-18" } });
+        expect(syncService.getTaskTargetCalendarId({ path: "Tasks/x.md", title: "x" }))
+            .toBe(mockPlugin.settings.googleCalendarExport.targetCalendarId);
     });
 
-    describe("timed events end at due", () => {
+    describe("fork features on", () => {
         beforeEach(() => {
-            mockPlugin.settings.googleCalendarExport.createAsAllDay = false;
+            mockPlugin.settings.forkFeatures = {
+                ...DEFAULT_FORK_FEATURES,
+                dueAsEventEnd: true,
+                taskCalendarRouting: true,
+            };
         });
 
-        it("ends at a timed due later the same day", () => {
+        it("uses due as the exclusive end for multi-day all-day events", () => {
             const event = syncService.taskToCalendarEvent({
-                path: "Tasks/work-day.md",
-                title: "Work day",
-                scheduled: "2026-10-01T08:30",
-                due: "2026-10-01T18:00",
+                path: "Tasks/date-span.md",
+                title: "Date span",
+                scheduled: "2026-09-17",
+                due: "2026-09-20",
             });
-            expect(new Date(event.end.dateTime).getTime() - new Date(event.start.dateTime).getTime())
-                .toBe((9 * 60 + 30) * 60 * 1000);
+
+            expect(event).toMatchObject({
+                start: { date: "2026-09-17" },
+                end: { date: "2026-09-21" },
+            });
         });
 
-        it("ends when a later date-only due day ends", () => {
-            const event = syncService.taskToCalendarEvent({
-                path: "Tasks/trip.md",
-                title: "Trip",
-                scheduled: "2026-10-01T08:30",
-                due: "2026-10-03",
+        describe("timed events end at due", () => {
+            beforeEach(() => {
+                mockPlugin.settings.googleCalendarExport.createAsAllDay = false;
             });
-            const end = new Date(event.end.dateTime);
-            expect([end.getDate(), end.getHours(), end.getMinutes()]).toEqual([4, 0, 0]);
-        });
 
-        it("keeps the duration when due is same-day date-only, earlier, or absent", () => {
-            for (const due of ["2026-10-01", "2026-10-01T07:00", undefined]) {
+            it("ends at a timed due later the same day", () => {
                 const event = syncService.taskToCalendarEvent({
-                    path: "Tasks/short.md",
-                    title: "Short",
+                    path: "Tasks/work-day.md",
+                    title: "Work day",
                     scheduled: "2026-10-01T08:30",
-                    due,
+                    due: "2026-10-01T18:00",
                 });
                 expect(new Date(event.end.dateTime).getTime() - new Date(event.start.dateTime).getTime())
-                    .toBe(60 * 60 * 1000);
-            }
+                    .toBe((9 * 60 + 30) * 60 * 1000);
+            });
+
+            it("ends when a later date-only due day ends", () => {
+                const event = syncService.taskToCalendarEvent({
+                    path: "Tasks/trip.md",
+                    title: "Trip",
+                    scheduled: "2026-10-01T08:30",
+                    due: "2026-10-03",
+                });
+                const end = new Date(event.end.dateTime);
+                expect([end.getDate(), end.getHours(), end.getMinutes()]).toEqual([4, 0, 0]);
+            });
+
+            it("keeps the duration when due is same-day date-only, earlier, or absent", () => {
+                for (const due of ["2026-10-01", "2026-10-01T07:00", undefined]) {
+                    const event = syncService.taskToCalendarEvent({
+                        path: "Tasks/short.md",
+                        title: "Short",
+                        scheduled: "2026-10-01T08:30",
+                        due,
+                    });
+                    expect(new Date(event.end.dateTime).getTime() - new Date(event.start.dateTime).getTime())
+                        .toBe(60 * 60 * 1000);
+                }
+            });
         });
-    });
 
-    it("falls back to a one-day event when due is absent", () => {
-        const event = syncService.taskToCalendarEvent({
-            path: "Tasks/single-day.md",
-            title: "Single day",
-            scheduled: "2026-09-17",
+        it("falls back to a one-day event when due is absent", () => {
+            const event = syncService.taskToCalendarEvent({
+                path: "Tasks/single-day.md",
+                title: "Single day",
+                scheduled: "2026-09-17",
+            });
+
+            expect(event).toMatchObject({
+                start: { date: "2026-09-17" },
+                end: { date: "2026-09-18" },
+            });
         });
 
-        expect(event).toMatchObject({
-            start: { date: "2026-09-17" },
-            end: { date: "2026-09-18" },
+        it("changes the calendar fingerprint only when a calendar override is set or changed", () => {
+            const file = Object.create(TFile.prototype);
+            mockPlugin.app.vault.getAbstractFileByPath = jest.fn().mockReturnValue(file);
+            let frontmatter: Record<string, unknown> = {};
+            mockPlugin.app.metadataCache = { getFileCache: jest.fn(() => ({ frontmatter })) };
+            const task = { path: "Tasks/route.md", title: "Route", scheduled: "2026-10-01T08:30" };
+            const fingerprint = () => (syncService as any).getCalendarRelevantFingerprint(task);
+
+            const noOverride = fingerprint();
+            expect(JSON.parse(noOverride)).not.toHaveProperty("calendar");
+            frontmatter = { googleCalendarName: "Schedule" };
+            const schedule = fingerprint();
+            expect(schedule).not.toBe(noOverride);
+            frontmatter = { googleCalendarName: "♡" };
+            expect(fingerprint()).not.toBe(schedule);
         });
-    });
 
-    it("changes the calendar fingerprint only when a calendar override is set or changed", () => {
-        const file = Object.create(TFile.prototype);
-        mockPlugin.app.vault.getAbstractFileByPath = jest.fn().mockReturnValue(file);
-        let frontmatter: Record<string, unknown> = {};
-        mockPlugin.app.metadataCache = { getFileCache: jest.fn(() => ({ frontmatter })) };
-        const task = { path: "Tasks/route.md", title: "Route", scheduled: "2026-10-01T08:30" };
-        const fingerprint = () => (syncService as any).getCalendarRelevantFingerprint(task);
+        it("resolves a task calendar override from frontmatter before the global target", () => {
+            const file = Object.create(TFile.prototype);
+            mockPlugin.app.vault.getAbstractFileByPath = jest.fn().mockReturnValue(file);
+            mockPlugin.app.metadataCache = {
+                getFileCache: jest.fn().mockReturnValue({
+                    frontmatter: { googleCalendarId: "heart-calendar" },
+                }),
+            };
+            // Calendar routing resolves note values against the subscribed calendar list.
+            mockGoogleCalendarService.getAvailableCalendars = jest.fn(() => [
+                { id: "heart-calendar", summary: "♡" },
+            ]);
 
-        const noOverride = fingerprint();
-        expect(JSON.parse(noOverride)).not.toHaveProperty("calendar");
-        frontmatter = { googleCalendarName: "Schedule" };
-        const schedule = fingerprint();
-        expect(schedule).not.toBe(noOverride);
-        frontmatter = { googleCalendarName: "♡" };
-        expect(fingerprint()).not.toBe(schedule);
-    });
-
-    it("resolves a task calendar override from frontmatter before the global target", () => {
-        const file = Object.create(TFile.prototype);
-        mockPlugin.app.vault.getAbstractFileByPath = jest.fn().mockReturnValue(file);
-        mockPlugin.app.metadataCache = {
-            getFileCache: jest.fn().mockReturnValue({
-                frontmatter: { googleCalendarId: "heart-calendar" },
-            }),
-        };
-        // Calendar routing resolves note values against the subscribed calendar list.
-        mockGoogleCalendarService.resolveCalendarId = jest.fn((value?: string) =>
-            value === "heart-calendar" ? value : undefined
-        );
-
-        expect(syncService.getTaskTargetCalendarId({
-            path: "Tasks/heart-only.md",
-            title: "Heart only",
-            scheduled: "2026-09-17",
-        })).toBe("heart-calendar");
+            expect(syncService.getTaskTargetCalendarId({
+                path: "Tasks/heart-only.md",
+                title: "Heart only",
+                scheduled: "2026-09-17",
+            })).toBe("heart-calendar");
+        });
     });
 });

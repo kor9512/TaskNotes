@@ -27,6 +27,9 @@ import {
 import type { PerformanceProfilerDetails } from "../utils/PerformanceProfiler";
 import { withPluginDataWriteLock } from "../utils/pluginDataWriteLock";
 import { TimeblockCalendarSync, type TimeblockNoteSource } from "./TimeblockCalendarSync";
+import { forkFeature } from "../fork/featureFlags";
+import { getTaskTargetCalendarId, taskCalendarFingerprint } from "../fork/calendar/taskCalendar";
+import { getDueEventEnd, getStableGoogleEventId } from "../fork/calendar/eventShape";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/TaskCalendarSyncService" });
 
@@ -202,22 +205,6 @@ export class TaskCalendarSyncService {
 		);
 	}
 
-	/** Persist a task-specific Google Calendar target through the vault mutation boundary. */
-	async setTaskCalendarOverride(file: TFile, calendarId?: string): Promise<void> {
-		await processVaultFrontMatterWithinMutation(this.plugin.app, file, (frontmatter) => {
-			if (calendarId) {
-				const calendar = this.googleCalendarService
-					.getAvailableCalendars()
-					.find((item) => item.id === calendarId);
-				frontmatter.googleCalendarName = calendar?.summary || calendarId;
-				delete frontmatter.googleCalendarId;
-			} else {
-				delete frontmatter.googleCalendarId;
-				delete frontmatter.googleCalendarName;
-			}
-		});
-	}
-
 	private static getTaskCalendarCacheKey(taskPath: string, calendarId?: string): string {
 		return calendarId ? `${calendarId}::${taskPath}` : taskPath;
 	}
@@ -381,6 +368,7 @@ export class TaskCalendarSyncService {
 		return this.getConfigurationIssue() === null;
 	}
 
+	/** Why export is not ready, or null. Calendar availability is the synchronous readiness signal. */
 	getConfigurationIssue(): string | null {
 		const settings = this.plugin.settings.googleCalendarExport;
 		if (!settings.enabled) return uiText(msg({ message: "Google Calendar export is disabled", context: "services.taskCalendarSync.exportDisabled" }));
@@ -391,40 +379,18 @@ export class TaskCalendarSyncService {
 		return null;
 	}
 
+	/** fork: the calendar this task's event belongs in (export target unless task calendar routing). */
+	getTaskTargetCalendarId(task: TaskInfo): string {
+		return getTaskTargetCalendarId(this.plugin, task, this.googleCalendarService);
+	}
+
+	/** fork: record an event a task took over ("adopt" mode) so moves and deletes find it. */
+	async recordAdoptedEvent(taskPath: string, calendarId: string, eventId: string): Promise<void> {
+		await this.upsertEventIndex(taskPath, calendarId, eventId);
+	}
+
 	private getConnectionGeneration(): number {
 		return this.googleCalendarService.getConnectionGeneration?.() ?? 0;
-	}
-
-	/** Raw `googleCalendarId`/`googleCalendarName` override from the note, if any. */
-	private getTaskCalendarOverride(task: TaskInfo): string | undefined {
-		const file = this.plugin.app.vault.getAbstractFileByPath?.(task.path);
-		const frontmatter = file instanceof TFile
-			? this.plugin.app.metadataCache?.getFileCache(file)?.frontmatter
-			: undefined;
-		const value = frontmatter?.googleCalendarId ?? frontmatter?.googleCalendarName ?? frontmatter?.googleCalendar;
-		return typeof value === "string" && value.trim() ? value.trim() : undefined;
-	}
-
-	/**
-	 * Resolve the calendar for an individual task. A note may override the
-	 * global export target with a `googleCalendarName` frontmatter property.
-	 */
-	getTaskTargetCalendarId(task: TaskInfo): string {
-		const file = this.plugin.app.vault.getAbstractFileByPath?.(task.path);
-		const frontmatter = file instanceof TFile
-			? this.plugin.app.metadataCache?.getFileCache(file)?.frontmatter
-			: undefined;
-		const overrideId = frontmatter?.googleCalendarId;
-		const overrideName = frontmatter?.googleCalendarName ?? frontmatter?.googleCalendar;
-		// Optional call: service stubs without calendar routing fall back to the global target.
-		const resolvedOverride =
-			this.googleCalendarService.resolveCalendarId?.(
-				typeof overrideId === "string" ? overrideId : undefined
-			) ||
-			this.googleCalendarService.resolveCalendarId?.(
-				typeof overrideName === "string" ? overrideName : undefined
-			);
-		return resolvedOverride || this.plugin.settings.googleCalendarExport.targetCalendarId;
 	}
 
 	private async assertConnectionGenerationCurrent(
@@ -638,12 +604,8 @@ export class TaskCalendarSyncService {
 	}
 
 	private getCalendarRelevantFingerprint(task: TaskInfo): string {
-		// Include the note's calendar override only when set, so a calendar change made
-		// outside Obsidian (e.g. synced from another device) moves the event, while
-		// fingerprints of notes without an override stay identical to older versions.
-		const calendarOverride = this.getTaskCalendarOverride(task);
 		return JSON.stringify({
-			...(calendarOverride ? { calendar: calendarOverride } : {}),
+			...taskCalendarFingerprint(this.plugin, task), // fork: empty unless the task has its own calendar
 			title: task.title || "",
 			status: task.status || "",
 			priority: task.priority || "",
@@ -2228,19 +2190,18 @@ export class TaskCalendarSyncService {
 	): { date?: string; dateTime?: string; timeZone?: string } {
 		const settings = this.plugin.settings.googleCalendarExport;
 
+		// fork: end at the task's due
+		if (forkFeature(this.plugin, "dueAsEventEnd")) {
+			const dueEnd = getDueEventEnd(startInfo, task.due, settings.createAsAllDay);
+			if (dueEnd) return dueEnd;
+		}
+
 		if (startInfo.isAllDay || settings.createAsAllDay) {
-			// Google Calendar's all-day end date is exclusive. When a due date is
-			// present, use the day after due as the end so the event spans through
-			// the task's due date rather than ending on the start date.
-			const startDatePart = startInfo.date
-				|| (startInfo.dateTime ? getDatePart(startInfo.dateTime) : undefined);
-			const dueDatePart = task.due ? getDatePart(task.due) : undefined;
-			const endDateSource =
-				dueDatePart && (!startDatePart || dueDatePart >= startDatePart)
-					? task.due
-					: startInfo.date;
-			if (endDateSource) {
-				const endDate = new Date(endDateSource.split("T")[0] + "T00:00:00");
+			// All-day events: end is the same date (or next day for multi-day)
+			// Google Calendar requires end date to be the day AFTER for all-day events
+			if (startInfo.date) {
+				const startDate = new Date(startInfo.date + "T00:00:00");
+				const endDate = new Date(startDate);
 				endDate.setDate(endDate.getDate() + 1);
 				return { date: format(endDate, "yyyy-MM-dd") };
 			}
@@ -2253,44 +2214,18 @@ export class TaskCalendarSyncService {
 			endDate.setDate(endDate.getDate() + 1);
 			return { date: format(endDate, "yyyy-MM-dd") };
 		} else {
+			// Timed events: use duration
+			const duration = task.timeEstimate || settings.defaultEventDuration;
 			if (!startInfo.dateTime) {
 				return {};
 			}
 			const startDate = new Date(startInfo.dateTime);
-			const dueEnd = this.getTimedEndFromDue(startDate, task.due);
-			if (dueEnd) {
-				return {
-					dateTime: format(dueEnd, "yyyy-MM-dd'T'HH:mm:ssxxx"),
-					timeZone: startInfo.timeZone,
-				};
-			}
-			// Timed events without a later due: use duration
-			const duration = task.timeEstimate || settings.defaultEventDuration;
 			const endDate = new Date(startDate.getTime() + duration * 60 * 1000);
 			return {
 				dateTime: format(endDate, "yyyy-MM-dd'T'HH:mm:ssxxx"),
 				timeZone: startInfo.timeZone,
 			};
 		}
-	}
-
-	/**
-	 * A timed event ends at the task's due when due is later than the start: a
-	 * timed due ends at that moment, a date-only due on a later day ends when
-	 * that day ends (next local midnight). Otherwise the caller uses duration.
-	 */
-	private getTimedEndFromDue(startDate: Date, due?: string): Date | undefined {
-		if (!due) return undefined;
-		let dueEnd: Date;
-		if (due.includes("T")) {
-			dueEnd = new Date(due);
-		} else {
-			if (due <= format(startDate, "yyyy-MM-dd")) return undefined;
-			dueEnd = new Date(due + "T00:00:00");
-			dueEnd.setDate(dueEnd.getDate() + 1);
-		}
-		if (isNaN(dueEnd.getTime()) || dueEnd.getTime() <= startDate.getTime()) return undefined;
-		return dueEnd;
 	}
 
 	/**
@@ -2654,10 +2589,10 @@ export class TaskCalendarSyncService {
 		calendarId: string,
 		expectedConnectionGeneration: number
 	): Promise<string> {
-		// Google supports a caller-supplied event ID. Deriving it from the stable
-		// note path and calendar makes concurrent creates from multiple devices
-		// converge on one event instead of producing two random IDs.
-		const stableEventId = await this.getStableGoogleEventId(task.path, calendarId);
+		// fork: deterministic ID so concurrent devices converge on one event
+		const stableEventId = forkFeature(this.plugin, "stableEventIds")
+			? await getStableGoogleEventId(task.path, calendarId)
+			: undefined;
 		let createdEvent: ICSEvent;
 		try {
 			createdEvent = await this.withGoogleRateLimit(async () => {
@@ -2666,18 +2601,15 @@ export class TaskCalendarSyncService {
 					calendarId,
 					{
 						...eventData,
-						id: stableEventId,
+						...(stableEventId ? { id: stableEventId } : {}),
 						isAllDay: !!eventData.start.date,
 					},
 					expectedConnectionGeneration
 				);
 			});
 		} catch (error) {
-			// A second device may win the same deterministic insert. Recover the
-			// existing event instead of retrying POST and creating another event.
-			if (getErrorStatus(error) !== 409) {
-				throw error;
-			}
+			// fork: another device won the same deterministic insert — reuse its event.
+			if (!stableEventId || getErrorStatus(error) !== 409) throw error;
 			createdEvent = await this.googleCalendarService.getEvent(calendarId, stableEventId);
 		}
 
@@ -2701,17 +2633,6 @@ export class TaskCalendarSyncService {
 			throw error;
 		}
 		return eventId;
-	}
-
-	private async getStableGoogleEventId(taskPath: string, calendarId: string): Promise<string> {
-		const data = new TextEncoder().encode(`tasknotes:${calendarId}:${taskPath}`);
-		const digest = await crypto.subtle.digest("SHA-256", data);
-		const hex = Array.from(new Uint8Array(digest))
-			.map((value) => value.toString(16).padStart(2, "0"))
-			.join("");
-		// Google event IDs accept lowercase base32hex characters. Hex is a
-		// compliant subset and keeps this ID deterministic across devices.
-		return `tn${hex}`;
 	}
 
 	private shouldCreateDetachedRecurringException(task: TaskInfo): boolean {
@@ -2927,6 +2848,7 @@ export class TaskCalendarSyncService {
 		options: {
 			queueOnFailure?: boolean;
 			connectionGeneration?: number;
+			/** fork: calendar resolved by a previous attempt (404 retry after a calendar move) */
 			targetCalendarId?: string;
 		} = {}
 	): Promise<boolean> {
@@ -3061,21 +2983,21 @@ export class TaskCalendarSyncService {
 
 			// Check if it's a 404 error (event was deleted externally)
 			if (getErrorStatus(error) === 404 && existingEventId) {
-				// If the task moved to another calendar, remove the old-calendar
-				// event before creating the replacement. The retry must retain the
-				// resolved target because the cache may not yet include a freshly
-				// written per-task calendar override.
-				const oldEntry = (await this.getEventIndex()).find(
-					(item) => item.taskPath === task.path && item.eventId === existingEventId
-				);
-				if (oldEntry && oldEntry.calendarId !== targetCalendarId) {
-					await this.deleteOrQueueCalendarEvent(
-						task.path,
-						oldEntry.calendarId,
-						oldEntry.eventId,
-						connectionGeneration
+				// fork: the task moved to another calendar — remove the old-calendar
+				// event before creating the replacement there.
+				if (forkFeature(this.plugin, "taskCalendarRouting")) {
+					const oldEntry = (await this.getEventIndex()).find(
+						(item) => item.taskPath === task.path && item.eventId === existingEventId
 					);
-					await this.removeEventIndexForEvent(oldEntry.calendarId, oldEntry.eventId);
+					if (oldEntry && oldEntry.calendarId !== targetCalendarId) {
+						await this.deleteOrQueueCalendarEvent(
+							task.path,
+							oldEntry.calendarId,
+							oldEntry.eventId,
+							connectionGeneration
+						);
+						await this.removeEventIndexForEvent(oldEntry.calendarId, oldEntry.eventId);
+					}
 				}
 				// Clear the stale link and retry as create
 				await this.removeTaskEventId(task.path, connectionGeneration);
@@ -3468,8 +3390,7 @@ export class TaskCalendarSyncService {
 	async deleteTaskFromCalendarByPath(
 		taskPath: string,
 		eventId?: string,
-		exceptionEventId?: string,
-		taskCalendarId?: string
+		...additionalEventIds: Array<string | undefined>
 	): Promise<boolean> {
 		if (!this.plugin.settings.googleCalendarExport.syncOnTaskDelete) {
 			return true;
@@ -3477,7 +3398,7 @@ export class TaskCalendarSyncService {
 
 		const connectionGeneration = this.getConnectionGeneration();
 		const settings = this.plugin.settings.googleCalendarExport;
-		const eventIds = [eventId, exceptionEventId].filter(
+		const eventIds = [eventId, ...additionalEventIds].filter(
 			(id): id is string => typeof id === "string" && id.length > 0
 		);
 
@@ -3485,7 +3406,7 @@ export class TaskCalendarSyncService {
 			return true;
 		}
 
-		const targetCalendarId = taskCalendarId || settings.targetCalendarId;
+		const targetCalendarId = settings.targetCalendarId;
 		if (!targetCalendarId) {
 			tasknotesLogger.warn(
 				"[TaskCalendarSync] Cannot delete task events without target calendar:",
@@ -3498,16 +3419,23 @@ export class TaskCalendarSyncService {
 			return false;
 		}
 
+		// fork: a task's events may live in its own calendar; the note is gone, so use the index.
+		const eventIndex = forkFeature(this.plugin, "taskCalendarRouting")
+			? await this.getEventIndex()
+			: [];
 		const results: boolean[] = [];
 		for (const id of eventIds) {
+			const calendarId =
+				eventIndex.find((item) => item.taskPath === taskPath && item.eventId === id)
+					?.calendarId || targetCalendarId;
 			const deleted = await this.deleteOrQueueCalendarEvent(
 				taskPath,
-				targetCalendarId,
+				calendarId,
 				id,
 				connectionGeneration
 			);
 			if (deleted) {
-				await this.removeEventIndexForEvent(targetCalendarId, id);
+				await this.removeEventIndexForEvent(calendarId, id);
 			}
 			results.push(deleted);
 		}

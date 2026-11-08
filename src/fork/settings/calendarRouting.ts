@@ -7,6 +7,7 @@ import type TaskNotesPlugin from "../../main";
 import type { MessageDescriptor } from "../../i18n";
 import { displayError, uiText } from "../../i18n/runtime";
 import { createSettingGroup, runAsyncSettingCallback } from "../../settings/components/settingHelpers";
+import { forkFeature } from "../featureFlags";
 
 function getErrorMessage(error: unknown): string {
 	return error instanceof Error ? error.message : String(error);
@@ -17,6 +18,7 @@ export function renderForkCalendarRoutingSection(
 	plugin: TaskNotesPlugin,
 	save: () => void
 ): void {
+	if (!forkFeature(plugin, "calendarRoutingPanel")) return;
 	const translate = (key: MessageDescriptor, params?: Record<string, string | number>) =>
 		plugin.i18n.translate(key, params);
 

@@ -228,11 +228,8 @@ describe('ICSNoteService - Folder Template Processing (Issue #816)', () => {
 
 			await icsNoteService.createNoteFromICS(testEvent);
 
-			// Calendar routing: an empty folder setting falls back to Calendar/Events
-			expect(mockEnsureFolderExists).toHaveBeenCalledWith(
-				expect.anything(),
-				'Calendar/Events'
-			);
+			// Should not call ensureFolderExists when folder is empty
+			expect(mockEnsureFolderExists).not.toHaveBeenCalled();
 		});
 
 		it('should handle static folder path without variables', async () => {

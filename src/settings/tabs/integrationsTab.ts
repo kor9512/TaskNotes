@@ -44,6 +44,9 @@ import {
 import { createTaskNotesLogger } from "../../utils/tasknotesLogger";
 import { addForkOAuthSettings, createForkCopyPasteFlow } from "../../fork/settings/oauthCopyPaste";
 import { renderForkCalendarRoutingSection } from "../../fork/settings/calendarRouting";
+import { renderForkFeaturesSection } from "../../fork/settings/forkFeaturesSection";
+import { getEnabledGoogleCalendars } from "../../fork/calendar/taskCalendar";
+import { forkFeature } from "../../fork/featureFlags";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/Tabs/IntegrationsTab" });
 
@@ -1025,6 +1028,7 @@ export function renderIntegrationsTab(
 	// Initial render
 	void renderMicrosoftCalendarCard();
 
+	renderForkFeaturesSection(container, plugin, save, () => renderIntegrationsTab(container, plugin, save));
 	renderForkCalendarRoutingSection(container, plugin, save);
 
 	/** A dropdown of the connected Google account's calendars, refreshed when they load. */
@@ -1079,9 +1083,9 @@ export function renderIntegrationsTab(
 						});
 					}
 				}
-				if (enabledOnly) {
+				if (enabledOnly && forkFeature(plugin, "calendarRoutingPanel")) {
 					const enabledIds = new Set(
-						plugin.googleCalendarService.getEnabledCalendars().map((calendar) => calendar.id)
+						getEnabledGoogleCalendars(plugin).map((calendar) => calendar.id)
 					);
 					calendars = calendars.filter((calendar) => enabledIds.has(calendar.id));
 				}

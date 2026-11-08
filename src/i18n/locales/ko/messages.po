@@ -1408,6 +1408,11 @@ msgctxt "services.pomodoro.notices.alreadyRunning"
 msgid "A Pomodoro is already running"
 msgstr "뽀모도로가 이미 실행 중입니다"
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.taskCalendarRouting.description"
+msgid "A task can name its own Google calendar (googleCalendarName). Adds a calendar field to the task modal and context menu."
+msgstr "태스크마다 Google 캘린더를 지정할 수 있습니다(googleCalendarName). 태스크 창과 우클릭 메뉴에 캘린더 선택이 추가됩니다."
+
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentSelf"
 msgid "A task cannot be its own parent."
@@ -1774,7 +1779,7 @@ msgctxt "settings.defaults.reminders.directions.after"
 msgid "after"
 msgstr "후"
 
-#: src/services/OAuthService.ts
+#: src/fork/oauth/copyPasteFlow.ts
 msgctxt "services.oauth.copyPastePaste"
 msgid "After approval, paste the redirect URL or code and connect."
 msgstr "승인한 뒤 리디렉션 URL이나 코드를 붙여넣고 연결하세요."
@@ -2566,6 +2571,11 @@ msgctxt "settings.integrations.calendarRouting.heading"
 msgid "Calendar routing"
 msgstr "캘린더 연결"
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.calendarRoutingPanel.name"
+msgid "Calendar routing panel"
+msgstr "캘린더 라우팅 패널"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.indexICSEvents display"
 msgid "Calendar subscription"
@@ -2856,6 +2866,11 @@ msgstr "작업 변경..."
 msgctxt "settings.features.uiLanguage.description"
 msgid "Change the language of TaskNotes menus, notices, and views."
 msgstr "TaskNotes 메뉴, 알림 및 뷰의 언어를 변경합니다."
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.description"
+msgid "Changes this build makes to TaskNotes. Turning everything off gives upstream behaviour."
+msgstr "이 빌드가 TaskNotes에 더한 변경입니다. 모두 끄면 upstream과 같게 동작합니다."
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.releaseNotes.checkForUpdates.name"
@@ -4767,6 +4782,11 @@ msgctxt "contextMenus.task.dependencies.notices.blockingRemoved"
 msgid "Dependent task removed"
 msgstr "종속 작업이 제거되었습니다"
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.stableEventIds.description"
+msgid "Derive Google event IDs from the note path so two devices exporting the same task create one event."
+msgstr "노트 경로로 Google 이벤트 ID를 만들어, 두 기기가 같은 태스크를 내보내도 일정이 하나만 생깁니다."
+
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionLabel"
 msgid "Description"
@@ -5083,6 +5103,11 @@ msgstr "마감일"
 msgctxt "modals.actionPalette.dueCleared"
 msgid "Due date cleared"
 msgstr "마감일이 제거되었습니다"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.dueAsEventEnd.name"
+msgid "Due date ends the event"
+msgstr "마감일을 일정 종료로"
 
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
@@ -5808,6 +5833,11 @@ msgstr "V3 뷰 내보내기"
 msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
 msgid "Exported {count} saved views to {filePath}"
 msgstr "저장된 뷰 {count}개를 내보냈습니다. 파일: {filePath}"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.dueAsEventEnd.description"
+msgid "Exported events run from scheduled to due instead of using the default length."
+msgstr "내보내는 일정이 기본 길이 대신 예정일부터 마감일까지 이어집니다."
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
@@ -6851,6 +6881,11 @@ msgctxt "settings.integrations.oauth.forgotten"
 msgid "Forgot OAuth credentials for {provider}"
 msgstr "{provider}의 OAuth 인증 정보를 삭제했습니다"
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.heading"
+msgid "Fork features"
+msgstr "Fork 기능"
+
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.fourth"
 msgid "fourth"
@@ -7314,6 +7349,11 @@ msgctxt "settings.integrations.webhooks.modals.edit.customHeaders.description"
 msgid "Include TaskNotes headers (event type, signature, delivery ID). Turn off for Discord, Slack, and other services with strict CORS policies."
 msgstr "TaskNotes 헤더 (이벤트 유형, 서명, 전달 ID) 포함. Discord, Slack 및 엄격한 CORS 정책을 가진 다른 서비스에서는 비활성화하세요."
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.eventToTaskMode.options.independent"
+msgid "Independent copy"
+msgstr "독립 사본"
+
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskCalendarSyncService: calendar sync diagnostic"
 msgid "Indexed task file no longer exists"
@@ -7704,6 +7744,11 @@ msgstr "{startLine}-{endLine}번째 줄 범위가 더 이상 유효하지 않습
 msgctxt "utils/TasksPluginParser: TasksPluginParser.parseTaskLine error"
 msgid "Line too long to process safely"
 msgstr "줄이 너무 길어 안전하게 처리할 수 없습니다"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.eventToTaskMode.options.link"
+msgid "Link (upstream)"
+msgstr "연결 (upstream)"
 
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.icsEventInfo.linkExistingDesc"
@@ -8990,6 +9035,11 @@ msgctxt "settings.appearance.taskFilenames.customTemplate.helpText"
 msgid "Note: '{{dueDate}}' and '{{scheduledDate}}' are in YYYY-MM-DD format and will be empty if not set."
 msgstr "참고: '{{dueDate}}'와 '{{scheduledDate}}'는 YYYY-MM-DD 형식이며 설정되지 않은 경우 비어 있습니다."
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.calendarFolders.description"
+msgid "Notes and tasks created from calendar events go into a folder named after their calendar."
+msgstr "캘린더 일정으로 만든 노트와 태스크를 그 캘린더 이름의 폴더에 둡니다."
+
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.notifications.soundEnabledName"
 msgid "Notification sound"
@@ -9080,7 +9130,7 @@ msgctxt "settings.integrations.oauth.copyPasteLabel"
 msgid "OAuth redirect/code:"
 msgstr "OAuth 리디렉션/코드:"
 
-#: src/services/OAuthService.ts
+#: src/fork/oauth/copyPasteFlow.ts
 msgctxt "services.oauth.copyPasteExpired"
 msgid "OAuth request expired. Start again."
 msgstr "OAuth 요청이 만료되었습니다. 다시 시작하세요."
@@ -9707,6 +9757,16 @@ msgstr "뽀모도로 타이머 일시 정지/재개"
 msgctxt "views.pomodoro.status.paused"
 msgid "Paused"
 msgstr "일시 정지됨"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.calendarFolders.name"
+msgid "Per-calendar folders"
+msgstr "캘린더별 폴더"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.taskCalendarRouting.name"
+msgid "Per-task Google calendar"
+msgstr "태스크별 Google 캘린더"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.performance.header"
@@ -11241,7 +11301,7 @@ msgctxt "modals.actionPalette.statusDesc"
 msgid "Set task status to {label}"
 msgstr "작업 상태 설정: {label}"
 
-#: src/components/TaskContextMenu.ts
+#: src/fork/menus/taskCalendarMenu.ts
 msgctxt "contextMenus.task.calendar.setTaskTarget"
 msgid "Set TaskNotes Google Calendar"
 msgstr "TaskNotes Google 캘린더 지정"
@@ -11481,6 +11541,11 @@ msgctxt "settings.appearance.uiElements.showTaskCardInNote.name"
 msgid "Show task card in note"
 msgstr "노트에 작업 카드 표시"
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.calendarRoutingPanel.description"
+msgid "Show the calendar subscription and colour panel. Colour changes need the calendar list permission; reconnect after turning this on."
+msgstr "캘린더 구독·색상 패널을 표시합니다. 색상 변경에는 캘린더 목록 권한이 필요하므로, 켠 뒤 다시 연결하세요."
+
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.defaultEventVisibility.showTimeEntries.name"
 msgid "Show time entries"
@@ -11616,6 +11681,11 @@ msgstr "예정일부터 마감일까지 작업을 이어서 표시"
 msgctxt "settings.modalFields.splitLayout.name"
 msgid "Split layout on wide screens"
 msgstr "넓은 화면에서 분할 레이아웃"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.stableEventIds.name"
+msgid "Stable event IDs"
+msgstr "고정 이벤트 ID"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startDate"
@@ -12199,6 +12269,16 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Tags"
 msgstr "태그"
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.eventToTaskMode.options.adopt"
+msgid "Take over the event"
+msgstr "일정 넘겨받기"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.eventToTaskMode.description"
+msgid "Take over: the task becomes the original Google event (one event; editing or deleting the task changes the event). Link: upstream, the task links to the event and exporting adds a copy. Independent: no link; exporting adds a new event."
+msgstr "넘겨받기: 태스크가 원본 Google 일정이 됩니다(일정은 하나, 태스크를 고치거나 지우면 일정도 바뀜). 연결: upstream 방식, 태스크가 일정과 연결되고 내보내면 사본이 생깁니다. 독립: 연결 없음, 내보내면 새 일정이 생깁니다."
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.name"
 msgid "Target calendar"
@@ -12350,6 +12430,11 @@ msgstr "작업 세부정보"
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Task details/body; overrides NLP-derived details"
 msgstr "작업 세부정보/본문. NLP에서 추출한 세부정보보다 우선합니다"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.eventToTaskMode.name"
+msgid "Task from calendar event"
+msgstr "일정으로 태스크 만들기"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.detailsTooltip"
@@ -12621,12 +12706,12 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Calendar"
 msgstr "TaskNotes 캘린더"
 
-#: src/components/TaskContextMenu.ts
+#: src/fork/menus/taskCalendarMenu.ts
 msgctxt "contextMenus.task.calendar.defaultRestored"
 msgid "TaskNotes default Google Calendar restored"
 msgstr "TaskNotes 기본 Google 캘린더로 되돌렸습니다"
 
-#: src/components/TaskContextMenu.ts
+#: src/fork/menus/taskCalendarMenu.ts
 msgctxt "contextMenus.task.calendar.overrideSaved"
 msgid "TaskNotes Google Calendar override saved"
 msgstr "TaskNotes Google 캘린더 지정을 저장했습니다"
@@ -13966,7 +14051,7 @@ msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "본문 템플릿 사용"
 
-#: src/components/TaskContextMenu.ts
+#: src/fork/menus/taskCalendarMenu.ts
 msgctxt "contextMenus.task.calendar.useDefaultTarget"
 msgid "Use default target calendar"
 msgstr "기본 대상 캘린더 사용"

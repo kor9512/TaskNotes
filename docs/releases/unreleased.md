@@ -40,6 +40,9 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 ## Changed
 
+- Fork changes are now grouped under **Settings → Integrations → Fork features**, one switch per behaviour: per-task Google calendar, calendar routing panel, due date as event end, stable event IDs, per-calendar folders, and how a task created from a calendar event relates to it. With every switch off TaskNotes behaves like upstream. Existing installs keep their previous behaviour.
+- Creating a task from a Google event can now take over the original event ("Take over the event"), so only one event remains. Recurring events, read-only calendars, and events outside the export target without per-task calendars are copied instead.
+
 ## Removed
 
 ## Fixed

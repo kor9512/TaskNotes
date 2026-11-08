@@ -1411,6 +1411,11 @@ msgctxt "services.pomodoro.notices.alreadyRunning"
 msgid "A Pomodoro is already running"
 msgstr "Помодоро уже запущено"
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.taskCalendarRouting.description"
+msgid "A task can name its own Google calendar (googleCalendarName). Adds a calendar field to the task modal and context menu."
+msgstr "Задача может указать собственный Google-календарь (googleCalendarName). Добавляет поле календаря в окно задачи и контекстное меню."
+
 #: src/i18n/messages.ts
 msgctxt "views.taskList.movement.parentSelf"
 msgid "A task cannot be its own parent."
@@ -1777,7 +1782,7 @@ msgctxt "settings.defaults.reminders.directions.after"
 msgid "after"
 msgstr "после"
 
-#: src/services/OAuthService.ts
+#: src/fork/oauth/copyPasteFlow.ts
 msgctxt "services.oauth.copyPastePaste"
 msgid "After approval, paste the redirect URL or code and connect."
 msgstr "После подтверждения вставьте URL перенаправления или код и подключитесь."
@@ -2569,6 +2574,11 @@ msgctxt "settings.integrations.calendarRouting.heading"
 msgid "Calendar routing"
 msgstr "Маршрутизация календарей"
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.calendarRoutingPanel.name"
+msgid "Calendar routing panel"
+msgstr "Панель маршрутизации календарей"
+
 #: src/bases/MiniCalendarView.ts
 msgctxt "bases/MiniCalendarView: MiniCalendarView.indexICSEvents display"
 msgid "Calendar subscription"
@@ -2859,6 +2869,11 @@ msgstr "Сменить задачу…"
 msgctxt "settings.features.uiLanguage.description"
 msgid "Change the language of TaskNotes menus, notices, and views."
 msgstr "Изменить язык меню, уведомлений и представлений TaskNotes."
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.description"
+msgid "Changes this build makes to TaskNotes. Turning everything off gives upstream behaviour."
+msgstr "Изменения, которые эта сборка вносит в TaskNotes. Если всё выключить, поведение будет как в оригинале."
 
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.general.releaseNotes.checkForUpdates.name"
@@ -4770,6 +4785,11 @@ msgctxt "contextMenus.task.dependencies.notices.blockingRemoved"
 msgid "Dependent task removed"
 msgstr "Зависимая задача удалена"
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.stableEventIds.description"
+msgid "Derive Google event IDs from the note path so two devices exporting the same task create one event."
+msgstr "ID событий Google строятся из пути заметки, поэтому два устройства, экспортирующие одну задачу, создают одно событие."
+
 #: src/modals/CalendarEventCreationModal.ts
 msgctxt "modals.calendarEventCreation.descriptionLabel"
 msgid "Description"
@@ -5086,6 +5106,11 @@ msgstr "Срок выполнения"
 msgctxt "modals.actionPalette.dueCleared"
 msgid "Due date cleared"
 msgstr "Срок удалён"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.dueAsEventEnd.name"
+msgid "Due date ends the event"
+msgstr "Срок завершает событие"
 
 #: src/cli/commands/captureCommand.ts
 msgctxt "cli/commands/captureCommand: defaults description"
@@ -5811,6 +5836,11 @@ msgstr "Экспортировать представления V3"
 msgctxt "settings.integrations.basesIntegration.exportV3Views.success"
 msgid "Exported {count} saved views to {filePath}"
 msgstr "Экспортировано {count} сохранённых представлений в {filePath}"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.dueAsEventEnd.description"
+msgid "Exported events run from scheduled to due instead of using the default length."
+msgstr "Экспортированные события длятся от запланированной даты до срока, а не стандартное время."
 
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.httpApi.mcp.enable.description"
@@ -6854,6 +6884,11 @@ msgctxt "settings.integrations.oauth.forgotten"
 msgid "Forgot OAuth credentials for {provider}"
 msgstr "Учётные данные OAuth для {provider} удалены"
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.heading"
+msgid "Fork features"
+msgstr "Функции форка"
+
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.weekPositions.fourth"
 msgid "fourth"
@@ -7315,6 +7350,11 @@ msgctxt "settings.integrations.webhooks.modals.edit.customHeaders.description"
 msgid "Include TaskNotes headers (event type, signature, delivery ID). Turn off for Discord, Slack, and other services with strict CORS policies."
 msgstr "Включить заголовки TaskNotes (тип события, подпись, ID доставки). Отключите для Discord, Slack и других сервисов со строгими политиками CORS."
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.eventToTaskMode.options.independent"
+msgid "Independent copy"
+msgstr "Независимая копия"
+
 #: src/i18n/errorMessages.ts
 msgctxt "services/TaskCalendarSyncService: calendar sync diagnostic"
 msgid "Indexed task file no longer exists"
@@ -7705,6 +7745,11 @@ msgstr "Диапазон строк {startLine}–{endLine} больше нед�
 msgctxt "utils/TasksPluginParser: TasksPluginParser.parseTaskLine error"
 msgid "Line too long to process safely"
 msgstr "Строка слишком длинная для безопасной обработки"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.eventToTaskMode.options.link"
+msgid "Link (upstream)"
+msgstr "Связать (оригинал)"
 
 #: src/modals/ICSEventInfoModal.ts
 msgctxt "modals.icsEventInfo.linkExistingDesc"
@@ -8991,6 +9036,11 @@ msgctxt "settings.appearance.taskFilenames.customTemplate.helpText"
 msgid "Note: '{{dueDate}}' and '{{scheduledDate}}' are in YYYY-MM-DD format and will be empty if not set."
 msgstr "Примечание: '{{dueDate}}' и '{{scheduledDate}}' в формате ГГГГ-ММ-ДД и будут пустыми, если не установлены."
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.calendarFolders.description"
+msgid "Notes and tasks created from calendar events go into a folder named after their calendar."
+msgstr "Заметки и задачи из событий попадают в папку с названием их календаря."
+
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.notifications.soundEnabledName"
 msgid "Notification sound"
@@ -9081,7 +9131,7 @@ msgctxt "settings.integrations.oauth.copyPasteLabel"
 msgid "OAuth redirect/code:"
 msgstr "Перенаправление/код OAuth:"
 
-#: src/services/OAuthService.ts
+#: src/fork/oauth/copyPasteFlow.ts
 msgctxt "services.oauth.copyPasteExpired"
 msgid "OAuth request expired. Start again."
 msgstr "Срок запроса OAuth истёк. Начните заново."
@@ -9708,6 +9758,16 @@ msgstr "Приостановить/возобновить таймер помо�
 msgctxt "views.pomodoro.status.paused"
 msgid "Paused"
 msgstr "Приостановлено"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.calendarFolders.name"
+msgid "Per-calendar folders"
+msgstr "Папки по календарям"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.taskCalendarRouting.name"
+msgid "Per-task Google calendar"
+msgstr "Свой Google-календарь для задачи"
 
 #: src/settings/tabs/featuresTab.ts
 msgctxt "settings.features.performance.header"
@@ -11242,7 +11302,7 @@ msgctxt "modals.actionPalette.statusDesc"
 msgid "Set task status to {label}"
 msgstr "Установить статус задачи: {label}"
 
-#: src/components/TaskContextMenu.ts
+#: src/fork/menus/taskCalendarMenu.ts
 msgctxt "contextMenus.task.calendar.setTaskTarget"
 msgid "Set TaskNotes Google Calendar"
 msgstr "Задать Google Календарь TaskNotes"
@@ -11482,6 +11542,11 @@ msgctxt "settings.appearance.uiElements.showTaskCardInNote.name"
 msgid "Show task card in note"
 msgstr "Показывать карточку задачи в заметке"
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.calendarRoutingPanel.description"
+msgid "Show the calendar subscription and colour panel. Colour changes need the calendar list permission; reconnect after turning this on."
+msgstr "Показывает панель подписок и цветов календарей. Для смены цветов нужно разрешение на список календарей — после включения подключитесь заново."
+
 #: src/settings/tabs/appearanceTab.ts
 msgctxt "settings.appearance.defaultEventVisibility.showTimeEntries.name"
 msgid "Show time entries"
@@ -11617,6 +11682,11 @@ msgstr "Показывать задачу от даты планирования
 msgctxt "settings.modalFields.splitLayout.name"
 msgid "Split layout on wide screens"
 msgstr "Разделённая раскладка на широких экранах"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.stableEventIds.name"
+msgid "Stable event IDs"
+msgstr "Постоянные ID событий"
 
 #: src/components/RecurrenceContextMenu.ts
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.startDate"
@@ -12200,6 +12270,16 @@ msgctxt "utils/fieldConfigDefaults: defaults displayName"
 msgid "Tags"
 msgstr "Теги"
 
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.eventToTaskMode.options.adopt"
+msgid "Take over the event"
+msgstr "Забрать событие"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.eventToTaskMode.description"
+msgid "Take over: the task becomes the original Google event (one event; editing or deleting the task changes the event). Link: upstream, the task links to the event and exporting adds a copy. Independent: no link; exporting adds a new event."
+msgstr "Забрать: задача становится исходным событием Google (одно событие; изменение или удаление задачи меняет событие). Связать: как в оригинале, задача связана с событием, экспорт добавляет копию. Независимо: без связи, экспорт создаёт новое событие."
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.googleCalendarExport.targetCalendar.name"
 msgid "Target calendar"
@@ -12351,6 +12431,11 @@ msgstr "Детали задачи"
 msgctxt "cli/commands/captureCommand: defaults description"
 msgid "Task details/body; overrides NLP-derived details"
 msgstr "Содержимое задачи; заменяет детали, извлечённые с помощью NLP"
+
+#: src/fork/settings/forkFeaturesSection.ts
+msgctxt "settings.fork.eventToTaskMode.name"
+msgid "Task from calendar event"
+msgstr "Задача из события календаря"
 
 #: src/i18n/messages.ts
 msgctxt "ui.taskCard.detailsTooltip"
@@ -12622,12 +12707,12 @@ msgctxt "bases/registration: registerBasesTaskList.attemptRegistration name"
 msgid "TaskNotes Calendar"
 msgstr "Календарь TaskNotes"
 
-#: src/components/TaskContextMenu.ts
+#: src/fork/menus/taskCalendarMenu.ts
 msgctxt "contextMenus.task.calendar.defaultRestored"
 msgid "TaskNotes default Google Calendar restored"
 msgstr "Восстановлен Google Календарь TaskNotes по умолчанию"
 
-#: src/components/TaskContextMenu.ts
+#: src/fork/menus/taskCalendarMenu.ts
 msgctxt "contextMenus.task.calendar.overrideSaved"
 msgid "TaskNotes Google Calendar override saved"
 msgstr "Google Календарь TaskNotes для задачи сохранён"
@@ -13967,7 +14052,7 @@ msgctxt "settings.defaults.bodyTemplate.useBodyTemplate.name"
 msgid "Use body template"
 msgstr "Использовать шаблон тела"
 
-#: src/components/TaskContextMenu.ts
+#: src/fork/menus/taskCalendarMenu.ts
 msgctxt "contextMenus.task.calendar.useDefaultTarget"
 msgid "Use default target calendar"
 msgstr "Использовать целевой календарь по умолчанию"

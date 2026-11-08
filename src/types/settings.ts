@@ -7,6 +7,7 @@ import {
 	OAuthConnection,
 } from "../types";
 import type { FileFilterConfig } from "../suggest/FileSuggestHelper";
+import type { ForkFeatureSettings } from "../fork/featureFlags";
 
 export interface UserFieldMapping {
 	enabled: boolean;
@@ -269,6 +270,8 @@ export interface TaskNotesSettings {
 		google?: OAuthConnection;
 		microsoft?: OAuthConnection;
 	};
+	/** fork: feature switches; defaults reproduce upstream (see src/fork/featureFlags.ts). */
+	forkFeatures: ForkFeatureSettings;
 	// Google Calendar selection
 	enabledGoogleCalendars: string[]; // Array of calendar IDs that should be displayed
 	// Google Calendar sync tokens (for incremental sync)

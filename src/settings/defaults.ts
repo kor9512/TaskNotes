@@ -10,6 +10,7 @@ import {
 	GoogleCalendarExportSettings,
 } from "../types/settings";
 import { DEFAULT_FIELD_MAPPING } from "../core/defaultFieldMapping";
+import { DEFAULT_FORK_FEATURES } from "../fork/featureFlags";
 export { DEFAULT_FIELD_MAPPING } from "../core/defaultFieldMapping";
 
 /**
@@ -415,6 +416,7 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	oauthAuthorizationMode: "desktop-callback",
 	oauthPlaintextCredentials: {},
 	oauthPlaintextConnections: {},
+	forkFeatures: { ...DEFAULT_FORK_FEATURES },
 	// Google Calendar selection (empty = show all calendars)
 	enabledGoogleCalendars: [],
 	// Google Calendar sync tokens (for incremental sync)

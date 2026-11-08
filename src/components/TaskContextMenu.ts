@@ -67,6 +67,7 @@ import {
 } from "../ui/occurrenceNoteActions";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import type { UserMappedField } from "../types/settings";
+import { addForkTaskCalendarMenu } from "../fork/menus/taskCalendarMenu";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Components/TaskContextMenu" });
 
@@ -780,31 +781,9 @@ export class TaskContextMenu {
 
 			submenu.addSeparator();
 
-			// Sync to Google Calendar (via API)
-			submenu.addItem((subItem) => {
-				subItem.setTitle(this.t(msg({ message: "Set TaskNotes Google Calendar", context: "contextMenus.task.calendar.setTaskTarget" })));
-				subItem.setIcon("calendar-cog");
-				const calendarMenu = getSubmenu(subItem);
-				const calendars =
-					plugin.googleCalendarService?.getEnabledCalendars?.() ||
-					plugin.googleCalendarService?.getAvailableCalendars?.() ||
-					[];
-				calendarMenu.addItem((calendarItem) => {
-					calendarItem.setTitle(this.t(msg({ message: "Use default target calendar", context: "contextMenus.task.calendar.useDefaultTarget" })));
-					calendarItem.onClick(() => {
-						void this.setTaskGoogleCalendar(task, undefined);
-					});
-				});
-				for (const calendar of calendars) {
-					calendarMenu.addItem((calendarItem) => {
-						calendarItem.setTitle(calendar.summary || calendar.id);
-						calendarItem.onClick(() => {
-							void this.setTaskGoogleCalendar(task, calendar.id);
-						});
-					});
-				}
-			});
+			addForkTaskCalendarMenu(submenu, plugin, task, this.t.bind(this)); // fork
 
+			// Sync to Google Calendar (via API)
 			submenu.addItem((subItem) => {
 				subItem.setTitle(this.t(msg({ message: "Sync to Google Calendar", context: "contextMenus.task.calendar.syncToGoogle" })));
 				subItem.setIcon("refresh-cw");
@@ -2580,23 +2559,6 @@ export class TaskContextMenu {
 			});
 			new Notice(this.t(msg({ message: "Failed to add reminder", context: "contextMenus.task.notices.addReminderFailure" })));
 		}
-	}
-
-	private async setTaskGoogleCalendar(task: TaskInfo, calendarId?: string): Promise<void> {
-		const file = this.options.plugin.app.vault.getAbstractFileByPath(task.path);
-		if (!(file instanceof TFile)) return;
-
-		await this.options.plugin.taskCalendarSyncService?.setTaskCalendarOverride(file, calendarId);
-
-		const updatedTask = await this.options.plugin.cacheManager.getTaskInfo(task.path);
-		if (updatedTask && this.options.plugin.taskCalendarSyncService?.isEnabled()) {
-			await this.options.plugin.taskCalendarSyncService.syncTaskToCalendar(updatedTask);
-		}
-		new Notice(
-			calendarId
-				? this.t(msg({ message: "TaskNotes Google Calendar override saved", context: "contextMenus.task.calendar.overrideSaved" }))
-				: this.t(msg({ message: "TaskNotes default Google Calendar restored", context: "contextMenus.task.calendar.defaultRestored" }))
-		);
 	}
 
 	public show(event: MouseEvent): void {

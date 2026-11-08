@@ -16,13 +16,12 @@ const frontmatter: Record<string, Record<string, unknown>> = {
 	"Tasks/Default.md": {},
 };
 const plugin = {
-	settings: { googleCalendarExport: { targetCalendarId: target } },
+	settings: { googleCalendarExport: { targetCalendarId: target }, forkFeatures: { taskCalendarRouting: true } },
 	app: { metadataCache: { getCache: (path: string) => ({ frontmatter: frontmatter[path] }) } },
 	googleCalendarService: {
 		getAvailableCalendars: () => [
 			{ id: target, summary: "Todo" }, { id: schedule, summary: "Schedule" }, { id: other, summary: "Other" },
 		],
-		resolveCalendarId: (value: string) => (value === "Schedule" ? schedule : undefined),
 	},
 } as unknown as TaskNotesPlugin;
 
@@ -32,6 +31,14 @@ describe("fork: linked Google mirrors in a task's own calendar", () => {
 			[{ task: { path: "Tasks/Routed.md", googleCalendarEventId: "tnabc" }, date: day }], plugin);
 		expect(isLinked(event(schedule))).toBe(true);
 		expect(isLinked(event(other))).toBe(false);
+	});
+
+	it("ignores a task's own calendar when task calendar routing is off", () => {
+		const upstream = { ...plugin, settings: { ...plugin.settings, forkFeatures: { taskCalendarRouting: false } } } as unknown as TaskNotesPlugin;
+		const isLinked = buildLinkedGoogleEventPredicate(
+			[{ task: { path: "Tasks/Routed.md", googleCalendarEventId: "tnabc" }, date: day }], upstream);
+		expect(isLinked(event(schedule))).toBe(false);
+		expect(isLinked(event(target))).toBe(true);
 	});
 
 	it("keeps upstream behaviour for tasks without their own calendar", () => {

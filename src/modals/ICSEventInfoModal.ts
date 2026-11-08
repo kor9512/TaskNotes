@@ -10,6 +10,7 @@ import { SafeAsync } from "../utils/safeAsync";
 import { MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { showNotice } from "../ui/notifications";
+import { forkFeature } from "../fork/featureFlags";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Modals/ICSEventInfoModal" });
 
@@ -262,7 +263,14 @@ export class ICSEventInfoModal extends Modal {
 
 				// Open the created task file
 				await this.safeOpenFile(result.file.path);
-				this.close();
+
+				// fork: without an ICS link the task never shows as related — close instead
+				if (forkFeature(this.plugin, "eventToTaskMode") !== "link") {
+					this.close();
+					return;
+				}
+				// Refresh the modal to show the new related task
+				void this.refreshRelatedNotes();
 			},
 			{
 				errorMessage: uiText(msg({ message: "Failed to create task from ICS event", context: "modals/ICSEventInfoModal: ICSEventInfoModal.createTaskDirectly errorMessage" })),

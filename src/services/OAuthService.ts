@@ -1,6 +1,5 @@
 import { requestUrl, Platform } from "obsidian";
 import { msg } from "@lingui/core/macro";
-import { uiText } from "../i18n/runtime";
 import { oauthCallbackHtml } from "../i18n/oauthCallbackHtml";
 import TaskNotesPlugin from "../main";
 import { OAuthProvider, OAuthTokens, OAuthConnection, OAuthConfig } from "../types";
@@ -10,6 +9,9 @@ import type { HTTPRequestLike, HTTPResponseLike, HTTPServerLike } from "../api/h
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { publishUserNotice } from "../core/userNotices";
 import { OAuthSecretStore, type OAuthCredentials } from "./OAuthSecretStore";
+import { createForkOAuthStore } from "../fork/oauth/forkOAuthStore";
+import { CopyPasteOAuthFlow, forkOAuthScopes } from "../fork/oauth/copyPasteFlow";
+import { forkFeature } from "../fork/featureFlags";
 
 const tasknotesLogger = createTaskNotesLogger({ tag: "Services/OAuthService" });
 
@@ -69,10 +71,6 @@ export class OAuthService {
 	// Maps provider to pending refresh promise
 	private tokenRefreshPromises: Map<OAuthProvider, Promise<OAuthTokens>> = new Map();
 	private connectionGenerations: Map<OAuthProvider, number> = new Map();
-	private pendingCopyPaste: Map<
-		OAuthProvider,
-		{ state: string; codeVerifier: string; expiresAt: number; timeout: number }
-	> = new Map();
 
 	// OAuth configurations for different providers
 	private configs: Record<OAuthProvider, OAuthConfig> = {
@@ -83,7 +81,6 @@ export class OAuthService {
 			scope: [
 				"https://www.googleapis.com/auth/calendar.readonly",
 				"https://www.googleapis.com/auth/calendar.events",
-				"https://www.googleapis.com/auth/calendar.calendarlist",
 			],
 			authorizationEndpoint: "https://accounts.google.com/o/oauth2/v2/auth",
 			tokenEndpoint: "https://oauth2.googleapis.com/token",
@@ -104,52 +101,49 @@ export class OAuthService {
 
 	constructor(plugin: TaskNotesPlugin, secretStore: OAuthSecretStore) {
 		this.plugin = plugin;
-		this.secretStore = secretStore;
+		// fork: route storage by `oauthCredentialStorage` (SecretStorage or plugin settings)
+		this.secretStore = createForkOAuthStore(plugin, secretStore);
+		// fork: copy-paste authorization for devices without a loopback callback
+		this.copyPaste = new CopyPasteOAuthFlow({
+			emitter: plugin.emitter,
+			getConfig: (provider) => this.getConfig(provider),
+			generateCodeVerifier: () => this.generateCodeVerifier(),
+			generateCodeChallenge: (verifier) => this.generateCodeChallenge(verifier),
+			generateState: () => this.generateState(),
+			buildAuthorizationUrl: (config, challenge, state) =>
+				this.buildAuthorizationUrl(config, challenge, state),
+			openAuthorizationUrl: (url) => this.openAuthorizationUrl(url),
+			exchangeCodeForTokens: (config, code, verifier) =>
+				this.exchangeCodeForTokens(config, code, verifier),
+			storeConnection: (provider, tokens) => this.storeConnection(provider, tokens),
+			isAuthenticating: () => this.authenticationInProgress,
+			setAuthenticating: (value) => {
+				this.authenticationInProgress = value;
+			},
+		});
 	}
 
+	/** fork: copy-paste OAuth flow (see src/fork/oauth/copyPasteFlow.ts). */
+	readonly copyPaste: CopyPasteOAuthFlow;
+
 	getCredentials(provider: OAuthProvider): OAuthCredentials | null {
-		if (this.plugin.settings?.oauthCredentialStorage === "plaintext") {
-			const credentials = this.plugin.settings.oauthPlaintextCredentials?.[provider];
-			return credentials?.clientId
-				? {
-						clientId: credentials.clientId,
-						...(credentials.clientSecret ? { clientSecret: credentials.clientSecret } : {}),
-				  }
-				: null;
-		}
 		return this.secretStore.getCredentials(provider);
 	}
 
 	setCredentials(provider: OAuthProvider, credentials: OAuthCredentials): void {
-		if (this.plugin.settings?.oauthCredentialStorage === "plaintext") {
-			this.plugin.settings.oauthPlaintextCredentials ??= {};
-			this.plugin.settings.oauthPlaintextCredentials[provider] = {
-				clientId: credentials.clientId.trim(),
-				...(credentials.clientSecret?.trim()
-					? { clientSecret: credentials.clientSecret.trim() }
-					: {}),
-			};
-			void this.plugin.saveSettingsDataOnly();
-			return;
-		}
 		this.secretStore.setCredentials(provider, credentials);
 	}
 
 	clearCredentials(provider: OAuthProvider): void {
-		if (this.plugin.settings?.oauthCredentialStorage === "plaintext") {
-			if (this.plugin.settings.oauthPlaintextCredentials) {
-				delete this.plugin.settings.oauthPlaintextCredentials[provider];
-			}
-			void this.plugin.saveSettingsDataOnly();
-			return;
-		}
 		this.secretStore.clearCredentials(provider);
 	}
 
 	private getConfig(provider: OAuthProvider): OAuthConfig {
-		const credentials = this.getCredentials(provider);
+		const credentials = this.secretStore.getCredentials(provider);
 		return {
 			...this.configs[provider],
+			// fork: calendar-colour scope when the routing panel is on
+			scope: forkOAuthScopes(provider, this.configs[provider].scope, forkFeature(this.plugin, "calendarRoutingPanel")),
 			clientId: credentials?.clientId ?? "",
 			clientSecret: credentials?.clientSecret,
 		};
@@ -168,108 +162,11 @@ export class OAuthService {
 			throw new OAuthNotConfiguredError(provider);
 		}
 
+		// fork: copy-paste mode
 		if (this.plugin.settings?.oauthAuthorizationMode === "copy-paste") {
-			return await this.authenticateCopyPaste(provider, requestCopyPasteInput);
+			return await this.copyPaste.authenticate(provider, requestCopyPasteInput);
 		}
 		return await this.authenticateStandard(provider);
-	}
-
-	/** Opens the provider consent page for the mobile-safe copy-paste flow. */
-	async requestCopyPasteAuthorization(provider: OAuthProvider): Promise<number> {
-		if (this.authenticationInProgress) {
-			throw new Error("An OAuth authorization is already in progress");
-		}
-		const config = this.getConfig(provider);
-		if (!config.clientId) throw new OAuthNotConfiguredError(provider);
-		const codeVerifier = this.generateCodeVerifier();
-		const codeChallenge = await this.generateCodeChallenge(codeVerifier);
-		const state = this.generateState();
-		const timeout = window.setTimeout(() => {
-			this.pendingCopyPaste.delete(provider);
-			this.authenticationInProgress = false;
-			publishUserNotice(this.plugin.emitter, uiText(msg({ message: "OAuth request expired. Start again.", context: "services.oauth.copyPasteExpired" })));
-		}, 300000);
-		this.pendingCopyPaste.set(provider, {
-			state,
-			codeVerifier,
-			expiresAt: Date.now() + 300000,
-			timeout,
-		});
-		this.authenticationInProgress = true;
-		try {
-			await this.openAuthorizationUrl(this.buildAuthorizationUrl(config, codeChallenge, state));
-			publishUserNotice(this.plugin.emitter, uiText(msg({ message: "After approval, paste the redirect URL or code and connect.", context: "services.oauth.copyPastePaste" })));
-			return Date.now() + 300000;
-		} catch (error) {
-			this.clearPendingCopyPaste(provider);
-			throw error;
-		}
-	}
-
-	/** Exchanges a pasted redirect URL/code created by requestCopyPasteAuthorization. */
-	async connectCopyPasteAuthorization(provider: OAuthProvider, pastedValue: string): Promise<void> {
-		const pending = this.pendingCopyPaste.get(provider);
-		if (!pending || pending.expiresAt < Date.now()) {
-			this.clearPendingCopyPaste(provider);
-			throw new Error("No active OAuth request. Press Request authorization first.");
-		}
-		let code = pastedValue.trim();
-		if (!code) throw new Error("Paste the OAuth redirect URL or authorization code first.");
-		if (code.startsWith("http://") || code.startsWith("https://")) {
-			const redirectedUrl = new URL(code);
-			const returnedState = redirectedUrl.searchParams.get("state");
-			if (returnedState && returnedState !== pending.state) {
-				this.clearPendingCopyPaste(provider);
-				throw new Error("OAuth state did not match. Press Request authorization again.");
-			}
-			const providerError = redirectedUrl.searchParams.get("error");
-			if (providerError) throw new Error(`OAuth authorization failed: ${providerError}`);
-			code = redirectedUrl.searchParams.get("code") ?? "";
-		}
-		if (!code) throw new Error("The pasted OAuth value did not contain an authorization code.");
-		try {
-			const tokens = await this.exchangeCodeForTokens(this.getConfig(provider), code, pending.codeVerifier);
-			await this.storeConnection(provider, tokens);
-			publishUserNotice(this.plugin.emitter, `Successfully connected to ${provider} Calendar!`);
-		} finally {
-			this.clearPendingCopyPaste(provider);
-		}
-	}
-
-	private clearPendingCopyPaste(provider: OAuthProvider): void {
-		const pending = this.pendingCopyPaste.get(provider);
-		if (pending) window.clearTimeout(pending.timeout);
-		this.pendingCopyPaste.delete(provider);
-		this.authenticationInProgress = false;
-	}
-
-	/**
-	 * Mobile-safe OAuth flow: open the provider URL and accept either the full
-	 * redirected URL or the authorization code pasted by the user. The browser
-	 * may show a connection error after redirecting to the loopback URL; the URL
-	 * in its address bar still contains the code to paste here.
-	 */
-	private async authenticateCopyPaste(
-		provider: OAuthProvider,
-		requestInput?: () => Promise<string | null>
-	): Promise<void> {
-		await this.requestCopyPasteAuthorization(provider);
-		try {
-			const pasted = requestInput
-				? await requestInput()
-				: (() => {
-						const promptDialog = Reflect.get(window, "prompt");
-						return promptDialog("Paste the OAuth redirect URL or authorization code:");
-				  })();
-			if (!pasted?.trim()) {
-				throw new Error("No OAuth redirect URL or authorization code was provided.");
-			}
-
-			await this.connectCopyPasteAuthorization(provider, pasted ?? "");
-		} catch (error) {
-			this.clearPendingCopyPaste(provider);
-			throw error;
-		}
 	}
 
 	/**
@@ -839,14 +736,7 @@ export class OAuthService {
 			return false;
 		}
 
-		if (this.plugin.settings?.oauthCredentialStorage === "plaintext") {
-			if (this.plugin.settings.oauthPlaintextConnections) {
-				delete this.plugin.settings.oauthPlaintextConnections[provider];
-			}
-			void this.plugin.saveSettingsDataOnly();
-		} else {
-			this.secretStore.clearConnection(provider);
-		}
+		this.secretStore.clearConnection(provider);
 		this.connectionGenerations.set(provider, currentGeneration + 1);
 		return true;
 	}
@@ -932,13 +822,7 @@ export class OAuthService {
 			connectedAt: new Date().toISOString(),
 			lastRefreshed: new Date().toISOString(),
 		};
-		if (this.plugin.settings?.oauthCredentialStorage === "plaintext") {
-			this.plugin.settings.oauthPlaintextConnections ??= {};
-			this.plugin.settings.oauthPlaintextConnections[provider] = connection;
-			await this.plugin.saveSettingsDataOnly();
-		} else {
-			this.secretStore.setConnection(provider, connection);
-		}
+		this.secretStore.setConnection(provider, connection);
 		if (expectedGeneration === undefined) {
 			const currentGeneration = this.connectionGenerations.get(provider) ?? 0;
 			this.connectionGenerations.set(provider, currentGeneration + 1);
@@ -949,9 +833,6 @@ export class OAuthService {
 	 * Retrieves a connection from Obsidian SecretStorage.
 	 */
 	async getConnection(provider: OAuthProvider): Promise<OAuthConnection | null> {
-		if (this.plugin.settings?.oauthCredentialStorage === "plaintext") {
-			return this.plugin.settings.oauthPlaintextConnections?.[provider] ?? null;
-		}
 		return this.secretStore.getConnection(provider);
 	}
 

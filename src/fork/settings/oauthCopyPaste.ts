@@ -144,7 +144,7 @@ export function createForkCopyPasteFlow(
 		async request(): Promise<boolean> {
 			if (!enabled || !plugin.oauthService) return false;
 			new Notice(uiText(msg({ message: "Opening {provider} authorization…", context: "settings.integrations.oauth.opening" }), { provider: providerName }));
-			const expiresAt = await plugin.oauthService.requestCopyPasteAuthorization(provider);
+			const expiresAt = await plugin.oauthService.copyPaste.requestCopyPasteAuthorization(provider);
 			stopCountdown();
 			stopCountdown = startOAuthCopyPasteCountdown(controls.status, expiresAt);
 			return true;
@@ -159,7 +159,7 @@ export function createForkCopyPasteFlow(
 					onClick: async () => {
 						try {
 							new Notice(uiText(msg({ message: "Connecting to {provider} calendar…", context: "settings.integrations.oauth.connecting" }), { provider: providerName }));
-							await plugin.oauthService?.connectCopyPasteAuthorization(provider, controls.input.value);
+							await plugin.oauthService?.copyPaste.connectCopyPasteAuthorization(provider, controls.input.value);
 							controls.input.value = "";
 							stopCountdown();
 							await onConnected();

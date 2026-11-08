@@ -29,6 +29,7 @@ import { getTaskFilenameNotice } from "../utils/filenameGenerator";
 import { setTaskModalDetailsEditorValue } from "./taskModalDetailsEditor";
 import { collapseTaskModalDetailsLayout } from "./taskModalLayout";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
+import { applyForkTaskCalendarOnCreate } from "../fork/modals/googleCalendarField";
 
 import {
 	createLinkedAttachmentEntries,
@@ -855,19 +856,8 @@ export class TaskCreationModal extends TaskModal {
 				...taskData.customFrontmatter,
 			};
 		}
-		if (this.googleCalendarId) {
-			const calendar = this.plugin.googleCalendarService?.getAvailableCalendars().find(
-				(item) => item.id === this.googleCalendarId
-			);
-			taskData.customFrontmatter = {
-				...taskData.customFrontmatter,
-				// Store the human-readable alias. The sync service resolves it to
-				// the stable Google calendar ID internally.
-				googleCalendarName: calendar?.summary || this.googleCalendarId,
-			};
-		}
 
-		return taskData;
+		return applyForkTaskCalendarOnCreate(this, this.plugin, taskData); // fork
 	}
 
 	// Override to prevent creating duplicate title input when NLP is enabled

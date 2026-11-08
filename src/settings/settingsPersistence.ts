@@ -1,6 +1,7 @@
 import { normalizePath } from "obsidian";
 import { DEFAULT_NLP_TRIGGERS, DEFAULT_SETTINGS } from "./defaults";
 import { hasMissingMigratedSettings } from "./settingsMigration";
+import { buildForkFeatureSettings, shouldPersistForkFeatures } from "../fork/featureFlags";
 import type { TaskCreationDefaults, TaskNotesSettings } from "../types/settings";
 import { initializeFieldConfig } from "../utils/fieldConfigDefaults";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
@@ -251,12 +252,14 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 		customStatuses: (loadedData?.customStatuses || DEFAULT_SETTINGS.customStatuses).map((status) => ({ ...status })),
 		customPriorities: (loadedData?.customPriorities || DEFAULT_SETTINGS.customPriorities).map((priority) => ({ ...priority })),
 		savedViews: loadedData?.savedViews || DEFAULT_SETTINGS.savedViews,
+		forkFeatures: buildForkFeatureSettings(loadedData),
 	};
 
 	return {
 		settings,
 		shouldPersistMigratedSettings:
 			hasMissingMigratedSettings(loadedData) ||
+			shouldPersistForkFeatures(loadedData) ||
 			migratedLegacyCustomFilenameTemplate ||
 			migratedParentNoteTaskCreationDefault ||
 			normalizedUserFieldPropertyKeys,

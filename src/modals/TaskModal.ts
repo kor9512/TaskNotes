@@ -345,8 +345,6 @@ export abstract class TaskModal extends Modal {
 	protected recurrenceRule = "";
 	protected recurrenceAnchor: "scheduled" | "completion" = "scheduled";
 	protected reminders: Reminder[] = [];
-	protected googleCalendarId = "";
-	protected initialGoogleCalendarId = "";
 
 	// User-defined fields (dynamic based on settings)
 	protected userFields: Record<string, unknown> = {};
@@ -750,18 +748,7 @@ export abstract class TaskModal extends Modal {
 			return;
 		}
 		this.createFieldsFromConfig(container, config);
-		this.createGoogleCalendarField(container);
-	}
-
-	protected createGoogleCalendarField(container: HTMLElement): void {
-		createForkGoogleCalendarField(container, {
-			plugin: this.plugin,
-			t: (key, params) => this.t(key, params),
-			getValue: () => this.googleCalendarId,
-			setValue: (value) => {
-				this.googleCalendarId = value;
-			},
-		});
+		createForkGoogleCalendarField(container, this, this.plugin, (key, params) => this.t(key, params)); // fork
 	}
 
 	protected createFieldsFromConfig(container: HTMLElement, config: ModalFieldsConfigLike): void {
