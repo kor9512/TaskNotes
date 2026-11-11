@@ -15,7 +15,7 @@ TaskNotes keeps a storage title and a filename-safe title separate. When **Store
 
 For existing tasks, the **Quick actions for current task** command opens a keyboard-searchable action palette. It includes status, priority, time-tracking, archive, edit, and date actions, including built-in due and scheduled date presets such as today, tomorrow, this weekend, next week, and next month.
 
-TaskNotes also supports **Natural Language Creation**, which allows you to create tasks by typing descriptions in plain English. The built-in parser can extract structured data from phrases like "Buy groceries tomorrow at 3pm @home #errands high priority."
+TaskNotes also supports **Natural Language Creation**, which allows you to create tasks by typing descriptions in plain English. The built-in parser can extract structured data from phrases like "Buy groceries tomorrow at 3pm @home #errands high priority." The form updates as you type: removing text undoes what it set, and a field you change by hand keeps your value.
 
 In most workflows, users combine both approaches: fast capture with natural language, then occasional structured edits in the modal when more precision is needed.
 
@@ -98,7 +98,7 @@ When typing the status trigger character (default `*`) in the natural language i
 
 Status suggestions allow quick selection of statuses when creating tasks. For example, typing `*in` shows "In Progress" as a suggestion if that's one of your configured statuses.
 
-Clicking a task card's status indicator cycles through statuses in the order configured under **Settings → Task Properties → Status**. A status can optionally define a specific **Next status** for forward cycling; otherwise TaskNotes uses the configured order. Statuses marked **Skip when cycling** are left out of the ordered click cycle, but remain available through menus, suggestions, direct edits, and explicit next-status jumps.
+Clicking a task card's status indicator cycles through statuses in the order configured under **Settings → Task Properties → Status**. A status can optionally define a specific **Next status** for forward cycling; otherwise TaskNotes uses the configured order. Statuses marked **Skip when cycling** are left out of the ordered click cycle, but remain available through menus, suggestions, direct edits, and explicit next-status jumps. When **Reset status after each occurrence** is on and the first status marked **Completed** has a **Next status**, recurring tasks follow the same cycle and complete the occurrence when it reaches a completed status. Otherwise, a click completes the occurrence directly. See [Recurring Tasks](recurring-tasks.md#completion-tracking).
 
 Additionally, you can convert any line type in your notes to TaskNotes using the **Instant Conversion** feature. This works with checkboxes, bullet points, numbered lists, blockquotes, headers, and plain text lines.
 

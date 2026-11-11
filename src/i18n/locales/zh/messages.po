@@ -849,6 +849,13 @@ msgctxt "services/ICSNoteService: ICSNoteService.buildICSEventDetails display"
 msgid "**Start:** {value1}"
 msgstr "**开始：**{value1}"
 
+#: src/i18n/releaseNotesAnnouncement.ts
+msgctxt "release announcement Markdown"
+msgid "**TaskNotes v5 beta.** Use your Markdown tasks in Obsidian and the new TaskNotes app. [Plugin beta]({token1}) · [Web app]({token2}) · [iOS]({token3}). Back up your vault before trying the beta.\n"
+""
+msgstr "**TaskNotes v5 测试版。** 在 Obsidian 和全新的 TaskNotes 应用中使用你的 Markdown 任务。[插件测试版]({token1}) · [网页版]({token2}) · [iOS]({token3})。试用测试版前，请备份仓库。\n"
+""
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.markdown.url"
 msgid "**URL:** {value}"
@@ -1087,55 +1094,6 @@ msgstr "# 从这里开始使用 TaskNotes\n"
 "## 完成\n"
 "\n"
 "现在你已了解核心思路：任务是笔记，属性使它们可供查询，Bases 则将它们变成视图。\n"
-""
-
-#: src/i18n/releaseNotesAnnouncement.ts
-msgctxt "release announcement Markdown"
-msgid "## TaskNotes v5 and the TaskNotes app — join the beta\n"
-"\n"
-"**TaskNotes v5** introduces portable collections that you can use in both Obsidian and the new **TaskNotes app**. Your tasks remain ordinary Markdown files in your vault, with [mdbase Connect]({token1}) providing access from the app.\n"
-"\n"
-"Available to try now:\n"
-"- **[Try the TaskNotes v5 plugin beta]({token2})**\n"
-"- **[Try the TaskNotes web app]({token3})**\n"
-"- **[Download TaskNotes for iOS]({token4})**\n"
-"\n"
-"These are early releases under active development. Please back up your vault before trying them and [report any problems]({token5}). TaskNotes 4.13 remains the recommended stable plugin release.\n"
-"\n"
-"### Help bring TaskNotes to Android\n"
-"\n"
-"**We need at least 12 testers for the TaskNotes Android app before we can apply for a public Google Play release.**\n"
-"\n"
-"If you have an Android device and would like to help:\n"
-"\n"
-"1. **[Join the tester Google Group]({token6})** using the Google account you use for Google Play.\n"
-"2. **[Opt in to the Google Play test]({token7})** with that same account and install TaskNotes.\n"
-"3. Stay opted in for **at least 14 consecutive days**, use the app regularly during that time, and let us know how it goes.\n"
-"\n"
-"You don’t need to be a developer—using TaskNotes for your everyday tasks and sharing anything confusing or broken is valuable feedback. Your participation will help make the Android release possible.\n"
-""
-msgstr "## TaskNotes v5 和 TaskNotes 应用——欢迎参与测试\n"
-"\n"
-"**TaskNotes v5** 引入了可移植的集合，你可以在 Obsidian 和新的 **TaskNotes 应用**中使用。任务仍是库中的普通 Markdown 文件，你可以通过 [mdbase Connect]({token1}) 在应用中访问它们。\n"
-"\n"
-"现在可以试用：\n"
-"- **[试用 TaskNotes v5 插件测试版]({token2})**\n"
-"- **[试用 TaskNotes 网页应用]({token3})**\n"
-"- **[下载 iOS 版 TaskNotes]({token4})**\n"
-"\n"
-"这些都是仍在积极开发的早期版本。试用前请备份你的库，并[报告遇到的问题]({token5})。TaskNotes 4.13 仍是推荐使用的稳定插件版本。\n"
-"\n"
-"### 帮助 TaskNotes 推出 Android 版\n"
-"\n"
-"**在申请通过 Google Play 公开发布 TaskNotes Android 应用之前，我们至少需要 12 位测试者。**\n"
-"\n"
-"如果你有 Android 设备并愿意帮忙：\n"
-"\n"
-"1. 使用你在 Google Play 上使用的 Google 账号**[加入测试者 Google 群组]({token6})**。\n"
-"2. 用同一账号**[选择加入 Google Play 测试]({token7})**并安装 TaskNotes。\n"
-"3. 连续**至少 14 天**保持测试资格，期间定期使用应用，并告诉我们你的体验。\n"
-"\n"
-"你不需要是开发者——用 TaskNotes 管理日常任务，并分享任何不清楚或出错的地方，都是宝贵的反馈。你的参与将帮助 Android 版本顺利发布。\n"
 ""
 
 #: src/components/ICSEventContextMenu.ts
@@ -4873,7 +4831,7 @@ msgctxt "settings.integrations.subscriptionsList.statusLabels.disabled"
 msgid "Disabled"
 msgstr "已禁用"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.discard"
 msgid "Discard changes"
 msgstr "放弃更改"
@@ -5075,6 +5033,7 @@ msgstr "截止日期"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.dueDate"
 msgid "Due date"
 msgstr "截止日期"
@@ -5128,11 +5087,6 @@ msgstr "即将截止"
 msgctxt "modals.unscheduledTasksSelector.dueToday"
 msgid "Due today: {date}"
 msgstr "今天截止：{date}"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.metadata.due"
-msgid "Due:"
-msgstr "截止："
 
 #: src/modals/ReminderModal.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
@@ -5433,6 +5387,11 @@ msgstr "请输入属性键。"
 msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
 msgid "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings."
 msgstr "请输入属性名称。示例文字不是已保存的配置。只有设置属性名称后，TaskNotes 才能识别任务。现有 .base 筛选条件必须与这些设置一致。"
+
+#: src/modals/TaskModal.ts
+msgctxt "modals.task.timeEstimateInvalid"
+msgid "Enter a time such as 45 or 1h 30m"
+msgstr "请输入时间，例如 45 或 1h 30m"
 
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
@@ -6750,11 +6709,6 @@ msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "填满容器"
 
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.actions.fillFromNaturalLanguage"
-msgid "Fill form from natural language"
-msgstr "用自然语言填充表单"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.sections.filters"
 msgid "Filters"
@@ -7102,6 +7056,11 @@ msgstr "标头配置"
 msgctxt "views.basesCalendar.settings.layout.heightMode"
 msgid "Height mode"
 msgstr "高度模式"
+
+#: src/settings/tabs/appearanceTab.ts
+msgctxt "settings.appearance.timeSettings.slotHeight.description"
+msgid "Height of each time slot in timeline views (pixels). Lower it to keep a long time range, or short slots such as 15 minutes, from needing a scrollbar."
+msgstr "时间轴视图中每个时间格的高度（像素）。调小该值可以让较长的时间范围或 15 分钟这类较短的格子不必滚动查看。"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder"
@@ -7590,7 +7549,7 @@ msgctxt "views.taskList.movement.keepSubgroup"
 msgid "Keep current subgroup"
 msgstr "保留当前子分组"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.cancel"
 msgid "Keep editing"
 msgstr "继续编辑"
@@ -8245,6 +8204,11 @@ msgstr "每月（完成后）"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence"
 msgid "Monthly recurrence"
 msgstr "每月重复"
+
+#: src/modals/taskModalActionButtons.ts
+msgctxt "modals.task.buttons.moreActions"
+msgid "More actions"
+msgstr "更多操作"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.moveDownAriaLabel"
@@ -9391,7 +9355,6 @@ msgid "Open note"
 msgstr "打开笔记"
 
 #: src/modals/TaskEditModal.ts
-#: src/modals/TaskModal.ts
 msgctxt "modals.task.buttons.openNote"
 msgid "Open note"
 msgstr "打开笔记"
@@ -9791,6 +9754,11 @@ msgctxt "contextMenus.date.pickDateTime"
 msgid "Pick date & time…"
 msgstr "选择日期和时间..."
 
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.pinchZoom"
+msgid "Pinch to resize time slots"
+msgstr "双指缩放时间段高度"
+
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Pinned Columns"
@@ -9826,13 +9794,8 @@ msgctxt "modals.taskSelectorWithCreate.notices.emptyQuery"
 msgid "Please enter a task description"
 msgstr "请输入任务描述"
 
-#: src/modals/TaskCreationModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.taskCreation.notices.titleRequired"
-msgid "Please enter a task title"
-msgstr "请输入任务标题"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.titleRequired"
 msgid "Please enter a task title"
 msgstr "请输入任务标题"
 
@@ -10280,6 +10243,7 @@ msgid "Recurrence"
 msgstr "重复"
 
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.recurrence"
 msgid "Recurrence"
 msgstr "重复"
@@ -10517,6 +10481,7 @@ msgid "Reminder: {title}"
 msgstr "提醒：{title}"
 
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.reminders"
 msgid "Reminders"
 msgstr "提醒"
@@ -10751,6 +10716,11 @@ msgctxt "views.stats.resetFiltersButton"
 msgid "Reset filters"
 msgstr "重置筛选"
 
+#: src/settings/tabs/featuresTab.ts
+msgctxt "settings.features.recurring.resetStatusName"
+msgid "Reset status after each occurrence"
+msgstr "每次重复后重置状态"
+
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.resetTooltip"
 msgid "Reset to default path"
@@ -10879,7 +10849,7 @@ msgctxt "modals.task.buttons.save"
 msgid "Save"
 msgstr "保存"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.save"
 msgid "Save changes"
 msgstr "保存更改"
@@ -10937,6 +10907,7 @@ msgstr "计划日期"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "计划日期"
@@ -10975,11 +10946,6 @@ msgstr "计划日期或日期时间（YYYY-MM-DD 或 YYYY-MM-DDTHH:MM）"
 msgctxt "modals.actionPalette.scheduledSet"
 msgid "Scheduled date set"
 msgstr "计划日期已设置"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.metadata.scheduled"
-msgid "Scheduled:"
-msgstr "计划："
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.scheduledContext"
@@ -12387,6 +12353,11 @@ msgid "Task created"
 msgstr "任务已创建"
 
 #: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.followUpFailure"
+msgid "Task created, but a follow-up step failed: {message}"
+msgstr "任务已创建，但后续步骤失败：{message}"
+
+#: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.attachmentImportFailure"
 msgid "Task created, but some attachments could not be imported: {message}"
 msgstr "任务已创建，但部分附件无法导入：{message}"
@@ -12567,11 +12538,6 @@ msgstr "未找到标题为 {title} 的任务"
 msgctxt "ui.taskCard.taskOptions"
 msgid "Task options"
 msgstr "任务选项"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals/TaskCreationModal: TaskCreationModal.createNaturalLanguageInput display"
-msgid "Task preview"
-msgstr "任务预览"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.tabs.taskProperties"
@@ -13107,6 +13073,16 @@ msgctxt "settings.appearance.timeSettings.timeSlotDuration.name"
 msgid "Time slot duration"
 msgstr "时间段持续时间"
 
+#: src/settings/tabs/appearanceTab.ts
+msgctxt "settings.appearance.timeSettings.slotHeight.name"
+msgid "Time slot height"
+msgstr "时间格高度"
+
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.slotHeight"
+msgid "Time slot height (px)"
+msgstr "时间格高度（px）"
+
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.timeStarted.label"
 msgid "Time started"
@@ -13421,6 +13397,7 @@ msgid "today"
 msgstr "今天"
 
 #: src/components/DateContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.date.basic.today"
 msgid "Today"
 msgstr "今天"
@@ -13518,6 +13495,7 @@ msgid "tomorrow"
 msgstr "明天"
 
 #: src/components/DateContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.date.basic.tomorrow"
 msgid "Tomorrow"
 msgstr "明天"
@@ -13873,7 +13851,7 @@ msgctxt "settings.defaults.reminders.unnamedReminder"
 msgid "Unnamed reminder"
 msgstr "未命名提醒"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.title"
 msgid "Unsaved changes"
 msgstr "未保存的更改"
@@ -14430,6 +14408,11 @@ msgctxt "views.releaseNotes.title"
 msgid "What''s new in TaskNotes {version}"
 msgstr "TaskNotes {version} 的新功能"
 
+#: src/settings/tabs/featuresTab.ts
+msgctxt "settings.features.recurring.resetStatusDesc"
+msgid "When an occurrence is completed or skipped, move the task to the Next status of the first completed status. Turn off to keep the task's status."
+msgstr "完成或跳过某次重复时，任务会切换到第一个已完成状态的“下一个状态”。关闭后将保留任务的状态。"
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.autoExport.excludeArchived.description"
 msgid "When enabled, archived tasks are omitted from ICS exports."
@@ -14661,7 +14644,7 @@ msgctxt "modals.storageLocation.finalNote.switch"
 msgid "You can switch back to plugin storage at any time in the future."
 msgstr "你可以随时在将来切换回插件存储。"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.message"
 msgid "You have unsaved changes. Do you want to save them?"
 msgstr "你有未保存的更改。是否要保存？"

@@ -38,6 +38,11 @@ export interface TaskCardOptions {
 	targetDate?: Date;
 	/** List/board cards represent the pending commitment, not a projected date. */
 	usePendingOccurrenceIdentity?: boolean;
+	/**
+	 * The scheduled value of a recurring occurrence other than the pending one. The card
+	 * shows it read-only: the task's date fields only hold the pending occurrence.
+	 */
+	occurrenceScheduled?: string;
 	layout?: "default" | "compact" | "inline";
 	/** When true, hide status indicator (e.g., when Kanban is grouped by status) */
 	hideStatusIndicator?: boolean;
@@ -63,6 +68,8 @@ export interface TaskCardOptions {
 	onSelectionClick?: (event: MouseEvent, taskPath: string) => boolean;
 	/** When true, occurrence actions are promoted to the top of the card context menu. */
 	promoteOccurrenceControlsInContextMenu?: boolean;
+	/** The recurring occurrence this card stands for. Context menu actions act on it. */
+	occurrenceDate?: Date;
 }
 
 export const DEFAULT_TASK_CARD_OPTIONS: TaskCardOptions = {
@@ -225,6 +232,7 @@ export function createTaskCard(
 		plugin,
 		targetDate,
 		promoteOccurrenceControls: opts.promoteOccurrenceControlsInContextMenu,
+		occurrenceDate: opts.occurrenceDate,
 	});
 
 	createTaskCardTitle({
@@ -263,12 +271,9 @@ export function createTaskCard(
 			contextMenuHandler: (e) => {
 				const path = card.dataset.taskPath;
 				if (!path) return;
-				if (opts.promoteOccurrenceControlsInContextMenu === undefined) {
-					void showTaskContextMenu(e, path, plugin, targetDate);
-					return;
-				}
 				void showTaskContextMenu(e, path, plugin, targetDate, {
 					promoteOccurrenceControls: opts.promoteOccurrenceControlsInContextMenu,
+					occurrenceDate: opts.occurrenceDate,
 				});
 			},
 			createBatchContextMenu: (selectedPaths, onUpdate) =>

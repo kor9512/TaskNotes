@@ -852,6 +852,13 @@ msgctxt "services/ICSNoteService: ICSNoteService.buildICSEventDetails display"
 msgid "**Start:** {value1}"
 msgstr "**Начало:** {value1}"
 
+#: src/i18n/releaseNotesAnnouncement.ts
+msgctxt "release announcement Markdown"
+msgid "**TaskNotes v5 beta.** Use your Markdown tasks in Obsidian and the new TaskNotes app. [Plugin beta]({token1}) · [Web app]({token2}) · [iOS]({token3}). Back up your vault before trying the beta.\n"
+""
+msgstr "**Бета-версия TaskNotes v5.** Работайте со своими задачами в Markdown в Obsidian и новом приложении TaskNotes. [Бета-версия плагина]({token1}) · [Веб-приложение]({token2}) · [iOS]({token3}). Перед использованием бета-версии сделайте резервную копию хранилища.\n"
+""
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.markdown.url"
 msgid "**URL:** {value}"
@@ -1090,55 +1097,6 @@ msgstr "# Начните работу с TaskNotes\n"
 "## Готово\n"
 "\n"
 "Главное: задачи — это заметки, свойства позволяют их искать, а Bases превращает их в представления.\n"
-""
-
-#: src/i18n/releaseNotesAnnouncement.ts
-msgctxt "release announcement Markdown"
-msgid "## TaskNotes v5 and the TaskNotes app — join the beta\n"
-"\n"
-"**TaskNotes v5** introduces portable collections that you can use in both Obsidian and the new **TaskNotes app**. Your tasks remain ordinary Markdown files in your vault, with [mdbase Connect]({token1}) providing access from the app.\n"
-"\n"
-"Available to try now:\n"
-"- **[Try the TaskNotes v5 plugin beta]({token2})**\n"
-"- **[Try the TaskNotes web app]({token3})**\n"
-"- **[Download TaskNotes for iOS]({token4})**\n"
-"\n"
-"These are early releases under active development. Please back up your vault before trying them and [report any problems]({token5}). TaskNotes 4.13 remains the recommended stable plugin release.\n"
-"\n"
-"### Help bring TaskNotes to Android\n"
-"\n"
-"**We need at least 12 testers for the TaskNotes Android app before we can apply for a public Google Play release.**\n"
-"\n"
-"If you have an Android device and would like to help:\n"
-"\n"
-"1. **[Join the tester Google Group]({token6})** using the Google account you use for Google Play.\n"
-"2. **[Opt in to the Google Play test]({token7})** with that same account and install TaskNotes.\n"
-"3. Stay opted in for **at least 14 consecutive days**, use the app regularly during that time, and let us know how it goes.\n"
-"\n"
-"You don’t need to be a developer—using TaskNotes for your everyday tasks and sharing anything confusing or broken is valuable feedback. Your participation will help make the Android release possible.\n"
-""
-msgstr "## TaskNotes v5 и приложение TaskNotes — присоединяйтесь к бета-тестированию\n"
-"\n"
-"**TaskNotes v5** вводит переносимые коллекции, доступные и в Obsidian, и в новом **приложении TaskNotes**. Задачи остаются обычными файлами Markdown в вашем хранилище, а [mdbase Connect]({token1}) обеспечивает доступ к ним из приложения.\n"
-"\n"
-"Уже можно попробовать:\n"
-"- **[Бета-версию плагина TaskNotes v5]({token2})**\n"
-"- **[Веб-приложение TaskNotes]({token3})**\n"
-"- **[Скачать TaskNotes для iOS]({token4})**\n"
-"\n"
-"Это ранние версии, которые активно разрабатываются. Перед использованием создайте резервную копию хранилища и [сообщайте о проблемах]({token5}). Рекомендуемая стабильная версия плагина — TaskNotes 4.13.\n"
-"\n"
-"### Помогите выпустить TaskNotes для Android\n"
-"\n"
-"**Для подачи заявки на общедоступный выпуск TaskNotes для Android в Google Play нам нужно не менее 12 тестировщиков.**\n"
-"\n"
-"Если у вас есть устройство Android и вы хотите помочь:\n"
-"\n"
-"1. **[Вступите в группу тестировщиков Google]({token6})** с той же учётной записью Google, которую используете в Google Play.\n"
-"2. **[Присоединитесь к тестированию в Google Play]({token7})** с этой учётной записью и установите TaskNotes.\n"
-"3. Участвуйте в тестировании **не менее 14 дней подряд**, регулярно пользуйтесь приложением и рассказывайте о впечатлениях.\n"
-"\n"
-"Необязательно быть разработчиком: обычное использование TaskNotes для повседневных задач и сообщения о непонятных или неработающих функциях тоже очень помогают. Ваше участие сделает выпуск для Android возможным.\n"
 ""
 
 #: src/components/ICSEventContextMenu.ts
@@ -4876,7 +4834,7 @@ msgctxt "settings.integrations.subscriptionsList.statusLabels.disabled"
 msgid "Disabled"
 msgstr "Отключено"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.discard"
 msgid "Discard changes"
 msgstr "Отменить изменения"
@@ -5078,6 +5036,7 @@ msgstr "Срок выполнения"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.dueDate"
 msgid "Due date"
 msgstr "Срок выполнения"
@@ -5131,11 +5090,6 @@ msgstr "До срока"
 msgctxt "modals.unscheduledTasksSelector.dueToday"
 msgid "Due today: {date}"
 msgstr "Срок сегодня: {date}"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.metadata.due"
-msgid "Due:"
-msgstr "Срок:"
 
 #: src/modals/ReminderModal.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
@@ -5436,6 +5390,11 @@ msgstr "Введите ключ свойства."
 msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
 msgid "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings."
 msgstr "Введите имя свойства. Текст примера не является сохранённой настройкой. TaskNotes не может определять задачи, пока не задано имя свойства. Существующие фильтры .base должны соответствовать этим настройкам."
+
+#: src/modals/TaskModal.ts
+msgctxt "modals.task.timeEstimateInvalid"
+msgid "Enter a time such as 45 or 1h 30m"
+msgstr "Введите время, например 45 или 1h 30m"
 
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
@@ -6753,11 +6712,6 @@ msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "Заполнить контейнер"
 
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.actions.fillFromNaturalLanguage"
-msgid "Fill form from natural language"
-msgstr "Заполнить форму из естественного языка"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.sections.filters"
 msgid "Filters"
@@ -7103,6 +7057,11 @@ msgstr "Конфигурация заголовков"
 msgctxt "views.basesCalendar.settings.layout.heightMode"
 msgid "Height mode"
 msgstr "Режим высоты"
+
+#: src/settings/tabs/appearanceTab.ts
+msgctxt "settings.appearance.timeSettings.slotHeight.description"
+msgid "Height of each time slot in timeline views (pixels). Lower it to keep a long time range, or short slots such as 15 minutes, from needing a scrollbar."
+msgstr "Высота одного интервала времени в режиме шкалы времени (в пикселях). Уменьшите её, чтобы длинный диапазон или короткие интервалы, например 15 минут, не требовали прокрутки."
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder"
@@ -7591,7 +7550,7 @@ msgctxt "views.taskList.movement.keepSubgroup"
 msgid "Keep current subgroup"
 msgstr "Сохранить текущую подгруппу"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.cancel"
 msgid "Keep editing"
 msgstr "Продолжить редактирование"
@@ -8246,6 +8205,11 @@ msgstr "Ежемесячно (после завершения)"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence"
 msgid "Monthly recurrence"
 msgstr "Ежемесячное повторение"
+
+#: src/modals/taskModalActionButtons.ts
+msgctxt "modals.task.buttons.moreActions"
+msgid "More actions"
+msgstr "Другие действия"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.moveDownAriaLabel"
@@ -9392,7 +9356,6 @@ msgid "Open note"
 msgstr "Открыть заметку"
 
 #: src/modals/TaskEditModal.ts
-#: src/modals/TaskModal.ts
 msgctxt "modals.task.buttons.openNote"
 msgid "Open note"
 msgstr "Открыть заметку"
@@ -9792,6 +9755,11 @@ msgctxt "contextMenus.date.pickDateTime"
 msgid "Pick date & time…"
 msgstr "Выбрать дату и время…"
 
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.pinchZoom"
+msgid "Pinch to resize time slots"
+msgstr "Менять высоту интервалов жестом щипка"
+
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Pinned Columns"
@@ -9827,13 +9795,8 @@ msgctxt "modals.taskSelectorWithCreate.notices.emptyQuery"
 msgid "Please enter a task description"
 msgstr "Пожалуйста, введите описание задачи"
 
-#: src/modals/TaskCreationModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.taskCreation.notices.titleRequired"
-msgid "Please enter a task title"
-msgstr "Пожалуйста, введите название задачи"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.titleRequired"
 msgid "Please enter a task title"
 msgstr "Пожалуйста, введите название задачи"
 
@@ -10281,6 +10244,7 @@ msgid "Recurrence"
 msgstr "Повторение"
 
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.recurrence"
 msgid "Recurrence"
 msgstr "Повторение"
@@ -10518,6 +10482,7 @@ msgid "Reminder: {title}"
 msgstr "Напоминание: {title}"
 
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.reminders"
 msgid "Reminders"
 msgstr "Напоминания"
@@ -10752,6 +10717,11 @@ msgctxt "views.stats.resetFiltersButton"
 msgid "Reset filters"
 msgstr "Сбросить фильтры"
 
+#: src/settings/tabs/featuresTab.ts
+msgctxt "settings.features.recurring.resetStatusName"
+msgid "Reset status after each occurrence"
+msgstr "Сбрасывать статус после каждого повторения"
+
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.resetTooltip"
 msgid "Reset to default path"
@@ -10880,7 +10850,7 @@ msgctxt "modals.task.buttons.save"
 msgid "Save"
 msgstr "Сохранить"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.save"
 msgid "Save changes"
 msgstr "Сохранить изменения"
@@ -10938,6 +10908,7 @@ msgstr "Запланированная дата"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "Запланированная дата"
@@ -10976,11 +10947,6 @@ msgstr "Запланированная дата или дата и время (Y
 msgctxt "modals.actionPalette.scheduledSet"
 msgid "Scheduled date set"
 msgstr "Запланированная дата задана"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.metadata.scheduled"
-msgid "Scheduled:"
-msgstr "Запланировано:"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.scheduledContext"
@@ -12388,6 +12354,11 @@ msgid "Task created"
 msgstr "Задача создана"
 
 #: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.followUpFailure"
+msgid "Task created, but a follow-up step failed: {message}"
+msgstr "Задача создана, но следующий шаг не выполнен: {message}"
+
+#: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.attachmentImportFailure"
 msgid "Task created, but some attachments could not be imported: {message}"
 msgstr "Задача создана, но некоторые вложения не удалось импортировать: {message}"
@@ -12568,11 +12539,6 @@ msgstr "Задача с названием {title} не найдена"
 msgctxt "ui.taskCard.taskOptions"
 msgid "Task options"
 msgstr "Параметры задачи"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals/TaskCreationModal: TaskCreationModal.createNaturalLanguageInput display"
-msgid "Task preview"
-msgstr "Предпросмотр задачи"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.tabs.taskProperties"
@@ -13108,6 +13074,16 @@ msgctxt "settings.appearance.timeSettings.timeSlotDuration.name"
 msgid "Time slot duration"
 msgstr "Длительность временного слота"
 
+#: src/settings/tabs/appearanceTab.ts
+msgctxt "settings.appearance.timeSettings.slotHeight.name"
+msgid "Time slot height"
+msgstr "Высота интервала времени"
+
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.slotHeight"
+msgid "Time slot height (px)"
+msgstr "Высота интервала времени (px)"
+
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.timeStarted.label"
 msgid "Time started"
@@ -13422,6 +13398,7 @@ msgid "today"
 msgstr "сегодня"
 
 #: src/components/DateContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.date.basic.today"
 msgid "Today"
 msgstr "Сегодня"
@@ -13519,6 +13496,7 @@ msgid "tomorrow"
 msgstr "завтра"
 
 #: src/components/DateContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.date.basic.tomorrow"
 msgid "Tomorrow"
 msgstr "Завтра"
@@ -13874,7 +13852,7 @@ msgctxt "settings.defaults.reminders.unnamedReminder"
 msgid "Unnamed reminder"
 msgstr "Безымянное напоминание"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.title"
 msgid "Unsaved changes"
 msgstr "Несохранённые изменения"
@@ -14431,6 +14409,11 @@ msgctxt "views.releaseNotes.title"
 msgid "What''s new in TaskNotes {version}"
 msgstr "Что нового в TaskNotes {version}"
 
+#: src/settings/tabs/featuresTab.ts
+msgctxt "settings.features.recurring.resetStatusDesc"
+msgid "When an occurrence is completed or skipped, move the task to the Next status of the first completed status. Turn off to keep the task's status."
+msgstr "Когда повторение выполнено или пропущено, задача переходит в следующий статус первого статуса выполнения. Отключите, чтобы сохранять статус задачи."
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.autoExport.excludeArchived.description"
 msgid "When enabled, archived tasks are omitted from ICS exports."
@@ -14662,7 +14645,7 @@ msgctxt "modals.storageLocation.finalNote.switch"
 msgid "You can switch back to plugin storage at any time in the future."
 msgstr "Вы можете переключиться обратно на хранение в плагине в любое время в будущем."
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.message"
 msgid "You have unsaved changes. Do you want to save them?"
 msgstr "У вас есть несохранённые изменения. Хотите сохранить их?"

@@ -138,8 +138,9 @@ type VirtualScrollerWithContainer = {
 
 type KanbanEphemeralState = {
 	scrollTop?: unknown;
+	boardScrollLeft?: unknown;
+	boardScrollTop?: unknown;
 	columnScroll?: unknown;
-	collapsedColumns?: unknown;
 };
 
 type KanbanDropExecutionOptions = {
@@ -179,16 +180,6 @@ function getColumnScrollState(state: KanbanEphemeralState): Record<string, numbe
 		}
 	}
 	return result;
-}
-
-function getCollapsedColumnState(state: KanbanEphemeralState): Set<string> | null {
-	if (
-		!Array.isArray(state.collapsedColumns) ||
-		!state.collapsedColumns.every((value): value is string => typeof value === "string")
-	) {
-		return null;
-	}
-	return new Set(state.collapsedColumns);
 }
 
 function normalizeExpandedRelationshipFilterMode(value: unknown): "inherit" | "show-all" {
@@ -251,6 +242,10 @@ export class KanbanView extends BasesViewBase {
 	private draggedFromSwimlane: string | null = null; // Track source swimlane for list property handling
 	private dropTargetPath: string | null = null; // Card-level drop position tracking
 	private pendingRender = false; // Deferred render while dragging
+	// Scroll state captured before the first of any overlapping renders. A render
+	// empties the board, so state read mid-render would record scroll positions of 0.
+	private scrollStateBeforeRender: unknown = null;
+	private activeScrollPreservingRenders = 0;
 	private dropAbove = true; // Whether drop is above or below target card
 	private dragOverRafId = 0; // rAF handle for throttled dragover
 	private dragContainer: HTMLElement | null = null; // Container holding siblings during drag
@@ -273,7 +268,8 @@ export class KanbanView extends BasesViewBase {
 	private sortScopeCandidateTaskPaths = new Map<string, string[]>();
 	private containerListenersRegistered = false;
 	private columnScrollers = new Map<string, VirtualScroller<TaskInfo>>(); // columnKey -> scroller
-	private collapsedColumns = new Set<string>();
+	/** Collapsed column values keyed by grouping property, saved in the .base view config. */
+	private collapsedColumns: Record<string, string[]> = {};
 	private expandedRelationshipFilterMode: TaskCardOptions["expandedRelationshipFilterMode"] =
 		"inherit";
 	private currentVisibleTaskPaths = new Set<string>();
@@ -392,18 +388,36 @@ export class KanbanView extends BasesViewBase {
 			this.debugLog("ON-DATA-UPDATED: normal render (no suppression active)");
 		}
 
-		const savedState = this.getEphemeralState();
-		try {
-			void this.render();
-		} catch (error) {
+		void this.renderPreservingScroll().catch((error: unknown) => {
 			tasknotesLogger.error(`[TaskNotes][${this.type}] Render error:`, {
 				category: "internal",
 				operation: "render-kanban-view",
 				error: error,
 			});
-			this.renderError(error as Error);
+			this.renderError(error instanceof Error ? error : new Error(String(error)));
+		});
+	}
+
+	/**
+	 * Re-render the board and restore board, column and swimlane scroll positions
+	 * once the render has finished. Rendering empties the board, which resets its
+	 * scroll offsets, so the state must be captured before and restored after.
+	 */
+	private async renderPreservingScroll(): Promise<void> {
+		if (this.activeScrollPreservingRenders === 0) {
+			this.scrollStateBeforeRender = this.getEphemeralState();
 		}
-		this.setEphemeralState(savedState);
+		const savedState = this.scrollStateBeforeRender;
+		this.activeScrollPreservingRenders++;
+		try {
+			await this.render();
+		} finally {
+			this.activeScrollPreservingRenders--;
+			if (this.activeScrollPreservingRenders === 0) {
+				this.scrollStateBeforeRender = null;
+			}
+			this.setEphemeralState(savedState);
+		}
 	}
 
 	/**
@@ -432,6 +446,7 @@ export class KanbanView extends BasesViewBase {
 
 			// Read column orders
 			this.columnOrders = normalizeKanbanOrderConfig(get("columnOrder"));
+			this.collapsedColumns = normalizeKanbanOrderConfig(get("collapsedColumns"));
 			this.pinnedColumns = normalizePinnedColumnConfig(get("pinnedColumns"));
 			this.wipLimits = normalizeKanbanWipLimitsConfig(get("wipLimits"));
 
@@ -513,8 +528,9 @@ export class KanbanView extends BasesViewBase {
 		return {
 			...baseStateObject,
 			scrollTop: this.rootElement?.scrollTop || 0,
+			boardScrollLeft: this.boardEl?.scrollLeft || 0,
+			boardScrollTop: this.boardEl?.scrollTop || 0,
 			columnScroll,
-			collapsedColumns: Array.from(this.collapsedColumns),
 		};
 	}
 
@@ -525,25 +541,28 @@ export class KanbanView extends BasesViewBase {
 		if (!isKanbanEphemeralState(state)) return;
 		super.setEphemeralState(state);
 		const columnScroll = getColumnScrollState(state);
-		const collapsedColumns = getCollapsedColumnState(state);
-		if (collapsedColumns) {
-			this.collapsedColumns = collapsedColumns;
-		} else if ("collapsedColumns" in state) {
-			this.collapsedColumns.clear();
-		}
-		this.boardEl?.querySelectorAll<HTMLElement>(".kanban-view__column").forEach(column => {
-			this.applyColumnCollapsedState(column);
-		});
 
-		// Restore board-level horizontal scroll
-		if (typeof state.scrollTop === "number" && this.rootElement) {
-			const scrollTop = state.scrollTop;
-			window.requestAnimationFrame(() => {
-				if (this.rootElement && this.rootElement.isConnected) {
-					this.rootElement.scrollTop = scrollTop;
-				}
-			});
-		}
+		// Restore the board's own scroll offsets. The board is the horizontal
+		// scroller, and the vertical one when swimlanes are shown. Restore now to
+		// avoid a visible jump, and again next frame in case layout was pending.
+		const boardScrollLeft =
+			typeof state.boardScrollLeft === "number" ? state.boardScrollLeft : null;
+		const boardScrollTop =
+			typeof state.boardScrollTop === "number" ? state.boardScrollTop : null;
+		const restoreBoardScroll = () => {
+			if (!this.boardEl?.isConnected) return;
+			if (boardScrollLeft !== null) this.boardEl.scrollLeft = boardScrollLeft;
+			if (boardScrollTop !== null) this.boardEl.scrollTop = boardScrollTop;
+		};
+		restoreBoardScroll();
+
+		const rootScrollTop = typeof state.scrollTop === "number" ? state.scrollTop : null;
+		window.requestAnimationFrame(() => {
+			if (rootScrollTop !== null && this.rootElement?.isConnected) {
+				this.rootElement.scrollTop = rootScrollTop;
+			}
+			restoreBoardScroll();
+		});
 
 		// Restore column scroll positions after render completes
 		if (columnScroll) {
@@ -637,6 +656,9 @@ export class KanbanView extends BasesViewBase {
 			const candidateTasks = this.getTopLevelRenderTasks(taskNotes);
 			this.setCurrentVisibleTaskPaths(renderTasks);
 
+			// Saving a collapse toggle re-renders the board; keep keyboard focus on that toggle.
+			const focusedCollapseColumn = this.getFocusedCollapseColumn();
+
 			// Clear board and cleanup scrollers
 			this.destroyColumnScrollers();
 			this.boardEl.empty();
@@ -692,6 +714,7 @@ export class KanbanView extends BasesViewBase {
 			} else {
 				await this.renderFlat(groups, allGroups);
 			}
+			this.restoreCollapseButtonFocus(focusedCollapseColumn);
 		} catch (error: unknown) {
 			tasknotesLogger.error("[TaskNotes][KanbanView] Error rendering:", {
 				category: "internal",
@@ -1312,6 +1335,7 @@ export class KanbanView extends BasesViewBase {
 			sortOrderValues: isSortOrderInSortConfig(this.dataAdapter, sortOrderField)
 				? this.getSortOrderValues(taskNotes, sortOrderField)
 				: undefined,
+			sortOrderDirection: getSortOrderDirection(this.dataAdapter, sortOrderField),
 			statusConfigs: this.plugin.settings.customStatuses || [],
 			priorityConfigs:
 				this.plugin.priorityManager?.getAllPriorities?.() ||
@@ -1931,8 +1955,9 @@ export class KanbanView extends BasesViewBase {
 			},
 		});
 
-		const collapseKey = JSON.stringify([groupByPropertyId, groupKey]);
-		column.dataset.collapseKey = collapseKey;
+		const collapseProperty = groupByPropertyId ?? "";
+		column.dataset.collapseProperty = collapseProperty;
+		column.dataset.collapseValue = groupKey;
 		this.applyColumnCollapsedState(column);
 
 		for (const eventName of ["mousedown", "pointerdown", "touchstart"]) {
@@ -1945,21 +1970,49 @@ export class KanbanView extends BasesViewBase {
 		button.addEventListener("click", (event) => {
 			event.preventDefault();
 			event.stopPropagation();
-			const collapsed = !this.collapsedColumns.has(collapseKey);
-			if (collapsed) {
-				this.collapsedColumns.add(collapseKey);
-			} else {
-				this.collapsedColumns.delete(collapseKey);
-			}
+			const collapsed = !this.isColumnCollapsed(collapseProperty, groupKey);
+			this.saveColumnCollapsed(collapseProperty, groupKey, collapsed);
 			this.applyColumnCollapsedState(column);
 			if (!collapsed) this.columnScrollers.get(groupKey)?.recalculate();
 		});
 	}
 
+	private getFocusedCollapseColumn(): { property: string; value: string } | null {
+		const board = this.boardEl;
+		const focused = board?.ownerDocument.activeElement;
+		if (!board || !focused?.matches(".kanban-view__column-collapse-button") || !board.contains(focused)) {
+			return null;
+		}
+		const column = focused.closest<HTMLElement>(".kanban-view__column");
+		if (!column) return null;
+		return {
+			property: column.dataset.collapseProperty ?? "",
+			value: column.dataset.collapseValue ?? "",
+		};
+	}
+
+	private restoreCollapseButtonFocus(target: { property: string; value: string } | null): void {
+		if (!target || !this.boardEl) return;
+		for (const column of Array.from(
+			this.boardEl.querySelectorAll<HTMLElement>(".kanban-view__column")
+		)) {
+			if (
+				column.dataset.collapseProperty === target.property &&
+				column.dataset.collapseValue === target.value
+			) {
+				column.querySelector<HTMLElement>(".kanban-view__column-collapse-button")?.focus();
+				return;
+			}
+		}
+	}
+
 	private applyColumnCollapsedState(column: HTMLElement): void {
 		const button = column.querySelector<HTMLElement>(".kanban-view__column-collapse-button");
 		if (!button) return;
-		const collapsed = this.collapsedColumns.has(column.dataset.collapseKey!);
+		const collapsed = this.isColumnCollapsed(
+			column.dataset.collapseProperty ?? "",
+			column.dataset.collapseValue ?? ""
+		);
 		column.classList.toggle("kanban-view__column--collapsed", collapsed);
 		column.dataset.collapsed = String(collapsed);
 		column.style.width = collapsed
@@ -2241,7 +2294,7 @@ export class KanbanView extends BasesViewBase {
 		if (!newOrder) return;
 
 		this.saveSwimLaneOrder(swimLanePropertyId, newOrder);
-		await this.render();
+		await this.renderPreservingScroll();
 	}
 
 	private setupColumnHeaderDragHandlers(header: HTMLElement): void {
@@ -2321,7 +2374,7 @@ export class KanbanView extends BasesViewBase {
 				await this.saveColumnOrder(groupBy, newOrder);
 
 				// Re-render
-				await this.render();
+				await this.renderPreservingScroll();
 			})();
 		});
 
@@ -2444,7 +2497,7 @@ export class KanbanView extends BasesViewBase {
 								newOrder.splice(dropIndex, 0, this.draggedColumnKey);
 
 								await this.saveColumnOrder(groupBy, newOrder);
-								await this.render();
+								await this.renderPreservingScroll();
 							}
 						}
 					}
@@ -2942,6 +2995,10 @@ export class KanbanView extends BasesViewBase {
 		this.draggedSourceSwimlanes.clear();
 		this.touchDragType = null;
 		this.draggedColumnKey = null;
+		if (this.pendingRender) {
+			this.pendingRender = false;
+			this.debouncedRefresh();
+		}
 	}
 
 	private handleAutoScroll(touchX: number): void {
@@ -4268,6 +4325,13 @@ export class KanbanView extends BasesViewBase {
 		const win = this.containerEl.ownerDocument.defaultView || window;
 		this.updateDebounceTimer = win.setTimeout(() => {
 			void (async () => {
+				// Match onDataUpdated: keep the dragged card and its occurrence cache
+				// intact, even if this timer was scheduled before the drag began.
+				if (this.draggedTaskPath) {
+					this.pendingRender = true;
+					this.updateDebounceTimer = null;
+					return;
+				}
 				// Respect render suppression — a drop is still in-flight.
 				// The post-drop render (schedulePostDropRender) will fire the
 				// guaranteed render once the writes have settled.
@@ -4283,11 +4347,8 @@ export class KanbanView extends BasesViewBase {
 					activeDropCount: this.activeDropCount,
 					suppressRenderRemaining: Math.max(0, this.suppressRenderUntil - Date.now()),
 				});
-				const savedState = this.getEphemeralState();
-				await this.render();
 				this.updateDebounceTimer = null;
-				// Restore scroll state after render completes
-				this.setEphemeralState(savedState);
+				await this.renderPreservingScroll();
 			})();
 		}, 150);
 	}
@@ -4499,6 +4560,30 @@ export class KanbanView extends BasesViewBase {
 		}
 	}
 
+	private isColumnCollapsed(propertyId: string, groupKey: string): boolean {
+		return this.collapsedColumns[propertyId]?.includes(groupKey) ?? false;
+	}
+
+	private saveColumnCollapsed(propertyId: string, groupKey: string, collapsed: boolean): void {
+		const values = (this.collapsedColumns[propertyId] ?? []).filter((value) => value !== groupKey);
+		if (collapsed) values.push(groupKey);
+		if (values.length > 0) {
+			this.collapsedColumns[propertyId] = values;
+		} else {
+			delete this.collapsedColumns[propertyId];
+		}
+
+		try {
+			this.config.set("collapsedColumns", JSON.stringify(this.collapsedColumns));
+		} catch (error) {
+			tasknotesLogger.error("[KanbanView] Failed to save collapsed columns:", {
+				category: "persistence",
+				operation: "save-collapsed-columns",
+				error: error,
+			});
+		}
+	}
+
 	private async saveColumnOrder(groupBy: string, order: string[]): Promise<void> {
 		// Update in-memory state
 		this.columnOrders[groupBy] = order;
@@ -4689,6 +4774,7 @@ export class KanbanView extends BasesViewBase {
 	 * Override from Component base class.
 	 */
 	onunload(): void {
+		this.pendingRender = false;
 		this.clearTouchDragState();
 		if (this.postDropTimer) {
 			window.clearTimeout(this.postDropTimer);

@@ -849,6 +849,13 @@ msgctxt "services/ICSNoteService: ICSNoteService.buildICSEventDetails display"
 msgid "**Start:** {value1}"
 msgstr "**시작:** {value1}"
 
+#: src/i18n/releaseNotesAnnouncement.ts
+msgctxt "release announcement Markdown"
+msgid "**TaskNotes v5 beta.** Use your Markdown tasks in Obsidian and the new TaskNotes app. [Plugin beta]({token1}) · [Web app]({token2}) · [iOS]({token3}). Back up your vault before trying the beta.\n"
+""
+msgstr "**TaskNotes v5 베타.** Markdown 작업을 Obsidian과 새로운 TaskNotes 앱에서 사용하세요. [플러그인 베타]({token1}) · [웹 앱]({token2}) · [iOS]({token3}). 베타를 사용하기 전에 보관함을 백업하세요.\n"
+""
+
 #: src/components/ICSEventContextMenu.ts
 msgctxt "contextMenus.ics.markdown.url"
 msgid "**URL:** {value}"
@@ -1087,55 +1094,6 @@ msgstr "# TaskNotes 시작하기\n"
 "## 마치며\n"
 "\n"
 "핵심은 간단합니다. 작업은 노트이고, 속성으로 검색할 수 있으며, 베이스가 이를 뷰로 만들어 줍니다.\n"
-""
-
-#: src/i18n/releaseNotesAnnouncement.ts
-msgctxt "release announcement Markdown"
-msgid "## TaskNotes v5 and the TaskNotes app — join the beta\n"
-"\n"
-"**TaskNotes v5** introduces portable collections that you can use in both Obsidian and the new **TaskNotes app**. Your tasks remain ordinary Markdown files in your vault, with [mdbase Connect]({token1}) providing access from the app.\n"
-"\n"
-"Available to try now:\n"
-"- **[Try the TaskNotes v5 plugin beta]({token2})**\n"
-"- **[Try the TaskNotes web app]({token3})**\n"
-"- **[Download TaskNotes for iOS]({token4})**\n"
-"\n"
-"These are early releases under active development. Please back up your vault before trying them and [report any problems]({token5}). TaskNotes 4.13 remains the recommended stable plugin release.\n"
-"\n"
-"### Help bring TaskNotes to Android\n"
-"\n"
-"**We need at least 12 testers for the TaskNotes Android app before we can apply for a public Google Play release.**\n"
-"\n"
-"If you have an Android device and would like to help:\n"
-"\n"
-"1. **[Join the tester Google Group]({token6})** using the Google account you use for Google Play.\n"
-"2. **[Opt in to the Google Play test]({token7})** with that same account and install TaskNotes.\n"
-"3. Stay opted in for **at least 14 consecutive days**, use the app regularly during that time, and let us know how it goes.\n"
-"\n"
-"You don’t need to be a developer—using TaskNotes for your everyday tasks and sharing anything confusing or broken is valuable feedback. Your participation will help make the Android release possible.\n"
-""
-msgstr "## TaskNotes v5와 TaskNotes 앱 — 베타에 참여하세요\n"
-"\n"
-"**TaskNotes v5**에서는 Obsidian과 새로운 **TaskNotes 앱** 모두에서 사용할 수 있는 이식 가능한 컬렉션을 도입했습니다. 작업은 보관함에 일반 Markdown 파일로 남으며, 앱에서는 [mdbase Connect]({token1})를 통해 접근합니다.\n"
-"\n"
-"지금 사용해 볼 수 있습니다.\n"
-"- **[TaskNotes v5 플러그인 베타 사용하기]({token2})**\n"
-"- **[TaskNotes 웹 앱 사용하기]({token3})**\n"
-"- **[iOS용 TaskNotes 다운로드]({token4})**\n"
-"\n"
-"아직 활발히 개발 중인 초기 버전입니다. 사용하기 전에 보관함을 백업하고 [문제가 생기면 알려 주세요]({token5}). 안정적인 플러그인 버전으로는 TaskNotes 4.13을 권장합니다.\n"
-"\n"
-"### Android용 TaskNotes 출시에 힘을 보태 주세요\n"
-"\n"
-"**TaskNotes Android 앱을 Google Play에 공개 출시하려면 최소 12명의 테스터가 필요합니다.**\n"
-"\n"
-"Android 기기가 있고 도움을 주고 싶다면 다음을 따라 주세요.\n"
-"\n"
-"1. Google Play에서 사용하는 Google 계정으로 **[테스터 Google 그룹에 가입]({token6})**하세요.\n"
-"2. 같은 계정으로 **[Google Play 테스트에 참여]({token7})**하고 TaskNotes를 설치하세요.\n"
-"3. **연속 14일 이상** 테스트 참여 상태를 유지하면서 앱을 정기적으로 사용하고 경험을 알려 주세요.\n"
-"\n"
-"개발자일 필요는 없습니다. 일상적인 작업에 TaskNotes를 사용하면서 혼란스럽거나 제대로 작동하지 않는 부분을 알려 주는 것만으로도 큰 도움이 됩니다. 여러분의 참여가 Android 출시를 가능하게 합니다.\n"
 ""
 
 #: src/components/ICSEventContextMenu.ts
@@ -4873,7 +4831,7 @@ msgctxt "settings.integrations.subscriptionsList.statusLabels.disabled"
 msgid "Disabled"
 msgstr "비활성화됨"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.discard"
 msgid "Discard changes"
 msgstr "변경 사항 버리기"
@@ -5075,6 +5033,7 @@ msgstr "마감일"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.dueDate"
 msgid "Due date"
 msgstr "마감일"
@@ -5128,11 +5087,6 @@ msgstr "마감까지"
 msgctxt "modals.unscheduledTasksSelector.dueToday"
 msgid "Due today: {date}"
 msgstr "오늘 마감: {date}"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.metadata.due"
-msgid "Due:"
-msgstr "마감:"
 
 #: src/modals/ReminderModal.ts
 #: src/modals/UnscheduledTasksSelectorModal.ts
@@ -5433,6 +5387,11 @@ msgstr "속성 키를 입력하세요."
 msgctxt "settings.general.taskIdentification.incompletePropertyWarning"
 msgid "Enter a property name. Example text is not saved configuration. TaskNotes cannot identify tasks until a property name is set. Existing .base filters must match these settings."
 msgstr "속성 이름을 입력하세요. 예시 텍스트는 저장된 설정이 아닙니다. 속성 이름을 설정해야 TaskNotes가 작업을 식별할 수 있습니다. 기존 .base 필터도 이 설정과 일치해야 합니다."
+
+#: src/modals/TaskModal.ts
+msgctxt "modals.task.timeEstimateInvalid"
+msgid "Enter a time such as 45 or 1h 30m"
+msgstr "45 또는 1h 30m처럼 시간을 입력하세요"
 
 #: src/settings/components/CardComponent.ts
 msgctxt "settings/components/CardComponent: createCardUrlInput display"
@@ -6750,11 +6709,6 @@ msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "컨테이너 채우기"
 
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals.taskCreation.actions.fillFromNaturalLanguage"
-msgid "Fill form from natural language"
-msgstr "자연어에서 양식 채우기"
-
 #: src/views/StatsView.ts
 msgctxt "views.stats.sections.filters"
 msgid "Filters"
@@ -7102,6 +7056,11 @@ msgstr "헤더 구성"
 msgctxt "views.basesCalendar.settings.layout.heightMode"
 msgid "Height mode"
 msgstr "높이 모드"
+
+#: src/settings/tabs/appearanceTab.ts
+msgctxt "settings.appearance.timeSettings.slotHeight.description"
+msgid "Height of each time slot in timeline views (pixels). Lower it to keep a long time range, or short slots such as 15 minutes, from needing a scrollbar."
+msgstr "타임라인 보기에서 각 시간 슬롯의 높이(픽셀)입니다. 긴 시간 범위나 15분 같은 짧은 슬롯도 스크롤 없이 보이도록 값을 줄이세요."
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.dragDropResolutionPlaceholder"
@@ -7590,7 +7549,7 @@ msgctxt "views.taskList.movement.keepSubgroup"
 msgid "Keep current subgroup"
 msgstr "현재 하위 그룹 유지"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.cancel"
 msgid "Keep editing"
 msgstr "계속 편집"
@@ -8245,6 +8204,11 @@ msgstr "매월 (완료 후)"
 msgctxt "components.recurrenceContextMenu.customRecurrenceModal.monthlyRecurrence"
 msgid "Monthly recurrence"
 msgstr "월간 반복"
+
+#: src/modals/taskModalActionButtons.ts
+msgctxt "modals.task.buttons.moreActions"
+msgid "More actions"
+msgstr "추가 작업"
 
 #: src/modals/taskModalAttachments.ts
 msgctxt "modals.task.attachments.moveDownAriaLabel"
@@ -9391,7 +9355,6 @@ msgid "Open note"
 msgstr "노트 열기"
 
 #: src/modals/TaskEditModal.ts
-#: src/modals/TaskModal.ts
 msgctxt "modals.task.buttons.openNote"
 msgid "Open note"
 msgstr "노트 열기"
@@ -9791,6 +9754,11 @@ msgctxt "contextMenus.date.pickDateTime"
 msgid "Pick date & time…"
 msgstr "날짜 및 시간 선택..."
 
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.pinchZoom"
+msgid "Pinch to resize time slots"
+msgstr "핀치하여 시간 슬롯 크기 조정"
+
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Pinned Columns"
@@ -9826,13 +9794,8 @@ msgctxt "modals.taskSelectorWithCreate.notices.emptyQuery"
 msgid "Please enter a task description"
 msgstr "작업 설명을 입력하세요"
 
-#: src/modals/TaskCreationModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.taskCreation.notices.titleRequired"
-msgid "Please enter a task title"
-msgstr "작업 제목을 입력하세요"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.notices.titleRequired"
 msgid "Please enter a task title"
 msgstr "작업 제목을 입력하세요"
 
@@ -10280,6 +10243,7 @@ msgid "Recurrence"
 msgstr "반복"
 
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.recurrence"
 msgid "Recurrence"
 msgstr "반복"
@@ -10517,6 +10481,7 @@ msgid "Reminder: {title}"
 msgstr "리마인더: {title}"
 
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.reminders"
 msgid "Reminders"
 msgstr "리마인더"
@@ -10751,6 +10716,11 @@ msgctxt "views.stats.resetFiltersButton"
 msgid "Reset filters"
 msgstr "필터 초기화"
 
+#: src/settings/tabs/featuresTab.ts
+msgctxt "settings.features.recurring.resetStatusName"
+msgid "Reset status after each occurrence"
+msgstr "각 회차 후 상태 초기화"
+
 #: src/settings/tabs/generalTab.ts
 msgctxt "settings.integrations.basesIntegration.viewCommands.resetTooltip"
 msgid "Reset to default path"
@@ -10879,7 +10849,7 @@ msgctxt "modals.task.buttons.save"
 msgid "Save"
 msgstr "저장"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.save"
 msgid "Save changes"
 msgstr "변경 사항 저장"
@@ -10937,6 +10907,7 @@ msgstr "예정일"
 
 #: src/components/BatchContextMenu.ts
 #: src/components/TaskContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.task.scheduledDate"
 msgid "Scheduled date"
 msgstr "예정일"
@@ -10975,11 +10946,6 @@ msgstr "예정일 또는 날짜·시간(YYYY-MM-DD 또는 YYYY-MM-DDTHH:MM)"
 msgctxt "modals.actionPalette.scheduledSet"
 msgid "Scheduled date set"
 msgstr "예정일이 설정되었습니다"
-
-#: src/modals/TaskEditModal.ts
-msgctxt "modals.taskEdit.metadata.scheduled"
-msgid "Scheduled:"
-msgstr "예정:"
 
 #: src/modals/ReminderModal.ts
 msgctxt "modals.reminder.scheduledContext"
@@ -12387,6 +12353,11 @@ msgid "Task created"
 msgstr "작업 생성됨"
 
 #: src/modals/TaskCreationModal.ts
+msgctxt "modals.taskCreation.notices.followUpFailure"
+msgid "Task created, but a follow-up step failed: {message}"
+msgstr "작업을 만들었지만 후속 단계가 실패했습니다: {message}"
+
+#: src/modals/TaskCreationModal.ts
 msgctxt "modals.taskCreation.notices.attachmentImportFailure"
 msgid "Task created, but some attachments could not be imported: {message}"
 msgstr "작업이 생성되었지만 일부 첨부 파일을 가져오지 못했습니다: {message}"
@@ -12567,11 +12538,6 @@ msgstr "제목에 해당하는 작업을 찾을 수 없습니다: {title}"
 msgctxt "ui.taskCard.taskOptions"
 msgid "Task options"
 msgstr "작업 옵션"
-
-#: src/modals/TaskCreationModal.ts
-msgctxt "modals/TaskCreationModal: TaskCreationModal.createNaturalLanguageInput display"
-msgid "Task preview"
-msgstr "작업 미리보기"
 
 #: src/settings/TaskNotesSettingTab.ts
 msgctxt "settings.tabs.taskProperties"
@@ -13107,6 +13073,16 @@ msgctxt "settings.appearance.timeSettings.timeSlotDuration.name"
 msgid "Time slot duration"
 msgstr "시간 슬롯 간격"
 
+#: src/settings/tabs/appearanceTab.ts
+msgctxt "settings.appearance.timeSettings.slotHeight.name"
+msgid "Time slot height"
+msgstr "시간 슬롯 높이"
+
+#: src/i18n/messages.ts
+msgctxt "views.basesCalendar.settings.layout.slotHeight"
+msgid "Time slot height (px)"
+msgstr "시간 슬롯 높이(px)"
+
 #: src/i18n/messages.ts
 msgctxt "settings.integrations.webhooks.events.timeStarted.label"
 msgid "Time started"
@@ -13421,6 +13397,7 @@ msgid "today"
 msgstr "오늘"
 
 #: src/components/DateContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.date.basic.today"
 msgid "Today"
 msgstr "오늘"
@@ -13518,6 +13495,7 @@ msgid "tomorrow"
 msgstr "내일"
 
 #: src/components/DateContextMenu.ts
+#: src/modals/taskModalActionIconStates.ts
 msgctxt "contextMenus.date.basic.tomorrow"
 msgid "Tomorrow"
 msgstr "내일"
@@ -13873,7 +13851,7 @@ msgctxt "settings.defaults.reminders.unnamedReminder"
 msgid "Unnamed reminder"
 msgstr "이름 없는 리마인더"
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.title"
 msgid "Unsaved changes"
 msgstr "저장되지 않은 변경 사항"
@@ -14430,6 +14408,11 @@ msgctxt "views.releaseNotes.title"
 msgid "What''s new in TaskNotes {version}"
 msgstr "TaskNotes {version}의 새로운 기능"
 
+#: src/settings/tabs/featuresTab.ts
+msgctxt "settings.features.recurring.resetStatusDesc"
+msgid "When an occurrence is completed or skipped, move the task to the Next status of the first completed status. Turn off to keep the task's status."
+msgstr "회차를 완료하거나 건너뛰면 작업이 첫 번째 완료 상태의 다음 상태로 이동합니다. 끄면 작업의 상태가 유지됩니다."
+
 #: src/settings/tabs/integrationsTab.ts
 msgctxt "settings.integrations.autoExport.excludeArchived.description"
 msgid "When enabled, archived tasks are omitted from ICS exports."
@@ -14661,7 +14644,7 @@ msgctxt "modals.storageLocation.finalNote.switch"
 msgid "You can switch back to plugin storage at any time in the future."
 msgstr "향후 언제든지 플러그인 저장소로 다시 전환할 수 있습니다."
 
-#: src/modals/TaskEditModal.ts
+#: src/modals/TaskModal.ts
 msgctxt "modals.task.unsavedChanges.message"
 msgid "You have unsaved changes. Do you want to save them?"
 msgstr "저장되지 않은 변경 사항이 있습니다. 저장하시겠습니까?"

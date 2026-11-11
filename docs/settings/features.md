@@ -23,6 +23,8 @@ NLP settings define how text input is interpreted during task capture. **Enable 
 
 Wrap text in double quotes, single quotes, or backticks to keep it as literal title text during NLP parsing. For example, `BIO "123H" - HW1` keeps `123H` in the title instead of treating it as a 123-hour estimate, while `Review "Today" notes` keeps `Today` as text instead of parsing it as a date.
 
+Wikilinks, markdown links and URLs stay in the title as written, and nothing inside them is parsed: `Review [[2026-11-03 Meeting]]` gets no date, and the `#` in `[[Project#Next steps]]` is not read as a tag. Inline code works like the backtick quotes above. A trigger placed directly before a link still applies to the whole link, so `+[[Project]]` sets a project.
+
 ## Pomodoro Timer
 
 Pomodoro settings control interval lengths, long-break cadence, optional auto-start behavior, and end-of-session notifications/sound. **Pomodoro data storage** chooses whether history is kept in plugin data or daily notes.
@@ -42,6 +44,8 @@ Time tracking options handle completion behavior. You can automatically stop run
 ## Recurring Tasks
 
 Use **Maintain due date offset in recurring tasks** to keep due/scheduled spacing consistent when recurring tasks roll forward.
+
+**Reset status after each occurrence** moves a recurring task to the **Next status** of the first completed status whenever an occurrence is completed or skipped, so a status reached during one occurrence does not carry into the next. It is on in new setups and off in setups saved before the setting existed. With it off, recurring tasks keep their status and a status click completes the occurrence directly. See [Recurring Tasks](../features/recurring-tasks.md#completion-tracking).
 
 Occurrence note behavior is configured per recurring task from the task context menu: open **Recurrence → Occurrence notes** to choose manual creation or automatic creation of the next materialized occurrence after completion. See [Recurring Tasks](../features/recurring-tasks.md#materialized-occurrence-notes) for the workflow and storage model.
 

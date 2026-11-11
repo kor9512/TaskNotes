@@ -249,6 +249,7 @@ export interface TaskNotesSettings {
 	// Recurring task behavior
 	maintainDueDateOffsetInRecurring: boolean;
 	resetCheckboxesOnRecurrence: boolean; // Reset markdown checkboxes in task body when recurring task completes
+	resetRecurringStatusAfterOccurrence: boolean; // Move a series to the first completed status's Next status after each occurrence
 	// Frontmatter link format settings
 	useFrontmatterMarkdownLinks: boolean; // Use markdown links in frontmatter (requires obsidian-frontmatter-markdown-links plugin)
 	// OAuth Calendar Integration settings
@@ -400,6 +401,7 @@ export interface CalendarViewSettings {
 	customDayCount: number; // Number of days to show in custom view (2-10)
 	// Time settings
 	slotDuration: "00:15:00" | "00:30:00" | "01:00:00"; // 15, 30, or 60 minutes
+	slotHeight: number; // Height of one time slot in pixels (time grid)
 	slotMinTime: string; // Start time (HH:MM:SS format)
 	slotMaxTime: string; // End time (HH:MM:SS format)
 	scrollTime: string; // Initial scroll position (HH:MM:SS format)

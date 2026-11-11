@@ -219,6 +219,8 @@ Recurring tasks can show:
 - **Pattern instances** (dashed border): dragging updates `DTSTART` and future pattern instances
 - **Materialized occurrence notes**: dragging updates the occurrence note's own `scheduled` or `due` date like a normal task, without changing the parent's recurrence rule
 
+In list mode and the Agenda, the card for a pattern instance shows that instance's scheduled date as read-only text and leaves out the task's due date. To give one instance its own dates, create an occurrence note for it.
+
 ![Recurring tasks in calendar week view](../assets/views-calendar-week.png)
 
 Materialized occurrence notes keep `occurrence_date` as their identity. If you drag the note for the June 1 occurrence to June 2, it is still the June 1 recurrence instance, now scheduled for June 2. TaskNotes suppresses the June 1 virtual parent event and leaves the June 2 virtual occurrence alone unless that date also has its own materialized note.
@@ -233,7 +235,9 @@ Dropping a recurring task on a status marked **Completed** in a Kanban or Task L
 
 When you complete an occurrence from the context menu, you can choose which date it is recorded against — today, the occurrence's scheduled date, its due date, or a date you pick (see [Completing Tasks](task-management.md#completing-tasks)). Completion-anchored recurrences resolve *on schedule* to the newly scheduled date, an explicit re-anchor.
 
-A series keeps its status when an occurrence is completed or skipped, so one moved to In Progress stays there for its next occurrence. To have each occurrence start from the same status, set **Next status** on the first status marked **Completed** under [Settings → Task Properties](../settings/task-properties.md). Completing or skipping the current occurrence then moves the series to that status, and **Undo** restores the previous one. A task already in a completed status keeps it.
+With **Reset status after each occurrence** turned on under [Settings → Features → Recurring Tasks](../settings/features.md#recurring-tasks), completing or skipping an occurrence moves the series to the **Next status** of the first status marked **Completed** under [Settings → Task Properties](../settings/task-properties.md), so a status reached during one occurrence does not carry into the next. The setting is on in new setups, where TaskNotes' built-in Done status moves on to Open, and off in setups saved before it existed. **Undo** restores the previous status. With the setting off, or without a Next status on that completed status, the series keeps its status, and a task already in a completed status keeps it.
+
+With the reset on and a Next status set, clicking a recurring task's status indicator follows the status cycle, as it does for other tasks: it moves the series to the next status, and when that status is marked **Completed** it completes the occurrence shown on the card instead. Otherwise, the click completes the occurrence directly and keeps the series' status. On a completed occurrence, the click reopens it.
 
 Completed instances are stored in:
 

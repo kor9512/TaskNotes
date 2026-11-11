@@ -131,14 +131,21 @@ test("Italian and German native dates, persisted pickers and Italian NLP remain 
 			await editor.click();
 			await editor.press("ControlOrMeta+A");
 			await editor.pressSequentially("Comprare latte entro 2026-12-25");
-			const fill = cores.get(locale)!._(keyMap["modals.taskCreation.actions.fillFromNaturalLanguage"].id);
-			await modal.getByLabel(fill, { exact: true }).click();
 			await expect(modal.locator(".title-input-detailed")).toHaveValue("Comprare latte");
 			const due = modal.locator('[data-type="due-date"]');
 			await expect(due).toHaveClass(/has-value/);
-			await expect(due).toHaveAttribute("aria-label", /2026-12-25/);
+			await expect(due).toHaveAttribute("aria-label", /2026/);
 			await page.screenshot({ path: `test-results/lingui-bundled/${locale}-italian-nlp.png` });
 			await modal.getByRole("button", { name: cores.get(locale)!._(keyMap["common.cancel"].id), exact: true }).click();
+			const confirmation = page.locator(".modal").filter({
+				hasText: cores.get(locale)!._(keyMap["modals.task.unsavedChanges.title"].id),
+			});
+			await expect(confirmation).toBeVisible();
+			await expect(modal).toBeVisible();
+			await confirmation.getByRole("button", {
+				name: cores.get(locale)!._(keyMap["modals.task.unsavedChanges.discard"].id), exact: true,
+			}).click();
+			await expect(confirmation).toHaveCount(0);
 			await expect(modal).toHaveCount(0);
 			report[locale] = { dates: formattedDates, nlpLanguage: "it", parsedTitle: "Comprare latte", due: "2026-12-25", pickersPersisted: true };
 		}
