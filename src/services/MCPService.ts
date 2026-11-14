@@ -30,6 +30,7 @@ import {
 import { collectCalendarEvents } from "../utils/calendarUtils";
 import { buildTaskCreationDataFromParsed } from "./buildTaskCreationDataFromParsed";
 import { hydrateTaskDetailsFromFile } from "../utils/taskDetails";
+import { forkFeature, isMcpToolAllowed } from "../fork/featureFlags";
 import { JsonRpcBody, normalizeMcpInitializeProtocol } from "./mcpProtocol";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -260,7 +261,14 @@ export class MCPService {
 	}
 
 	private getToolRegistrar(server: McpServer): McpToolRegistrar {
-		return server.registerTool.bind(server) as McpToolRegistrar;
+		const register = server.registerTool.bind(server) as McpToolRegistrar;
+		const allowlist = forkFeature(this.plugin, "mcpToolAllowlist");
+		if (allowlist.length === 0) return register;
+		// Fork: expose only the allowlisted tools (smaller tool list per client prompt).
+		return ((name: string, ...rest: unknown[]) =>
+			isMcpToolAllowed(allowlist, name)
+				? (register as (...a: unknown[]) => unknown)(name, ...rest)
+				: undefined) as unknown as McpToolRegistrar;
 	}
 
 	// Task Tools

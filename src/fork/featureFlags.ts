@@ -24,6 +24,11 @@ export interface ForkFeatureSettings {
 	eventToTaskMode: ForkEventToTaskMode;
 	/** Notes/tasks made from calendar events go to a per-calendar folder and keep the calendar name. */
 	calendarFolders: boolean;
+	/**
+	 * MCP tool names to expose. Empty = every tool (upstream). No settings UI on purpose:
+	 * it is a server-side narrowing (fewer tool schemas in each client prompt), set in data.json.
+	 */
+	mcpToolAllowlist: string[];
 }
 
 /** Upstream behaviour. Used for new installs and in tests unless a test opts in. */
@@ -34,6 +39,7 @@ export const DEFAULT_FORK_FEATURES: Readonly<ForkFeatureSettings> = Object.freez
 	stableEventIds: false,
 	eventToTaskMode: "link",
 	calendarFolders: false,
+	mcpToolAllowlist: [],
 });
 
 /**
@@ -48,6 +54,7 @@ export const LEGACY_FORK_FEATURES: Readonly<ForkFeatureSettings> = Object.freeze
 	stableEventIds: true,
 	eventToTaskMode: "independent",
 	calendarFolders: true,
+	mcpToolAllowlist: [],
 });
 
 const EVENT_TO_TASK_MODES: readonly ForkEventToTaskMode[] = ["link", "adopt", "independent"];
@@ -83,7 +90,17 @@ export function buildForkFeatureSettings(data: unknown): ForkFeatureSettings {
 	if (typeof mode === "string" && (EVENT_TO_TASK_MODES as readonly string[]).includes(mode)) {
 		result.eventToTaskMode = mode as ForkEventToTaskMode;
 	}
+	if (Array.isArray(stored.mcpToolAllowlist)) {
+		result.mcpToolAllowlist = stored.mcpToolAllowlist.filter(
+			(name): name is string => typeof name === "string" && name.length > 0
+		);
+	}
 	return result;
+}
+
+/** Whether an MCP tool is exposed. An empty allowlist exposes everything (upstream). */
+export function isMcpToolAllowed(allowlist: readonly string[] | undefined, name: string): boolean {
+	return !allowlist || allowlist.length === 0 || allowlist.includes(name);
 }
 
 /**

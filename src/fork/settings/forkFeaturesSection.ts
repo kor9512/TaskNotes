@@ -10,7 +10,7 @@ import {
 } from "../../settings/components/settingHelpers";
 import { DEFAULT_FORK_FEATURES, type ForkFeatureSettings } from "../featureFlags";
 
-type BooleanFeature = Exclude<keyof ForkFeatureSettings, "eventToTaskMode">;
+type BooleanFeature = Exclude<keyof ForkFeatureSettings, "eventToTaskMode" | "mcpToolAllowlist">;
 
 function features(plugin: TaskNotesPlugin): ForkFeatureSettings {
 	plugin.settings.forkFeatures ??= { ...DEFAULT_FORK_FEATURES };

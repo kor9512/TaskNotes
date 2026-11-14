@@ -3,6 +3,7 @@ import {
 	LEGACY_FORK_FEATURES,
 	buildForkFeatureSettings,
 	forkFeature,
+	isMcpToolAllowed,
 	shouldPersistForkFeatures,
 } from "../../../src/fork/featureFlags";
 import {
@@ -46,6 +47,22 @@ describe("fork feature switches", () => {
 			buildForkFeatureSettings({ forkFeatures: { eventToTaskMode: "merge" } }).eventToTaskMode
 		).toBe("link");
 		expect(shouldPersistForkFeatures({ forkFeatures: {} })).toBe(false);
+	});
+});
+
+describe("fork: MCP tool allowlist", () => {
+	it("exposes everything when empty and only listed tools otherwise", () => {
+		expect(isMcpToolAllowed([], "tasknotes_delete_task")).toBe(true);
+		expect(isMcpToolAllowed(undefined, "tasknotes_delete_task")).toBe(true);
+		expect(isMcpToolAllowed(["tasknotes_create_task"], "tasknotes_create_task")).toBe(true);
+		expect(isMcpToolAllowed(["tasknotes_create_task"], "tasknotes_delete_task")).toBe(false);
+	});
+
+	it("reads the stored list and drops non-string entries", () => {
+		const s = buildForkFeatureSettings({
+			forkFeatures: { mcpToolAllowlist: ["tasknotes_create_task", 3, ""] },
+		});
+		expect(s.mcpToolAllowlist).toEqual(["tasknotes_create_task"]);
 	});
 });
 
