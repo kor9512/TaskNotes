@@ -27,6 +27,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 ```
 ## Added
 
+- Added an optional MCP tool allowlist under Fork features to limit which tools are exposed to clients; an empty allowlist exposes all tools.
 - Added materialized occurrence notes for recurring tasks. See [Recurring Tasks](https://tasknotes.dev/features/recurring-tasks/#materialized-occurrence-notes) for setup and calendar behavior.
 ```
 

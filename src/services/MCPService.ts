@@ -265,10 +265,9 @@ export class MCPService {
 		const allowlist = forkFeature(this.plugin, "mcpToolAllowlist");
 		if (allowlist.length === 0) return register;
 		// Fork: expose only the allowlisted tools (smaller tool list per client prompt).
-		return ((name: string, ...rest: unknown[]) =>
-			isMcpToolAllowed(allowlist, name)
-				? (register as (...a: unknown[]) => unknown)(name, ...rest)
-				: undefined) as unknown as McpToolRegistrar;
+		return (name, config, callback) => {
+			if (isMcpToolAllowed(allowlist, name)) register(name, config, callback);
+		};
 	}
 
 	// Task Tools
