@@ -112,6 +112,7 @@ export const DEFAULT_TASK_CREATION_DEFAULTS: TaskCreationDefaults = {
 	defaultContexts: "",
 	defaultTags: "",
 	defaultProjects: "",
+	defaultProjectsOnlyWhenEmpty: false,
 	useParentNoteForTaskCreation: false,
 	useParentNoteAsProject: false,
 	useParentHeaderAsProject: false,
@@ -150,11 +151,8 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	// Default event type visibility
 	defaultShowScheduled: true,
 	defaultShowDue: true,
-	defaultShowDueWhenScheduled: true,
-	defaultShowScheduledToDueSpan: false, // Off by default - opt-in feature
 	defaultShowTimeEntries: false,
 	defaultShowRecurring: true,
-	defaultShowICSEvents: true,
 	// Timeblocking settings
 	enableTimeblocking: false, // Disabled by default - toggleable feature
 	defaultShowTimeblocks: true,
@@ -168,11 +166,6 @@ export const DEFAULT_CALENDAR_VIEW_SETTINGS: CalendarViewSettings = {
 	showTodayHighlight: true,
 	// Event display
 	eventMinHeight: 15, // FullCalendar default
-	// Event overlap and stacking behavior
-	slotEventOverlap: true, // FullCalendar default - events can visually overlap
-	eventMaxStack: null, // No limit on stacked events in timeGrid (null = unlimited)
-	dayMaxEvents: true, // Auto-limit based on cell height in dayGrid
-	dayMaxEventRows: false, // No row limit in dayGrid (false = unlimited)
 };
 
 export const DEFAULT_ICS_INTEGRATION_SETTINGS: ICSIntegrationSettings = {
@@ -203,7 +196,6 @@ export const DEFAULT_GOOGLE_CALENDAR_EXPORT: GoogleCalendarExportSettings = {
 	syncOnTaskDelete: true,
 	eventTitleTemplate: "{{title}}", // Simple title by default
 	includeDescription: true,
-	eventColorId: null, // Use calendar default color
 	syncTrigger: "scheduled", // Default to scheduled date
 	createAsAllDay: true, // All-day events by default
 	showAllDayAsFree: false, // Preserve Busy availability unless explicitly enabled
@@ -216,9 +208,7 @@ export const DEFAULT_GOOGLE_CALENDAR_EXPORT: GoogleCalendarExportSettings = {
 };
 
 export const DEFAULT_PROJECT_AUTOSUGGEST: ProjectAutosuggestSettings = {
-	enableFuzzy: false,
 	rows: ["{title|n(Title)}", "{aliases|n(Aliases)}", "{file.path|n(Path)}"],
-	showAdvanced: false,
 	requiredTags: [],
 	includeFolders: [],
 	propertyKey: "",
@@ -257,19 +247,19 @@ export const DEFAULT_NLP_TRIGGERS: NLPTriggersConfig = {
 };
 
 export const DEFAULT_SETTINGS: TaskNotesSettings = {
+	dateDisplayFormat: "default",
 	tasksFolder: "TaskNotes/Tasks",
 	moveArchivedTasks: false,
 	archiveFolder: "TaskNotes/Archive",
 	taskTag: "task",
 	taskIdentificationMethod: "tag", // Default to tag-based identification
-	hideIdentifyingTagsInCards: false, // Default to showing all tags (backward compatibility)
+	hideIdentifyingTagsInCards: true, // The identifying tag is on every task, so cards hide it by default
 	hideIdentifyingTagsMode: "all", // Default to existing exact + hierarchical hiding behavior
 	taskPropertyName: "",
 	taskPropertyValue: "",
 	excludedFolders: "", // Default to no excluded folders
 	defaultTaskPriority: "normal",
 	defaultTaskStatus: "open",
-	taskOrgFiltersCollapsed: false, // Default to expanded
 	// Task filename defaults
 	taskFilenameFormat: "zettel", // Keep existing behavior as default
 	storeTitleInFilename: true,
@@ -291,7 +281,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	pomodoroNotifications: true,
 	pomodoroSoundEnabled: true,
 	pomodoroSoundVolume: 50,
-	pomodoroStorageLocation: "plugin",
+	// New installs keep history in daily notes. Existing settings keep their saved value.
+	pomodoroStorageLocation: "daily-notes",
 	pomodoroMobileSidebar: "tab",
 	showPomodoroInStatusBar: true,
 	// Editor defaults
@@ -306,8 +297,6 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	nlpEnterToSubmit: false,
 	nlpLanguage: "en", // Default to English
 	uiLanguage: "system",
-	// NLP status suggestion trigger (deprecated)
-	statusSuggestionTrigger: "*",
 	// NLP triggers
 	nlpTriggers: DEFAULT_NLP_TRIGGERS,
 
@@ -318,22 +307,17 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 
 	// Inline task conversion defaults
 	inlineTaskConvertFolder: "{{currentNotePath}}",
-	// Performance defaults
-	disableNoteIndexing: false,
 	// Suggestion performance defaults
 	suggestionDebounceMs: 0,
 	// Customization defaults
 	fieldMapping: DEFAULT_FIELD_MAPPING,
 	customStatuses: DEFAULT_STATUSES,
 	customPriorities: DEFAULT_PRIORITIES,
-	// Migration defaults
-	recurrenceMigrated: false,
 	// Release notes defaults
 	lastSeenVersion: undefined,
 	showReleaseNotesOnUpdate: true,
 	checkForUpdatesOnStartup: true,
 	lastNotifiedReleaseVersion: undefined,
-	starterNoteCreated: false,
 	// Status bar defaults
 	showTrackedTasksInStatusBar: false,
 	// Time tracking defaults
@@ -351,14 +335,10 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	expandSubtasksByDefault: false,
 	// Subtask chevron position default
 	subtaskChevronPosition: "right",
-	// Filter toolbar layout defaults
-	viewsButtonAlignment: "right",
 	// Overdue behavior defaults
 	hideCompletedFromOverdue: true,
 	// ICS integration defaults
 	icsIntegration: DEFAULT_ICS_INTEGRATION_SETTINGS,
-	// Saved filter views defaults
-	savedViews: [],
 	// Notification defaults
 	enableNotifications: true,
 	notificationType: "system",
@@ -392,8 +372,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	// Default visible properties for inline task cards (more compact by default)
 	inlineVisibleProperties: ["status", "priority", "due", "scheduled", "recurrence"],
 	// Bases integration defaults
-	enableBases: true,
-	enableMdbaseSpec: false,
+	enableMdbaseSpec: true,
+	hideMdbaseFolders: true,
 	autoCreateDefaultBasesFiles: true, // Auto-create missing default Base files on startup
 	// Command-to-file mappings for view commands (v4)
 	commandFileMapping: {
@@ -402,8 +382,8 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 		"open-tasks-view": "TaskNotes/Views/tasks-default.base",
 		"open-advanced-calendar-view": "TaskNotes/Views/calendar-default.base",
 		"open-agenda-view": "TaskNotes/Views/agenda-default.base",
-		"pomodoro-stats-base": "TaskNotes/Views/pomodoro-stats.base",
 		relationships: "TaskNotes/Views/relationships.base",
+		"pomodoro-stats-base": "TaskNotes/Views/pomodoro-stats.base",
 	},
 	// Recurring task behavior defaults
 	maintainDueDateOffsetInRecurring: false,
@@ -414,8 +394,6 @@ export const DEFAULT_SETTINGS: TaskNotesSettings = {
 	useFrontmatterMarkdownLinks: false, // Default to wikilinks for compatibility
 	// OAuth Calendar Integration defaults
 	// OAuth client credentials and account tokens are stored in Obsidian SecretStorage.
-	enableGoogleCalendar: false,
-	enableMicrosoftCalendar: false,
 	disableCalendarOnMobile: false,
 	oauthCredentialStorage: "secret",
 	oauthAuthorizationMode: "desktop-callback",

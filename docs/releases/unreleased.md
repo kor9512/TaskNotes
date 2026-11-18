@@ -50,3 +50,7 @@ When a change has user-facing documentation, include a canonical tasknotes.dev l
 
 - Google all-day task events now use the task due date as the exclusive event end date, allowing scheduled-to-due spans to display across multiple days.
 - Calendar changes now remove the previous-calendar event before creating the replacement and preserve the resolved target across retry paths.
+- Fixed tracked-time blocks in the calendar hiding the task title unless the block was very short. The title now appears beside the status icon, as it does on scheduled tasks.
+- Fixed expanded subtasks of a task with no dates or properties being squeezed onto one line, with their dates and properties overlapping the title. Subtasks now keep their own layout.
+- (#2579) Fixed task links on their own line in Live Preview taking up about three lines each, with blank space above and below the task and list bullets pushed onto a separate line. Each task now takes one line again, as it did in 4.x.
+  - Thanks to @BrucePlumb for reporting

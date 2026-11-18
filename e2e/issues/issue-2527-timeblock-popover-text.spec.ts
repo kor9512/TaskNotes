@@ -57,6 +57,15 @@ function titleContrast(page: Page, selector: string) {
 	}, selector);
 }
 
+/** Wait for the calendar's view-enter fade, which would otherwise lower measured contrast. */
+async function settleViewEnter(page: Page) {
+	await page.locator('.tnc:visible').first().evaluate(async (calendar) => {
+		await Promise.all(calendar.getAnimations({ subtree: true })
+			.filter((animation) => animation instanceof CSSAnimation && animation.animationName === 'tn-calendar-view-enter')
+			.map((animation) => animation.finished.catch(() => {})));
+	});
+}
+
 async function openBase(view: string, extra = '') {
 	await page.evaluate(
 		async ({ path, view, extra }) => {
@@ -162,6 +171,7 @@ for (const theme of ['moonstone', 'obsidian'] as const) {
 		await openBase('dayGridMonth');
 		const item = page.locator('.tnc:visible .tnc-item--dot[data-event-type="timeblock"]').first();
 		await expect(item).toBeVisible();
+		await settleViewEnter(page);
 		await page.screenshot({ path: testInfo.outputPath(`month-${mode}.png`) });
 		const contrast = await titleContrast(
 			page,
@@ -175,6 +185,7 @@ for (const theme of ['moonstone', 'obsidian'] as const) {
 		await openBase('listWeek');
 		const item = page.locator('.tnc:visible .tnc-item--list[data-event-type="timeblock"]').first();
 		await expect(item).toContainText(TIMEBLOCK);
+		await settleViewEnter(page);
 		const contrast = await titleContrast(
 			page,
 			'.tnc-item--list[data-event-type="timeblock"] .tnc-item-main'
@@ -182,18 +193,23 @@ for (const theme of ['moonstone', 'obsidian'] as const) {
 		expect(contrast).toBeGreaterThanOrEqual(3);
 	});
 
-	test(`filled time-grid timeblocks keep on-accent text (${mode})`, async () => {
+	test(`tinted time-grid timeblocks keep normal text (${mode})`, async () => {
 		await page.evaluate((theme) => (window as any).app.changeTheme(theme), theme);
 		await openBase('timeGridDay');
+		await settleViewEnter(page);
 		const title = page.locator('.tnc:visible .tnc-item--timed[data-event-type="timeblock"] .tnc-item-title');
 		await expect(title).toBeVisible();
-		const [color, onAccent] = await title.evaluate((el) => {
-			const probe = document.body.createDiv();
-			probe.style.color = 'var(--text-on-accent)';
+		const [color, normal] = await title.evaluate((el) => {
+			const probe = el.createDiv();
+			probe.style.color = 'var(--tn-text-normal)';
 			const expected = getComputedStyle(probe).color;
 			probe.remove();
 			return [getComputedStyle(el).color, expected];
 		});
-		expect(color).toBe(onAccent);
+		expect(color).toBe(normal);
+		expect(await titleContrast(
+			page,
+			'.tnc-item--timed[data-event-type="timeblock"] .tnc-item-title'
+		)).toBeGreaterThanOrEqual(3);
 	});
 }

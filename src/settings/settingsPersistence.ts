@@ -2,7 +2,11 @@ import { normalizePath } from "obsidian";
 import { DEFAULT_NLP_TRIGGERS, DEFAULT_SETTINGS } from "./defaults";
 import { hasMissingMigratedSettings } from "./settingsMigration";
 import { buildForkFeatureSettings, shouldPersistForkFeatures } from "../fork/featureFlags";
-import type { TaskCreationDefaults, TaskNotesSettings } from "../types/settings";
+import type {
+	PropertyTriggerConfig,
+	TaskCreationDefaults,
+	TaskNotesSettings,
+} from "../types/settings";
 import { initializeFieldConfig } from "../utils/fieldConfigDefaults";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 
@@ -11,6 +15,7 @@ const tasknotesLogger = createTaskNotesLogger({ tag: "Settings/SettingsPersisten
 export type LoadedSettingsData = Partial<TaskNotesSettings> &
 	Record<string, unknown> & {
 		statusSuggestionTrigger?: string;
+		enableBases?: unknown;
 		useNativeMetadataCache?: unknown;
 	};
 
@@ -72,7 +77,7 @@ export async function pluginDataFileExists(host: SettingsDataHost): Promise<bool
 			operation: "check-settings-data-file-existence",
 			error: error,
 		});
-		return false;
+		throw error;
 	}
 }
 
@@ -88,8 +93,14 @@ export async function loadPluginSettingsDataWithRetry(
 		return { data: loadedData, compromised: false };
 	}
 
-	if (!(await pluginDataFileExists(host))) {
-		return { data: null, compromised: false };
+	try {
+		if (!(await pluginDataFileExists(host))) {
+			return { data: null, compromised: false };
+		}
+	} catch {
+		// Unknown is not absent. Abort startup rather than saving defaults over
+		// possibly existing settings after an I/O or Sync existence-probe error.
+		return { data: null, compromised: true };
 	}
 
 	for (let attempt = 0; attempt < retryCount; attempt++) {
@@ -120,6 +131,12 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 		migratedData.resetRecurringStatusAfterOccurrence = false;
 	}
 
+	// Migration: Pomodoro history now defaults to daily notes. Settings saved
+	// without the option predate it and keep their history in plugin data.
+	if (typeof migratedData.pomodoroStorageLocation === "undefined") {
+		migratedData.pomodoroStorageLocation = "plugin";
+	}
+
 	// Migration: Add API settings defaults if they don't exist.
 	if (typeof migratedData.enableAPI === "undefined") {
 		migratedData.enableAPI = false;
@@ -148,6 +165,31 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 				migratedData.statusSuggestionTrigger;
 		}
 	}
+	// nlpTriggers is now the only status trigger. The saved key is left for 4.x devices.
+	delete migratedData.statusSuggestionTrigger;
+
+	// Legacy single custom fields used to migrate only when their settings card opened.
+	// Native settings indexing must be read-only, so migrate during settings load instead.
+	if (migratedData.userField?.enabled) {
+		const legacy = migratedData.userField;
+		const fields = [...(migratedData.userFields ?? [])];
+		const baseId = (legacy.displayName || legacy.key || "field")
+			.toLowerCase()
+			.replace(/[^a-z0-9_-]/g, "-");
+		if (!fields.some((field) => field.key === legacy.key)) {
+			let id = baseId;
+			let suffix = 2;
+			while (fields.some((field) => field.id === id)) id = `${baseId}-${suffix++}`;
+			fields.push({
+				id,
+				displayName: legacy.displayName || "",
+				key: legacy.key || "",
+				type: legacy.type || "text",
+			});
+		}
+		migratedData.userFields = fields;
+		migratedData.userField = { ...legacy, enabled: false };
+	}
 
 	// Normalize accidental surrounding whitespace in configured frontmatter keys.
 	if (Array.isArray(migratedData.userFields)) {
@@ -162,9 +204,14 @@ function migrateLoadedSettingsData(data: LoadedSettingsData | null): LoadedSetti
 		migratedData.modalFieldsConfig = initializeFieldConfig(undefined, migratedData.userFields);
 	}
 
-	// Migration: Force enableBases to true (issue #1187).
-	if (migratedData.enableBases === false) {
-		migratedData.enableBases = true;
+	// Bases integration is always enabled (issue #1187). The saved key is left for 4.x devices.
+	delete migratedData.enableBases;
+
+	// mdbase type definitions start on only for new installs. Existing settings keep
+	// them off, as earlier versions did, because a device still on 4.x can overwrite
+	// the v5 type; turning them on is a step in the TaskNotes App setup.
+	if (typeof migratedData.enableMdbaseSpec === "undefined") {
+		migratedData.enableMdbaseSpec = false;
 	}
 
 	// Migration: Update the unused legacy default custom filename template to the
@@ -209,6 +256,38 @@ function buildTaskCreationDefaults(
 	return defaults;
 }
 
+/**
+ * Resolves saved NLP triggers the way the settings tab displays them, so the parser uses
+ * what the user sees: built-in triggers missing from saved data take their defaults,
+ * surrounding whitespace is dropped, and an empty trigger falls back to its default.
+ */
+function normalizeNLPTriggers(
+	saved: PropertyTriggerConfig[] | undefined
+): PropertyTriggerConfig[] {
+	const defaults = new Map(DEFAULT_NLP_TRIGGERS.triggers.map((trigger) => [trigger.propertyId, trigger]));
+	const seen = new Set<string>();
+	const triggers: PropertyTriggerConfig[] = [];
+
+	for (const entry of Array.isArray(saved) ? saved : []) {
+		const propertyId = typeof entry?.propertyId === "string" ? entry.propertyId : "";
+		if (!propertyId || seen.has(propertyId)) continue;
+		seen.add(propertyId);
+		const trigger = typeof entry.trigger === "string" ? entry.trigger.trim() : "";
+		triggers.push({
+			propertyId,
+			trigger: trigger || defaults.get(propertyId)?.trigger || `${propertyId}:`,
+			enabled:
+				typeof entry.enabled === "boolean" ? entry.enabled : propertyId !== "priority",
+		});
+	}
+
+	for (const builtIn of DEFAULT_NLP_TRIGGERS.triggers) {
+		if (!seen.has(builtIn.propertyId)) triggers.push({ ...builtIn });
+	}
+
+	return triggers;
+}
+
 export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): SettingsBuildResult {
 	const normalizedUserFieldPropertyKeys = Boolean(
 		data?.userFields?.some(
@@ -250,7 +329,7 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 		nlpTriggers: {
 			...DEFAULT_SETTINGS.nlpTriggers,
 			...(loadedData?.nlpTriggers || {}),
-			triggers: loadedData?.nlpTriggers?.triggers || DEFAULT_SETTINGS.nlpTriggers.triggers,
+			triggers: normalizeNLPTriggers(loadedData?.nlpTriggers?.triggers),
 		},
 		modalFieldsConfig: initializeFieldConfig(
 			loadedData?.modalFieldsConfig,
@@ -258,7 +337,6 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 		),
 		customStatuses: (loadedData?.customStatuses || DEFAULT_SETTINGS.customStatuses).map((status) => ({ ...status })),
 		customPriorities: (loadedData?.customPriorities || DEFAULT_SETTINGS.customPriorities).map((priority) => ({ ...priority })),
-		savedViews: loadedData?.savedViews || DEFAULT_SETTINGS.savedViews,
 		forkFeatures: buildForkFeatureSettings(loadedData),
 	};
 
@@ -270,6 +348,23 @@ export function buildSettingsFromLoadedData(data: LoadedSettingsData | null): Se
 			migratedLegacyCustomFilenameTemplate ||
 			migratedParentNoteTaskCreationDefault ||
 			normalizedUserFieldPropertyKeys,
+	};
+}
+
+/**
+ * Settings exactly as an earlier version saved them, merged over defaults but
+ * without this version's load-time migrations. Used only to recognize metadata
+ * that version generated; never use it as the plugin's settings.
+ */
+export function buildSavedSettingsSnapshot(data: LoadedSettingsData | null): TaskNotesSettings | null {
+	if (!data) return null;
+	return {
+		...DEFAULT_SETTINGS,
+		...data,
+		fieldMapping: { ...DEFAULT_SETTINGS.fieldMapping, ...(data.fieldMapping || {}) },
+		customStatuses: data.customStatuses || DEFAULT_SETTINGS.customStatuses,
+		customPriorities: data.customPriorities || DEFAULT_SETTINGS.customPriorities,
+		userFields: data.userFields || DEFAULT_SETTINGS.userFields,
 	};
 }
 

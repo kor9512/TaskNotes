@@ -69,7 +69,7 @@ export function renderForkCalendarRoutingSection(
 						colorSwatch.setAttribute("aria-label", uiText(msg({ message: "Color for {calendar}", context: "settings.integrations.calendarRouting.colorLabel" }), { calendar: calendar.summary }));
 						colorSwatch.addEventListener("change", () => runAsyncSettingCallback(async () => {
 							try {
-								await plugin.googleCalendarService?.updateCalendarColor(calendar.id, colorSwatch.value);
+								await plugin.ownGoogleCalendarService?.updateCalendarColor(calendar.id, colorSwatch.value);
 								row.style.setProperty("--tn-calendar-color", colorSwatch.value);
 								new Notice(uiText(msg({ message: "Updated {calendar} color", context: "settings.integrations.calendarRouting.colorUpdated" }), { calendar: calendar.summary }));
 							} catch {
@@ -106,7 +106,7 @@ export function renderForkCalendarRoutingSection(
 								}
 								save();
 								try {
-									await plugin.googleCalendarService?.manualRefresh();
+									await plugin.ownGoogleCalendarService?.manualRefresh();
 									new Notice(enabled ? uiText(msg({ message: "Subscribed to {calendar}", context: "settings.integrations.calendarRouting.subscribed" }), { calendar: calendar.summary }) : uiText(msg({ message: "Unsubscribed from {calendar}", context: "settings.integrations.calendarRouting.unsubscribed" }), { calendar: calendar.summary }));
 								} catch (error) {
 									new Notice(uiText(msg({ message: "Calendar refresh failed: {message}", context: "settings.integrations.calendarRouting.refreshFailed" }), { message: displayError(getErrorMessage(error)) }));

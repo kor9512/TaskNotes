@@ -984,12 +984,12 @@
 	overflow: hidden;
 	pointer-events: none;
 }
-.tnc-dg-dots[hidden] {
-	display: none;
-}
 .tnc-dg-dots.is-unlimited {
 	position: static;
 	padding: 0 6px 4px;
+}
+.tnc-dg-dots[hidden] {
+	display: none;
 }
 .tnc-dg-dots > .tnc-item--indicator {
 	position: static;
@@ -1957,6 +1957,16 @@
 	outline-offset: -2px;
 }
 
+@media (prefers-reduced-motion: no-preference) {
+	.tnc-item.is-write-changed {
+		animation: tnc-write-settle calc(var(--tnc-motion) * 2) ease-out;
+	}
+}
+@keyframes tnc-write-settle {
+	from { opacity: var(--tnc-drag-opacity); }
+	to { opacity: 1; }
+}
+/* Host: .tnc-cap i is listed because its own transition rule is (0,1,1). The raise animations above are (0,2,0) and stay on. */
 .tnc .tnc-col-actual .tnc-item-title {
 	white-space: nowrap;
 	overflow-wrap: normal;
@@ -2086,17 +2096,6 @@
 		background: none;
 	}
 }
-@media (prefers-reduced-motion: no-preference) {
-	.tnc-item.is-write-changed {
-		animation: tnc-write-settle calc(var(--tnc-motion) * 2) ease-out;
-	}
-}
-@keyframes tnc-write-settle {
-	from { opacity: var(--tnc-drag-opacity); }
-	to { opacity: 1; }
-}
-
-/* Host: .tnc-cap i is listed because its own transition rule is (0,1,1). The raise animations above are (0,2,0) and stay on. */
 @media (prefers-reduced-motion: reduce) {
 	.tnc *,
 	.tnc .tnc-cap i {

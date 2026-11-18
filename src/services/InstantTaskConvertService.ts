@@ -24,6 +24,7 @@ import { getTaskFilenameNotice } from "../utils/filenameGenerator";
 import type { InterpolationValues, MessageDescriptor } from "../i18n";
 import { createTaskNotesLogger } from "../utils/tasknotesLogger";
 import { sanitizeGeneratedLinkAlias, sanitizeLinkAliasText } from "../utils/linkAliasUtils";
+import { formatResolvedProjectReference, generateLink } from "../utils/linkUtils";
 import { publishUserNotice } from "../core/userNotices";
 import {
 	modifyVaultFile,
@@ -842,7 +843,10 @@ export class InstantTaskConvertService {
 		// Apply default projects if defaults are enabled
 		if (this.plugin.settings.useDefaultsOnInstantConvert) {
 			const defaults = this.plugin.settings.taskCreationDefaults;
-			if (defaults.defaultProjects) {
+			if (
+				defaults.defaultProjects &&
+				!(defaults.defaultProjectsOnlyWhenEmpty && parsedProjects.length > 0)
+			) {
 				const defaultProjectsArray = splitListPreservingLinksAndQuotes(
 					defaults.defaultProjects
 				);
@@ -851,8 +855,16 @@ export class InstantTaskConvertService {
 
 			// Add parent note as project if enabled
 			if (defaults.useParentNoteAsProject && currentFile) {
-				// The parentNote is already a markdown link, so we can add it directly
-				projectsArray.push(parentNote);
+				projectsArray.push(
+					generateLink(
+						this.plugin.app,
+						currentFile,
+						currentFile.path,
+						"",
+						"",
+						this.plugin.settings.useFrontmatterMarkdownLinks
+					)
+				);
 			}
 
 			if (defaults.useParentHeaderAsProject && currentFile) {
@@ -871,8 +883,20 @@ export class InstantTaskConvertService {
 			projectsArray.push(...parsedProjects);
 		}
 
-		// Remove duplicates
-		const uniqueProjects = [...new Set(projectsArray)];
+		// Remove duplicates, writing resolved project links in the TaskNotes link format
+		const projectSourcePath = currentFile?.path || "";
+		const uniqueProjects = [
+			...new Set(
+				projectsArray.map((project) =>
+					formatResolvedProjectReference(
+						this.plugin.app,
+						project,
+						projectSourcePath,
+						this.plugin.settings.useFrontmatterMarkdownLinks
+					)
+				)
+			),
+		];
 
 		// Apply default reminders if enabled
 		let reminders: Reminder[] | undefined = undefined;
@@ -1638,13 +1662,15 @@ export class InstantTaskConvertService {
 							sourcePath
 						);
 						if (file) {
-							// Generate the proper relative link
-							const linkText = this.plugin.app.metadataCache.fileToLinktext(
+							// Generate the proper relative link in the TaskNotes link format
+							return generateLink(
+								this.plugin.app,
 								file,
 								sourcePath,
-								true
+								"",
+								"",
+								this.plugin.settings.useFrontmatterMarkdownLinks
 							);
-							return `[[${linkText}]]`;
 						}
 					} catch (error) {
 						// If file resolution fails, return the original project
