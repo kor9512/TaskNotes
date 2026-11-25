@@ -54,11 +54,11 @@ Surfaces and text come only from the theme: `--background-primary`, `--backgroun
 | `--tn-focus-ring` | Keyboard focus: Obsidian's `--background-modifier-border-focus` |
 | `--tn-danger`, `--tn-warning`, `--tn-success`, `--tn-info` | Theme-derived semantic colour |
 
-Status and priority colours stay user-configurable. They colour glyphs, never task-row backgrounds. Status-grouped Kanban columns retain a restrained 5% body tint from a resolvable status colour, mixed with the theme's secondary surface; invalid colours stay neutral.
+Status and priority colours stay user-configurable. They colour glyphs, never task-row backgrounds. The one exception is the priority bar: in Bases views that show priority, a card with a ranked priority (weight above zero) gets a 3px bar in that colour along its left edge (`task-card--has-priority-bar`, set by `syncTaskCardPriorityBar`), so priority reads at a glance and not only from the glyph. Status-grouped Kanban columns retain a restrained 5% body tint from a resolvable status colour, mixed with the theme's secondary surface; invalid colours stay neutral.
 
 Calendar chips use theme text on a quiet surface, with a small hue mark derived from the configured colour. Clamp the mark's OKLCH lightness and chroma separately for light and dark themes before tinting the surface. Completed chips keep opaque text and a quieter mark. Selection adds an opaque accent outline, a theme-surface separator and a checkmark, rather than relying on the fill hue.
 
-Only overdue dates are red. A date due today is `--tn-warning`. All other dates are muted. Scheduled dates are never blue.
+Overdue due dates are red, dates due today are orange, and past scheduled dates are blue. Other dates are muted.
 
 ### Space, radius, depth, motion
 
@@ -83,7 +83,7 @@ Only overdue dates are red. A date due today is `--tn-warning`. All other dates 
 | Popover | `popover.ts` | Anchored overlay on the anchor window body or modal container, focus return, Esc, outside click, viewport clamp and flip |
 | List picker | `listPicker.ts` | Typeahead list on popover: arrows, Enter, shared footer, checked current value, applied-first multi-select |
 | Toast | `toast.ts` | Bottom-right, one result with a changed-task count and Undo; does not cover the central title column |
-| Empty state | `emptyState.ts` | One sentence, one action, key hint |
+| Empty state | `emptyState.ts` | One sentence, one action, key hint. `compact`: one line, no actions, for an expected empty result such as a filtered view |
 
 ## Task row anatomy
 
@@ -180,7 +180,7 @@ Undo history belongs to the vault, with one keyboard handler per workspace windo
 
 ## Theming contract
 
-Small semantic date text uses `--tn-warning-text` and `--tn-danger-text`, rather than the decorative semantic colors. Their defaults mix the theme's semantic colors with `--tn-text-normal` for readable contrast on primary and secondary surfaces; themes can override either text token directly.
+Small semantic date text uses `--tn-warning-text`, `--tn-danger-text` and `--tn-info-text`. Their defaults mix the theme's semantic colours with `--tn-text-normal` for contrast on primary and secondary surfaces. Themes can override each text token directly.
 
 ### Secondary composers and reports
 

@@ -274,7 +274,7 @@ function configuredValues(
 							});
 						} else if (plugin.settings.defaultTaskPriority === previous)
 							plugin.settings.defaultTaskPriority = value;
-						save();
+						ctx.saveText();
 						ctx.rebuild();
 					},
 				}),
@@ -283,7 +283,7 @@ function configuredValues(
 					"label",
 					`${id}.label`,
 					ctx.t(msg({ message: "Label:", context: "settings.taskProperties.taskStatuses.fields.label" })),
-					{ onChange: ctx.rebuild }
+					{ onChange: ctx.rebuild, deferSave: true }
 				),
 				ctx.field(
 					item,
@@ -291,6 +291,7 @@ function configuredValues(
 					`${id}.color`,
 					ctx.t(msg({ message: "Color:", context: "settings.taskProperties.taskStatuses.fields.color" })),
 					{
+						deferSave: true,
 						desc: ctx.t(msg({ message: "A CSS color or theme variable, such as var(--text-accent).", context: "settings.native.aCSSColorOrThemeVariableSuchAsVar" })),
 					}
 				),
@@ -300,6 +301,7 @@ function configuredValues(
 					`${id}.icon`,
 					ctx.t(msg({ message: "Icon:", context: "settings.taskProperties.taskStatuses.fields.icon" })),
 					{
+						deferSave: true,
 						desc: ctx.t(
 							msg({ message: "Lucide icon name. Leave empty for the default indicator.", context: "settings.native.lucideIconNameLeaveEmptyForTheDefaultIndicator" })
 						),
@@ -609,6 +611,10 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 		recurrence: ctx.t(msg({ message: "Recurrence", context: "settings.taskProperties.properties.recurrence.name" })),
 		reminders: ctx.t(msg({ message: "Reminders", context: "settings.taskProperties.properties.reminders.name" })),
 	};
+	// Named here rather than in `labels`, which lists the core properties.
+	const names: Partial<Record<keyof FieldMapping, string>> = {
+		id: ctx.t(msg({ message: "Task ID", context: "settings.taskProperties.properties.id.name" })),
+	};
 	const triggers: Record<string, string> = {
 		status: "status:",
 		priority: "!",
@@ -674,6 +680,7 @@ export function propertyDefinitions(ctx: SettingsContext): SettingDefinitionItem
 			type: "page",
 			name:
 				labels[property] ??
+				names[property] ??
 				property.replace(/([A-Z])/g, " $1").replace(/^./, (char) => char.toUpperCase()),
 			displayValue: () => mapping[property] ?? "",
 			items,

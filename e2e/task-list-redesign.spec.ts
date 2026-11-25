@@ -4,30 +4,38 @@ import { launchObsidian, closeObsidian, setObsidianViewport, type ObsidianApp } 
 
 let instance: ObsidianApp;
 let page: Page;
+let originalWrap: boolean;
 const folder = `ListRedesign-${Date.now()}`;
 const longTag = 'a-tag-with-a-very-long-unbroken-segment-' + 'x'.repeat(90);
 
 test.beforeAll(async () => {
   instance = await launchObsidian();
   page = instance.page;
-  await page.evaluate(async ({ folder, longTag }) => {
+  originalWrap = await page.evaluate(async ({ folder, longTag }) => {
     const app = (window as any).app;
-    app.plugins.plugins.tasknotes.settings.hideIdentifyingTagsInCards = true;
+    const plugin = app.plugins.plugins.tasknotes;
+    const original = plugin.settings.wrapTaskCardProperties;
+    // These metadata-overflow scenarios intentionally select the compact (+N) option.
+    plugin.settings.wrapTaskCardProperties = false;
+    plugin.settings.hideIdentifyingTagsInCards = true;
     await app.vault.createFolder(folder);
     for (let index = 0; index < 6; index++) {
       await app.vault.create(`${folder}/Task ${index}.md`,
         `---\ntags: [task, design, accessibility, ${index === 3 ? longTag : 'release'}]\ncontexts: [studio, phone]\nprojects: [\"[[${folder}/Task 1|Website redesign]]\"]\ntitle: ${index === 3 ? 'Review the redesigned onboarding flow with the accessibility team before the November launch' : ['Prepare launch checklist', 'Website redesign', 'Book a review with the product team', '', 'Publish the updated design tokens', 'Send final handoff notes to engineering'][index]}\nstatus: ${index < 4 ? 'open' : 'done'}\npriority: high\ndue: 2027-02-27${index === 2 ? 'T15:30:00' : ''}\nscheduled: 2027-02-25\n${index % 2 ? 'recurrence: FREQ=DAILY\n' : ''}${index === 2 ? `blockedBy: [\"[[${folder}/Task 0]]\"]\n` : ''}---\n${index % 2 ? 'Task details to make indicator widths differ.' : ''}`);
     }
+    return original;
   }, { folder, longTag });
 });
 
 test.afterAll(async () => {
   try {
-    if (page && !page.isClosed()) await page.evaluate(async folder => {
+    if (page && !page.isClosed()) await page.evaluate(async ({ folder, originalWrap }) => {
       const app = (window as any).app;
+      app.plugins.plugins.tasknotes.settings.wrapTaskCardProperties = originalWrap;
+      await app.plugins.plugins.tasknotes.saveSettingsDataOnly();
       const fixture = app.vault.getAbstractFileByPath(folder);
       if (fixture) await app.vault.delete(fixture, true);
-    }, folder);
+    }, { folder, originalWrap });
   } finally {
     if (instance) await closeObsidian(instance);
   }
@@ -248,7 +256,7 @@ test('shared compact cards and inline task links retain their layout', async () 
   await page.screenshot({ path: 'test-results/list-redesign-inline.png' });
 });
 
-test('empty lists use the shared empty state and creation action', async () => {
+test('empty lists use the shared empty state and the toolbar creation action', async () => {
   const content = stringify({
     filters: { and: [`file.inFolder("${folder}/Missing")`, 'file.hasTag("task")'] },
     views: [{ type: 'tasknotesTaskList', name: 'Empty' }],
@@ -259,7 +267,8 @@ test('empty lists use the shared empty state and creation action', async () => {
   }, { folder, content });
   const empty = page.locator('.workspace-leaf.mod-active .tn-empty');
   await expect(empty).toBeVisible();
-  await empty.getByRole('button', { name: 'New', exact: true }).click();
+  await expect(empty.locator('button')).toHaveCount(0);
+  await page.locator('.workspace-leaf.mod-active .tn-bases-new-task-btn').click();
   await expect(page.locator('.modal.mod-tasknotes')).toBeVisible();
   await page.keyboard.press('Escape');
 });

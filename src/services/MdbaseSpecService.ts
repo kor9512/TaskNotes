@@ -15,7 +15,7 @@ import {
 import { migrationRecognitionNotice } from "./mdbase/recognitionNotices";
 import { metadataSafetyNotice } from "./mdbase/metadataFailureNotices";
 import { addAppCollectionConfig, effectiveMembershipKeys, applyTaskExclusions } from "./mdbase/collectionConfig";
-import { upgradeCanonicalDocument } from "./mdbase/preserveCanonical";
+import { removeGeneratedAnyLinkTargets, upgradeCanonicalDocument } from "./mdbase/preserveCanonical";
 import { MetadataQueue, SafeMetadata } from "./mdbase/SafeMetadata";
 import { MetadataTransaction } from "./mdbase/MetadataTransaction";
 import { findExplicitTypeReference } from "./mdbase/ExplicitTypeReferences";
@@ -943,7 +943,10 @@ export class MdbaseSpecService {
 		if (state) {
 			const savedExclusions = (state.type["x-tasknotes-generator"] as Record<string, unknown> | undefined)?.excluded_folders;
 			if (this.lastKnownTypeContent === null && Array.isArray(savedExclusions)) this.plugin.settings.excludedFolders = savedExclusions.join(", ");
-			const adjusted = this.lastKnownTypeContent === null ? applyTaskExclusions(state.content, this.plugin.settings.excludedFolders || "") : state.content;
+			const corrected = removeGeneratedAnyLinkTargets(state.content, state.type);
+			const adjusted = this.lastKnownTypeContent === null
+				? applyTaskExclusions(corrected, this.plugin.settings.excludedFolders || "")
+				: corrected;
 			if (adjusted !== state.content) {
 				await this.writeFileIfUnchanged({ path: state.path, content: state.content }, adjusted);
 				state = { ...state, content: adjusted, type: withCurrentTaskNotesContract(parseMdbaseTaskTypeDocument(adjusted).type).type };
@@ -1065,6 +1068,7 @@ export class MdbaseSpecService {
 			state && typeof state.type.name === "string"
 				? state.type.name
 				: (typePathParts[typePathParts.length - 1]?.replace(/\.md$/i, "") ?? "task");
+		const writtenFingerprint = portableSettingsFingerprint(this.plugin.settings);
 		const resources = this.buildCanonicalMdbaseResources(
 			typesFolder,
 			legacyCompatibility,
@@ -1072,7 +1076,7 @@ export class MdbaseSpecService {
 			contractsFolder
 		);
 		await this.writeCanonicalSupportResources(resources);
-		const written = await this.writeCanonicalType(typePath, resources, true, comparedContent);
+		const written = await this.writeCanonicalType(typePath, resources, true, comparedContent, writtenFingerprint);
 		if (!written) return;
 		// A type generated from local settings: the record starts from them too.
 		if (!state && this.currentRecordContent === null) {
@@ -1202,8 +1206,8 @@ export class MdbaseSpecService {
 		}
 	}
 
-	private rememberAppliedAppSettings(): void {
-		this.lastAppliedAppValues = appSettingsFromPluginSettings(this.plugin.settings);
+	private rememberAppliedAppSettings(values = appSettingsFromPluginSettings(this.plugin.settings)): void {
+		this.lastAppliedAppValues = values;
 		this.lastAppliedAppFingerprint = JSON.stringify(this.lastAppliedAppValues);
 	}
 
@@ -1306,9 +1310,9 @@ export class MdbaseSpecService {
 					type: TASKNOTES_SETTINGS_TYPE,
 					typeKey: this.recordTypeKey(existingCollection),
 				});
-				await this.writeFileIfUnchanged({ path, content: null }, created);
+				await this.writeFileIfUnchanged({ path, content: null }, created, true);
 				this.lastKnownRecordContent = created;
-				this.rememberAppliedAppSettings();
+				this.rememberAppliedAppSettings(local);
 			} else if (this.lastKnownRecordContent !== null) {
 				this.applyRecordToSettings(null, undefined);
 			}
@@ -1332,7 +1336,7 @@ export class MdbaseSpecService {
 				...buildTaskNotesSettingsPatch(frontmatter, changes),
 			};
 			if (Object.keys(patch).length > 0) await this.writeRecordPatch(content, patch);
-			this.rememberAppliedAppSettings();
+			this.rememberAppliedAppSettings(local);
 			return;
 		}
 		const externalChanged = content !== this.lastKnownRecordContent;
@@ -1356,12 +1360,12 @@ export class MdbaseSpecService {
 		const patch = buildTaskNotesSettingsPatch(frontmatter, changes);
 		if (Object.keys(patch).length > 0) await this.writeRecordPatch(content, patch);
 		else this.lastKnownRecordContent = content;
-		this.rememberAppliedAppSettings();
+		this.rememberAppliedAppSettings(local);
 	}
 
 	private async writeRecordPatch(content: string, patch: Record<string, unknown>): Promise<void> {
 		const next = writeAppSettingsDocument(content, patch);
-		await this.writeFileIfUnchanged({ path: this.currentRecordPath, content }, next);
+		await this.writeFileIfUnchanged({ path: this.currentRecordPath, content }, next, true);
 		this.lastKnownRecordContent = next;
 	}
 
@@ -1381,10 +1385,11 @@ export class MdbaseSpecService {
 		path: string,
 		resources: TaskNotesMdbaseResources,
 		allowRepair: boolean,
-		comparedContent?: string | null
+		comparedContent: string | null,
+		writtenFingerprint: string
 	): Promise<boolean> {
 		const work = this.canonicalWritePromise.catch(() => false).then(() =>
-			this.writeCanonicalTypeSnapshot(path, resources, allowRepair, comparedContent)
+			this.writeCanonicalTypeSnapshot(path, resources, allowRepair, comparedContent, writtenFingerprint)
 		);
 		this.canonicalWritePromise = work;
 		return work;
@@ -1394,15 +1399,12 @@ export class MdbaseSpecService {
 		path: string,
 		resources: TaskNotesMdbaseResources,
 		allowRepair: boolean,
-		comparedContent?: string | null
+		comparedContent: string | null,
+		writtenFingerprint: string
 	): Promise<boolean> {
-		const adapter = this.plugin.app.vault.adapter;
-		const exists = await adapter.exists(path);
 		let content = resources.typeDocument;
-		const snapshot: FileSnapshot = {
-			path,
-			content: comparedContent !== undefined ? comparedContent : (exists ? await adapter.read(path) : null),
-		};
+		let settingsEdit = false;
+		const snapshot: FileSnapshot = { path, content: comparedContent };
 
 		if (snapshot.content !== null) {
 			const existing = snapshot.content;
@@ -1421,6 +1423,7 @@ export class MdbaseSpecService {
 					await this.backupInvalidType(path, existing);
 				}
 				content = mergeCanonicalTaskTypeDocument(existing, resources);
+				settingsEdit = validation.valid;
 			} catch (error) {
 				if (!allowRepair) {
 					this.reportInvalidCanonicalType(
@@ -1438,7 +1441,7 @@ export class MdbaseSpecService {
 		const previousWriteState = this.writeInProgress;
 		this.writeInProgress = true;
 		try {
-			await this.writeFileIfUnchanged(snapshot, content);
+			await this.writeFileIfUnchanged(snapshot, content, settingsEdit);
 		} catch (error) {
 			// Re-read the disk state through normal conflict reconciliation. Never
 			// retry with a fresh snapshot and stale settings after a failed CAS.
@@ -1448,8 +1451,14 @@ export class MdbaseSpecService {
 			this.writeInProgress = previousWriteState;
 		}
 
-		const parsed = parseMdbaseTaskTypeDocument(content);
-		this.applyCanonicalState({ path, content, type: parsed.type }, false);
+		if (portableSettingsFingerprint(this.plugin.settings) === writtenFingerprint) {
+			const parsed = parseMdbaseTaskTypeDocument(content);
+			this.applyCanonicalState({ path, content, type: parsed.type }, false);
+		} else {
+			this.canonicalTypePath = path;
+			this.lastKnownTypeContent = content;
+			this.lastAppliedSettingsFingerprint = writtenFingerprint;
+		}
 		return true;
 	}
 
@@ -1814,9 +1823,10 @@ export class MdbaseSpecService {
 
 	private async writeFileIfUnchanged(
 		snapshot: FileSnapshot,
-		content: string
+		content: string,
+		settingsEdit = false
 	): Promise<void> {
-		if (this.metadataTransaction.stage(snapshot, content)) return;
+		if (this.metadataTransaction.stage(snapshot, content, settingsEdit)) return;
 		if (await this.metadataIO.read(snapshot.path) !== snapshot.content) {
 			throw new Error(`Refusing to overwrite a concurrent change to ${snapshot.path}`);
 		}
@@ -2227,7 +2237,8 @@ export class MdbaseSpecService {
 		});
 		const config = YAML.parseDocument(resources.configDocument);
 		config.setIn(["settings", "explicit_type_keys"], ["mdbase_type"]);
-		resources.typeDocument = applyTaskExclusions(resources.typeDocument, settings.excludedFolders || "");
+		const corrected = removeGeneratedAnyLinkTargets(resources.typeDocument, resources.type);
+		resources.typeDocument = applyTaskExclusions(corrected, settings.excludedFolders || "");
 		resources.type = parseMdbaseTaskTypeDocument(resources.typeDocument).type;
 		const document = (source: string): string => {
 			const resource = canonicalTaskNotesResources.find((entry) => entry.source === source);

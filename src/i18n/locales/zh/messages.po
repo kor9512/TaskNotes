@@ -949,10 +949,10 @@ msgstr "+1周"
 msgctxt "views.releaseNotes.baseFilesNotice"
 msgid "> [!info] About default `.base` files\n"
 "> Updates to default generated `.base` templates do not overwrite your existing `.base` files, so your customizations stay safe.\n"
-"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → General → Views & base files → Update files**."
+"> If you want the newest template improvements, regenerate base files in **Settings → TaskNotes → Appearance & interaction → Views & base files → Update files**, or run the **TaskNotes: Update default base files** command."
 msgstr "> [!info] 关于默认 `.base` 文件\n"
 "> 默认生成的 `.base` 模板更新不会覆盖你现有的 `.base` 文件，因此你的自定义会被保留。\n"
-"> 如果你希望获得最新模板改进，请在 **设置 → TaskNotes → 常规 → 视图与 base 文件 → 更新文件** 中重新生成 base 文件。"
+"> 如果你希望获得最新模板改进，请在 **设置 → TaskNotes → 外观与交互 → 视图与 Base 文件 → 更新文件** 中重新生成 base 文件，或运行 **TaskNotes: 更新默认 Base 文件** 命令。"
 
 #: src/views/PomodoroView.ts
 msgctxt "timer subtract duration button"
@@ -1716,6 +1716,11 @@ msgstr "附件"
 
 #: src/modals/TimeblockInfoModal.ts
 msgctxt "modals.timeblockInfo.attachmentsLabel"
+msgid "Attachments"
+msgstr "附件"
+
+#: src/utils/propertyHelpers.ts
+msgctxt "settings.taskProperties.fieldMapping.fields.attachments"
 msgid "Attachments"
 msgstr "附件"
 
@@ -6020,11 +6025,6 @@ msgctxt "views.basesCalendar.settings.layout.heightModeFill"
 msgid "Fill container"
 msgstr "填满容器"
 
-#: src/bases/BasesViewBase.ts
-msgctxt "views.stats.sections.filters"
-msgid "Filters"
-msgstr "筛选器"
-
 #: src/settings/native/properties.ts
 msgctxt "settings.taskProperties.projectsCard.filtersOn"
 msgid "Filters on"
@@ -6450,6 +6450,7 @@ msgctxt "settings.integrations.mdbaseSpec.hideFolders.name"
 msgid "Hide mdbase folders in the file explorer"
 msgstr "在文件列表中隐藏 mdbase 文件夹"
 
+#: src/bases/calendarViewOptions.ts
 #: src/bases/registration.ts
 msgctxt "bases/registration: registerBasesTaskList.attemptRegistration.options displayName"
 msgid "Hide top-level subtasks"
@@ -7511,6 +7512,11 @@ msgctxt "interaction move feedback"
 msgid "Moved {count, plural, one {# task} other {# tasks}} to {destination}"
 msgstr "已将{count, plural, other { # 个任务}}移至 {destination}"
 
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring occurrence drop feedback"
+msgid "Moved the {from} occurrence to {to}. Other occurrences are unchanged."
+msgstr "已将 {from} 的这次重复移至 {to}。其他重复未更改。"
+
 #: src/services/MdbaseSpecService.ts
 msgctxt "mdbaseSafety.multiple"
 msgid "Multiple TaskNotes types: {paths}. Keep one canonical provider or move the others out of the types folder, then reload TaskNotes. TaskNotes kept its last-known-good configuration."
@@ -8058,9 +8064,9 @@ msgid "No tasks match \"{searchTerm}\""
 msgstr "没有匹配“{searchTerm}”的任务"
 
 #: src/bases/BasesViewBase.ts
-msgctxt "empty task view recovery"
-msgid "No tasks match this view. Review its filters."
-msgstr "没有符合此视图的任务。请检查筛选条件。"
+msgctxt "empty task view"
+msgid "No tasks match this view."
+msgstr "没有符合此视图的任务。"
 
 #: src/bases/BasesViewBase.ts
 msgctxt "notices.audit.noTasksCopy"
@@ -8606,6 +8612,11 @@ msgstr "打开笔记"
 msgctxt "settings.general.taskInteraction.actions.openNote"
 msgid "Open note"
 msgstr "打开笔记"
+
+#: src/components/TaskContextMenu.ts
+msgctxt "contextMenus.task.openNoteInNewTab"
+msgid "Open note in new tab"
+msgstr "在新标签页打开笔记"
 
 #: src/components/task-context-menu/completion.ts
 #: src/modals/TaskActionPaletteModal.ts
@@ -10284,6 +10295,27 @@ msgctxt "settings.native.separateValuesWithCommas"
 msgid "Separate values with commas."
 msgstr "用逗号分隔值。"
 
+#: src/components/TaskContextMenu.ts
+#: src/modals/TaskActionPaletteModal.ts
+msgctxt "contextMenus.task.seriesStatus"
+msgid "Series status"
+msgstr "系列状态"
+
+#: src/ui/taskPropertyPickers.ts
+msgctxt "interaction property"
+msgid "Series status"
+msgstr "系列状态"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.tooltips.seriesStatusValue"
+msgid "Series status: {value}"
+msgstr "系列状态：{value}"
+
+#: src/bases/calendarMutations.ts
+msgctxt "calendar recurring pattern drop feedback"
+msgid "Series time changed to {time}. Later occurrences now appear at this time; the next occurrence keeps its own time."
+msgstr "系列时间已改为 {time}。之后的重复现在显示在此时间；下一次重复保留其自身的时间。"
+
 #: src/settings/native/integrations.ts
 msgctxt "settings.integrations.calendarSubscriptions.recurringEventRelatedNotesMode.options.series"
 msgid "Series-wide"
@@ -10347,6 +10379,11 @@ msgstr "设置提醒"
 msgctxt "modals.task.actions.scheduled"
 msgid "Set scheduled date"
 msgstr "设置计划日期"
+
+#: src/modals/taskModalActionIconStates.ts
+msgctxt "modals.task.actions.seriesStatus"
+msgid "Set series status"
+msgstr "设置系列状态"
 
 #: src/modals/TaskModal.ts
 #: src/modals/taskModalActionIconStates.ts
@@ -10448,6 +10485,16 @@ msgstr "显示日程日期栏"
 msgctxt "bases/registration: defaults show-all"
 msgid "Show all"
 msgstr "显示全部"
+
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.name"
+msgid "Show all properties on inline task cards"
+msgstr "在内联任务卡片上显示所有属性"
+
+#: src/settings/native/appearance.ts
+msgctxt "settings.appearance.taskCards.wrapProperties.name"
+msgid "Show all properties on task cards"
+msgstr "在任务卡片上显示所有属性"
 
 #: src/i18n/messages.ts
 msgctxt "views.basesCalendar.settings.layout.showAllDaySlot"
@@ -11509,6 +11556,11 @@ msgctxt "settings.integrations.googleCalendarExport.notices.noDateToSync"
 msgid "Task has no scheduled or due date to sync"
 msgstr "任务没有可同步的计划日期或截止日期"
 
+#: src/settings/native/properties.ts
+msgctxt "settings.taskProperties.properties.id.name"
+msgid "Task ID"
+msgstr "任务 ID"
+
 #: src/settings/native/general.ts
 msgctxt "settings.general.taskIdentification.header"
 msgid "Task identification"
@@ -11782,6 +11834,11 @@ msgstr "TaskNotes 已为此设备创建新的 API 令牌。请从设置 → Task
 msgctxt "contextMenus.task.calendar.defaultRestored"
 msgid "TaskNotes default Google Calendar restored"
 msgstr "已恢复 TaskNotes 默认 Google 日历"
+
+#: src/main.ts
+msgctxt "notices.settingsUnreadable"
+msgid "TaskNotes did not start because its settings file could not be read. Your settings have not been changed. Restart Obsidian to try again. Reinstalling TaskNotes deletes its settings."
+msgstr "由于无法读取设置文件，TaskNotes 未启动。你的设置没有更改。请重启 Obsidian 后重试。重新安装 TaskNotes 会删除其设置。"
 
 #: src/services/mdbase/recognitionNotices.ts
 msgctxt "migrationRecognition.waiting"
@@ -12314,6 +12371,12 @@ msgstr "此笔记已是任务"
 msgctxt "modals.storageLocation.bullets.dataLongevity"
 msgid "This provides better data longevity with your notes"
 msgstr "这提供了与你的笔记更好的数据持久性"
+
+#: src/components/task-context-menu/completion.ts
+#: src/services/TaskService.ts
+msgctxt "services.task.notices.noRecurringOccurrence"
+msgid "This recurring task has no occurrence to update on that date"
+msgstr "此重复任务在该日期没有可更新的实例"
 
 #: src/settings/native/properties.ts
 msgctxt "settings.native.thisRemovesThePropertyFromTaskNotesFormsNotFrom"
@@ -13842,6 +13905,16 @@ msgstr "在所有设备上撤销 TaskNotes 对 Google 日历的访问权限。"
 msgctxt "settings.features.pomodoro.workDuration.name"
 msgid "Work duration"
 msgstr "工作时长"
+
+#: src/settings/native/features.ts
+msgctxt "settings.features.inlineTasks.wrapProperties.description"
+msgid "Wrap a task link's properties onto extra lines instead of hiding them behind a count such as +3. Task links inside a sentence still show only the title."
+msgstr "将任务链接的属性换行显示，而不是隐藏在 +3 之类的计数后面。句子中的任务链接仍只显示标题。"
+
+#: src/settings/native/appearance.ts
+msgctxt "settings.appearance.taskCards.wrapProperties.description"
+msgid "Wrap properties onto extra lines when a card is too narrow, instead of hiding them behind a count such as +3. Task links in notes have their own setting under Inline tasks."
+msgstr "卡片过窄时，将属性换行显示，而不是隐藏在 +3 之类的计数后面。笔记中的任务链接在“内联任务”中有单独的设置。"
 
 #: src/settings/native/tasknotesApp.ts
 msgctxt "settings.tasknotesApp.types.description"
